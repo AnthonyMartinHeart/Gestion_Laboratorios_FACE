@@ -1,16 +1,16 @@
 # Gestion_Laboratorios_FACE
 
-#Arquitectura del Proyecto: Gestor de Bitácoras y Asistencia para Consultores
+# Arquitectura del Proyecto: Gestor de Bitácoras y Asistencia para Consultores
 1. Frontend (JavaScript)
 Tecnologías: React.js 
 
 Páginas Principales: (AUN NO FINAL)
 
-Login / Registro: Los usuarios (consultores) pueden iniciar sesión o registrarse.
+- Login / Registro: Los usuarios (consultores) pueden iniciar sesión o registrarse.
 
-Dashboard: Un resumen con las bitácoras y un acceso a las funcionalidades principales.
+- Dashboard: Un resumen con las bitácoras y un acceso a las funcionalidades principales.
 
-Bitácoras: Permite visualizar y agregar nuevas bitácoras de forma sencilla.
+- Bitácoras: Permite visualizar y agregar nuevas bitácoras de forma sencilla.
 
 Asistencia: Interfaz para que los consultores hagan preguntas o accedan a la ayuda.
 
@@ -21,13 +21,13 @@ Tecnologías: Node.js, Express.js, JWT (JSON Web Tokens), Bcrypt (para encriptar
 
 API RESTful:
 
-#Autenticación:
+# Autenticación:
 
 Ruta de POST /auth/login: Verifica las credenciales y devuelve un JWT.
 
 Ruta de POST /auth/register: Crea un nuevo usuario y devuelve el JWT.
 
-#Bitácoras:
+# Bitácoras:
 
 Ruta de GET /logs: Devuelve todas las bitácoras almacenadas.
 
@@ -35,14 +35,14 @@ Ruta de POST /logs: Permite crear una nueva bitácora.
 
 Ruta de GET /logs/{id}: Detalles de una bitácora específica.
 
-#Asistencia:
+# Asistencia:
 
 Ruta de GET /assistance: Lista de consultas y asistencia disponible.
 
 Ruta de POST /assistance: Crea una solicitud de ayuda.
 
 
-Middleware:
+# Middleware:
 
 Autenticación: Middleware que valida el token JWT en las rutas protegidas.
 
