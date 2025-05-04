@@ -56,22 +56,22 @@ async function createUsers() {
           rol: "consultor",
         }),
       ),
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Diego Alexis Meza Ortega",
-          rut: "21.172.447-1",
-          email: "usuario5.2024@gmail.cl",
-          password: await encryptPassword("user1234"),
-          rol: "usuario",
+await userRepository.save(
+  userRepository.create({
+    nombreCompleto: "Camila Fernanda Soto Vargas",
+    rut: "19.524.639-8",
+    email: "c.soto2024@gmail.com",
+    password: await encryptPassword("user1234"),
+    rol: "usuario",
         }),
       ),
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Juan Pablo Rosas Martin",
-          rut: "20.738.415-1",
-          email: "usuario6.2024@gmail.cl",
-          password: await encryptPassword("user1234"),
-          rol: "usuario",
+await userRepository.save(
+  userRepository.create({
+    nombreCompleto: "Matías Andrés Navarro Pérez",
+    rut: "22.684.120-5",
+    email: "m.navarro2024@gmail.com",
+    password: await encryptPassword("user1234"),
+    rol: "usuario",
         }),
       ),
     ]);

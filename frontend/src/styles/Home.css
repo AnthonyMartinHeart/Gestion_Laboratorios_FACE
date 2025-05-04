@@ -1,0 +1,68 @@
+/* Estilos para el título */
+
+.home-container {
+    background: url('/Math.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Estilos para el título */
+h5 {
+    font-size: 4rem;
+    color: #141313; /* Color de la paleta */
+    margin-top: 15px; /* Ajusta este valor para mover el título más arriba */
+}
+
+
+/* Estilos para el subtítulo */
+h2 {
+    font-size: 2.5rem;
+    color: #231b91; /* Color Coffee */
+    text-align: center;
+    margin-top: 1px; /* Aumento el margen para bajarlo más */
+}
+
+/* Contenedor de los botones */
+.lab-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px; /* Aumento el margen para mover los botones más abajo */
+}
+
+/* Estilos para los botones (cubitos) */
+.lab-button {
+    background-color: #586192; /* Color customizado */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    width: 150px;
+    height: 150px;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para el efecto de elevación */
+    border: 4px solid #000; /* 🆕 Bordecito negro */
+}
+
+.lab-button:hover {
+    background-color: #220b67; /* Cambio de color al pasar el mouse */
+    transform: translateY(-5px); /* Efecto de elevarse ligeramente */
+}
+
+.lab-button:active {
+    transform: translateY(4px) scale(0.95); /* Animación de presión (se reduce y baja) */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra más pequeña cuando se presiona */
+}
+
+
+
+
+
+
