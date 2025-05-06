@@ -4,7 +4,7 @@
 1. Frontend (JavaScript)
 Tecnologías: React.js 
 
-Páginas Principales: (AUN NO FINAL)
+Páginas Principales:
 
 - Login / Registro: Los usuarios (consultores) pueden iniciar sesión o registrarse.
 
