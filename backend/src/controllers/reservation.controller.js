@@ -5,6 +5,7 @@ import {
   getReservationsByPCService,
   updateReservationService,
   deleteReservationService,
+  getAllReservationsService, 
 } from "../services/reservation.service.js";
 import {
   handleErrorClient,
@@ -44,6 +45,16 @@ export async function getReservationsByPC(req, res) {
     }
   }
   
+  export async function getAllReservations(req, res) {
+    try {
+      const [list, err] = await getAllReservationsService();
+      if (err) return handleErrorClient(res, 404, err);
+  
+      handleSuccess(res, 200, "Reservas encontradas", list);
+    } catch (e) {
+      handleErrorServer(res, 500, e.message);
+    }
+  }
 
 export async function updateReservation(req, res) {
   try {
