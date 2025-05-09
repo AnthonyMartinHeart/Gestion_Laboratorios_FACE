@@ -4,7 +4,7 @@ import '@styles/form.css';
 import HideIcon from '../assets/HideIcon.svg';
 import ViewIcon from '../assets/ViewIcon.svg';
 
-const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundColor }) => {
+const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundColor, logo }) => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -28,6 +28,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
             onSubmit={handleSubmit(onFormSubmit)}
             autoComplete="off"
         >
+            {logo && <div className="form-logo">{logo}</div>}
             <h1>{title}</h1>
             {fields.map((field, index) => (
                 <div className="container_inputs" key={index}>
