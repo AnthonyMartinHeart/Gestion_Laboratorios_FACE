@@ -16,3 +16,23 @@ body {
 	min-height: 100vh;
 	margin: 0 auto;
 }
+
+.app-layout {
+	display: flex;
+  }
+  
+  .main-content {
+	transition: margin-left 0.3s;
+	padding: 1rem;
+	width: 100%;
+	min-height: 100vh;
+  }
+  
+  .main-content.expanded {
+	margin-left: 240px; 
+  }
+  
+  .main-content.collapsed {
+	margin-left: 60px; 
+  }
+  
