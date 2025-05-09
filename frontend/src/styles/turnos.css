@@ -1,6 +1,12 @@
+
 .turnos-container {
-  padding: 20px;
-  overflow-x: auto;
+    background: url('/Math.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
 }
 
 /* Título */
