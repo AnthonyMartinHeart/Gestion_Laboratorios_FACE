@@ -15,7 +15,7 @@ async function createUsers() {
         userRepository.create({
           nombreCompleto: "Jorge Antonio Martinez Henriquez",
           rut: "21.069.508-7",
-          email: "administrador2024@gmail.cl",
+          email: "administrador2025@gmail.cl",
           password: await encryptPassword("admin1234"),
           rol: "administrador",
         }),
@@ -60,7 +60,7 @@ await userRepository.save(
   userRepository.create({
     nombreCompleto: "Camila Fernanda Soto Vargas",
     rut: "19.524.639-8",
-    email: "c.soto2024@gmail.com",
+    email: "c.soto2025@gmail.cl",
     password: await encryptPassword("user1234"),
     rol: "usuario",
         }),
@@ -69,7 +69,7 @@ await userRepository.save(
   userRepository.create({
     nombreCompleto: "Matías Andrés Navarro Pérez",
     rut: "22.684.120-5",
-    email: "m.navarro2024@gmail.com",
+    email: "m.navarro2025@gmail.cl",
     password: await encryptPassword("user1234"),
     rol: "usuario",
         }),
