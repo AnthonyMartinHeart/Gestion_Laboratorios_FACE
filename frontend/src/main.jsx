@@ -10,6 +10,7 @@ import ProtectedRoute from '@components/ProtectedRoute';
 import SelectPC from '@pages/SelectPC';
 import Turnos from '@pages/Turnos';      
 import Bitacoras from '@pages/Bitacoras'; 
+import MiPerfil from '@pages/MiPerfil';
 import '@styles/styles.css';
 
 const router = createBrowserRouter([
@@ -35,12 +36,28 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/turnos',    
-        element: <Turnos />,
-      },
+        path: '/turnos',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+            <Turnos />
+          </ProtectedRoute>
+        ),
+      },,
       {
         path: '/bitacoras',
-        element: <Bitacoras />,
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+            <Bitacoras />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/mi-perfil',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'usuario']}>
+            <MiPerfil />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
