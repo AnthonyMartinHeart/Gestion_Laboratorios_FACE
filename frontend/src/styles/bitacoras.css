@@ -1,14 +1,14 @@
-/* General Styles */
 .bitacoras-container {
     background: url('/Math.jpg') no-repeat center center fixed;
     background-size: cover;
+    background-color: #f5f5f5;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     text-align: center;
-    padding: 20px;
+    padding: 60px 20px 20px 20px; 
 }
 
 .bitacoras-container {
@@ -20,16 +20,21 @@
 .bitacoras-container h1 {
     text-align: center;
     margin-bottom: 40px;
-    font-size: 1.8rem; /* Tamaño de fuente más pequeño para dispositivos móviles */
+    font-size: 1.8rem; /* Tamaño para móviles */
     color: #333;
 }
 
 .bitacoras-container h2 {
-    text-align: left;
+    text-align: center;          
     margin: 30px 0 10px 0;
-    font-size: 1.2rem; /* Font-size más pequeño para dispositivos móviles */
+    font-size: 1.2rem;
     color: #222;
-}
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;                  
+  }
+  
 
 .bitacora-table {
     overflow-x: auto;
@@ -65,7 +70,7 @@
     background-color: #f9f9f9;
 }
 
-/* Adaptación para pantallas más pequeñas (max-width: 768px) */
+
 @media (max-width: 768px) {
     .bitacoras-container {
         padding: 100px 10px 10px 10px; /* Ajusta el padding para pantallas pequeñas */
@@ -78,7 +83,7 @@
 
     .bitacoras-container h2 {
         font-size: 1.1rem; /* Título más pequeño en móviles */
-        margin: 20px 0 10px 0; /* Ajusta los márgenes */
+        margin: 20px 0 10px 0; 
     }
 
     .bitacora-table th,
@@ -97,21 +102,70 @@
 /* Adaptación aún más para pantallas muy pequeñas (por ejemplo, móviles en apaisado o pantallas más pequeñas) */
 @media (max-width: 480px) {
     .bitacoras-container {
-        padding: 80px 10px 10px 10px; /* Menos padding para pantallas más pequeñas */
+        padding: 80px 10px 10px 10px; 
     }
 
     .bitacoras-container h1 {
-        font-size: 1.3rem; /* Título aún más pequeño */
+        font-size: 1.3rem; /* Título más pequeño */
     }
 
     .bitacoras-container h2 {
-        font-size: 1rem; /* Título aún más pequeño */
-        margin: 15px 0 5px 0; /* Menos margen */
+        font-size: 1rem; /* Título más pequeño */
+        margin: 15px 0 5px 0; 
     }
 
     .bitacora-table th,
     .bitacora-table td {
         padding: 6px;
-        font-size: 0.75rem; /* Fuente aún más pequeña para pantallas muy pequeñas */
+        font-size: 0.75rem; /* para hacerla más pequeña */
     }
 }
+
+.bitacoras-container input[type="date"] {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .export-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    top: -1px; 
+  }
+  
+  .export-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  .export-btn:active {
+    transform: scale(0.97);
+  }
+  
+  label[for="fecha"] {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 1.3rem;
+    background-color: #f0f4ff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    width: fit-content;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+  
