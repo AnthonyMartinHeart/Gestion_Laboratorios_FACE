@@ -1,0 +1,115 @@
+.perfil-container {
+    background: url('/Math.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+  
+  .perfil-container h1 {
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .perfil-details {
+    margin-bottom: 20px;
+    text-align: left;
+    display: inline-block;
+    max-width: 500px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.158);
+    border-radius: 8px;
+  }
+  
+  
+  .perfil-details p {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  
+  .perfil-details p {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: #000000;
+    text-align: center; 
+  }
+
+  .perfil-actions button {
+    background-color: #81878d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .perfil-actions button:hover {
+    background-color: #276fa1;
+  }
+  
+  .perfil-foto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  .foto-circular {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #eee;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .foto-circular img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .sin-foto {
+    font-size: 48px;
+    color: #999;
+  }
+  
+  .icono-editar {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: white;
+    border-radius: 50%;
+    padding: 6px;
+    font-size: 20px;
+    color: #3498db;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, color 0.3s;
+    cursor: pointer;
+  }
+  
+  .icono-editar:hover {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .btn-quitar {
+    margin-top: 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
