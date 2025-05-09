@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '@services/auth.service.js';
 import Form from '@components/Form';
 import useLogin from '@hooks/auth/useLogin.jsx';
+import logoImage from '@assets/GL-BLUE.png'; 
 import '@styles/form.css';
 
 const Login = () => {
@@ -29,6 +30,7 @@ const Login = () => {
     return (
         <main className="container">
             <Form
+                logo={<img src={logoImage} alt="Logo GL-BLUE" className="form-logo-img" />}
                 title="Iniciar sesión"
                 fields={[
                     {
