@@ -1,35 +1,153 @@
-.error_404{
+/* Variables de animación y colores */
+:root {
+	--s: 25vmin;
+	--p: calc(var(--s) / 2);
+	--c1: #1900ff;
+	--c2: #f5f5f5;
+	--c3: rgba(251, 255, 2, 0.741);
+	--bg: var(--c3);
+	--d: 4000ms;
+	--e: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  
+  /* Estilos principales para la página de error */
+  .error_404 {
 	height: 100vh;
 	width: 100%;
-	background: linear-gradient(90deg, #003366, #001a33); /*Color del fondo de la pagina de error (gradiente)*/
+	background-color: var(--bg);
+	background-image:
+	  linear-gradient(45deg, var(--c1) 25%, transparent 25%),
+	  linear-gradient(-45deg, var(--c1) 25%, transparent 25%),
+	  linear-gradient(45deg, transparent 75%, var(--c2) 75%),
+	  linear-gradient(-45deg, transparent 75%, var(--c2) 75%);
+	background-size: var(--s) var(--s);
+	background-position: 
+	  calc(var(--p) *  1) calc(var(--p) *  0), 
+	  calc(var(--p) * -1) calc(var(--p) *  1), 
+	  calc(var(--p) *  1) calc(var(--p) * -1), 
+	  calc(var(--p) * -1) calc(var(--p) *  0);
+	animation: 
+	  color var(--d) var(--e) infinite,
+	  position var(--d) var(--e) infinite;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	.card{
-		background-color: #eef7ff;
-		padding: 6.5vh;
-		border-radius: 24px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		h1{
-			margin: 0;
-			font-size: 120px;
-			font-weight: bold;
-			color: #003366;
-		}
-		h3{
-			margin: 0;
-			font-size: 24px;
-			font-weight: lighter;
-			color: #003366;
-		}
-		h4{
-			margin: 0;
-			padding-top: 2vh;
-			font-size: 14px;
-			font-weight: lighter;
-			color: #003366;
-		}
+  }
+  
+  /* Estilo para la tarjeta de error */
+  .error_404 .card {
+	background-color: #FFEBEE; /* Lavender blush */
+	padding: 6.5vh;
+	border-radius: 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+  }
+  
+  /* Estilo del título principal (404) */
+  .error_404 .card h1 {
+	margin: 0;
+	font-size: 120px;
+	font-weight: bold;
+	color: #251a5f; /* Giants orange */
+	text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Estilo para el subtítulo (mensaje de error) */
+  .error_404 .card h3 {
+	margin: 0;
+	font-size: 24px;
+	font-weight: lighter;
+	color: #000000; /* Amber */
+	margin-top: 15px;
+  }
+  
+  /* Estilo para el mensaje adicional (detalles sobre el error) */
+  .error_404 .card h4 {
+	margin: 0;
+	padding-top: 2vh;
+	font-size: 14px;
+	font-weight: lighter;
+	color: #795548; /* Coffee */
+  }
+  
+  /* Animaciones */
+  @keyframes color {
+	0%, 25% {
+	  --bg: var(--c3);
 	}
-}
+	26%, 50% {
+	  --bg: var(--c1);
+	}
+	51%, 75% {
+	  --bg: var(--c3);
+	}
+	76%, 100% {
+	  --bg: var(--c2);
+	}
+  }
+  
+  @keyframes position {
+	0% {
+	  background-position: 
+		calc(var(--p) *  1) calc(var(--p) *  0), 
+		calc(var(--p) * -1) calc(var(--p) *  1), 
+		calc(var(--p) *  1) calc(var(--p) * -1), 
+		calc(var(--p) * -1) calc(var(--p) *  0);
+	}
+	25% {
+	  background-position: 
+		calc(var(--p) *  1) calc(var(--p) *  4), 
+		calc(var(--p) * -1) calc(var(--p) *  5), 
+		calc(var(--p) *  1) calc(var(--p) *  3), 
+		calc(var(--p) * -1) calc(var(--p) *  4);
+	}
+	50% {
+	  background-position: 
+		calc(var(--p) *  3) calc(var(--p) * 8), 
+		calc(var(--p) * -3) calc(var(--p) * 9), 
+		calc(var(--p) *  2) calc(var(--p) * 7), 
+		calc(var(--p) * -2) calc(var(--p) * 8);
+	}
+	75% {
+	  background-position: 
+		calc(var(--p) *  3) calc(var(--p) * 12), 
+		calc(var(--p) * -3) calc(var(--p) * 13), 
+		calc(var(--p) *  2) calc(var(--p) * 11), 
+		calc(var(--p) * -2) calc(var(--p) * 12);
+	}
+	100% {    
+	  background-position: 
+		calc(var(--p) *  5) calc(var(--p) * 16), 
+		calc(var(--p) * -5) calc(var(--p) * 17), 
+		calc(var(--p) *  5) calc(var(--p) * 15), 
+		calc(var(--p) * -5) calc(var(--p) * 16);
+	}
+  }
+  
+  /* Desactivar animaciones en dispositivos con preferencia por la reducción de movimiento */
+  @media (prefers-reduced-motion) {
+	.error_404 {
+	  animation: none;
+	}
+  }
+  
+  /* Estilos para asegurar que la tarjeta esté centrada en dispositivos móviles */
+  @media (max-width: 767px) {
+	.error_404 .card {
+	  padding: 5vh;
+	}
+  
+	.error_404 .card h1 {
+	  font-size: 80px; /* Reducir tamaño en pantallas pequeñas */
+	}
+  
+	.error_404 .card h3 {
+	  font-size: 18px;
+	}
+  
+	.error_404 .card h4 {
+	  font-size: 12px;
+	}
+  }
+  
