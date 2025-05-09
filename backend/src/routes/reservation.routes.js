@@ -4,18 +4,30 @@ import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import {
   createReservation,
   getReservationsByPC,
+  getAllReservations,
   updateReservation,
   deleteReservation,
 } from "../controllers/reservation.controller.js";
 
 const router = Router();
+
+// Proteger todas las rutas con JWT
 router.use(authenticateJwt);
 
-router
-  .post("/create", authenticateJwt, createReservation)
-  .get("/get", authenticateJwt, getReservationsByPC)
-  .put("/:id", updateReservation) //actualiza id de creacion no id de pc
+// Crear una nueva reserva
+router.post("/create", createReservation);
 
-  .delete("/:id", deleteReservation); //elimina id de creacion no id de pc
+// Obtener reservas por PC y fecha
+router.get("/get", getReservationsByPC);
+
+// Obtener todas las reservas 
+router.get("/all", authenticateJwt, getAllReservations); 
+
+
+// Actualizar una reserva por ID
+router.put("/:id", updateReservation);
+
+// Eliminar una reserva por ID
+router.delete("/:id", deleteReservation);
 
 export default router;
