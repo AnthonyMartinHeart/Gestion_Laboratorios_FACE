@@ -238,10 +238,29 @@ input {
 /* Estilo para el contenedor principal con imagen de fondo */
 .container {
 	height: 100vh;
-	background: url('/image3.jpg') no-repeat center center/cover; /* Ruta de la imagen como fondo */
+	background: url('/image4.png') no-repeat center center/cover; /* Ruta de la imagen como fondo */
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	background-size: cover; /* Asegura que la imagen cubra todo el contenedor */
 	background-position: center; /* Alinea la imagen al centro */
   }
+
+  .form-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px; /* Un poco menos de espacio inferior */
+}
+
+.form-logo-img {
+    max-width: 110px; /* Más pequeño para no sobresaturar el encabezado del form */
+    height: auto;
+}
+
+@media (max-width: 480px) {
+    .form-logo-img {
+        max-width: 65px; /* Reducción adicional para dispositivos móviles */
+        margin-bottom: 12px;
+    }
+}
