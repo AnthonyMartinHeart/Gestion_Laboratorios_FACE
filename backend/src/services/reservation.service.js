@@ -62,7 +62,16 @@ export async function getReservationsByPCService(pcId, fechaReserva) {
     }
   }
   
-  
+  export async function getAllReservationsService() {
+    try {
+      const repo = AppDataSource.getRepository(Reservation);
+      const list = await repo.find(); // Recupera todas las reservas
+      return [list, null];
+    } catch (error) {
+      console.error("Error obteniendo todas las reservas:", error);
+      return [null, "Error interno del servidor"];
+    }
+  }
 
 export async function updateReservationService(id, data) {
   try {
