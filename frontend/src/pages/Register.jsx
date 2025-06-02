@@ -51,20 +51,24 @@ const Register = () => {
                         patternMessage: "Debe contener solo letras y espacios",
                     },
                     {
-                        label: "Correo electrónico",
-                        name: "email",
-                        placeholder: "example@gmail.cl",
-                        fieldType: 'input',
-                        type: "email",
-                        required: true,
-                        minLength: 15,
-                        maxLength: 35,
-                        errorMessageData: errorEmail,
-                        validate: {
-                            emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl',
-                        },
-                        onChange: (e) => handleInputChange('email', e.target.value),
-                    },
+                      label: "Correo electrónico",
+                      name: "email",
+                      placeholder: "@gmail.cl / @alumnos.ubiobio.cl",
+                      fieldType: 'input',
+                      type: "email",
+                      required: true,
+                      minLength: 15,
+                      maxLength: 35,
+                      errorMessageData: errorEmail,
+                      validate: {
+                      emailDomain: (value) =>
+            value.toLowerCase().endsWith('@gmail.cl') ||
+            value.toLowerCase().endsWith('@alumnos.ubiobio.cl') ||
+            'El correo debe terminar en @gmail.cl o @alumnos.ubiobio.cl',
+    },
+    onChange: (e) => handleInputChange('email', e.target.value),
+}
+,
                     {
                         label: "Rut",
                         name: "rut",
