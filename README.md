@@ -2,7 +2,8 @@
 
 # Arquitectura del Proyecto: Gestor de Bitácoras y Asistencia para Consultores
 
-![image](https://github.com/user-attachments/assets/a545d4f8-960a-48cd-9305-ee3eabeaaa04)
+![image](https://github.com/user-attachments/assets/c7bd760f-6cfd-4558-b57a-0b54e579c25f)
+
 
 1. Frontend (JavaScript)
 Tecnologías: React.js 
