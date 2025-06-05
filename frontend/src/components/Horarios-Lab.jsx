@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 import "@styles/Horarios.css";
 
 const horas = [
@@ -19,6 +20,24 @@ export default function HorarioLaboratorios() {
   const [lab1, setLab1] = useState(generarTablaInicial());
   const [lab2, setLab2] = useState(generarTablaInicial());
   const [lab3, setLab3] = useState(generarTablaInicial());
+
+  useEffect(() => {
+    const savedData = JSON.parse(localStorage.getItem("horarios")) || {};
+    if (savedData.lab1) setLab1(savedData.lab1);
+    if (savedData.lab2) setLab2(savedData.lab2);
+    if (savedData.lab3) setLab3(savedData.lab3);
+  }, []);
+
+  const handleSave = () => {
+    const dataToSave = { lab1, lab2, lab3 };
+    localStorage.setItem("horarios", JSON.stringify(dataToSave));
+    Swal.fire({
+      title: "Guardado exitoso",
+      text: "Los horarios han sido guardados correctamente.",
+      icon: "success",
+      confirmButtonText: "Aceptar",
+    });
+  };
 
   const laboratorios = [
     { nombre: "CLASES LABORATORIO 1", data: lab1, setData: setLab1 },
@@ -76,6 +95,9 @@ export default function HorarioLaboratorios() {
           </div>
         ))}
       </div>
+      <button onClick={handleSave} className="save-button">
+        Guardar Horarios
+      </button>
     </div>
   );
 }
