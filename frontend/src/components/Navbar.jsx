@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import "@styles/navbar.css";
 import { useState, useEffect } from "react";
 import { HiArrowSmLeft, HiArrowSmRight } from "react-icons/hi";
-import { FaHome, FaBook, FaClock, FaUsers, FaUser } from "react-icons/fa";
+import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt } from "react-icons/fa";
 import { ImExit } from "react-icons/im";
 import logoWhite from "../assets/GL-WHITE.png";
 
@@ -72,22 +72,28 @@ const Navbar = () => {
               </NavLink>
             </li>
 
-            {(userRole === "administrador" || userRole === "consultor") && (
-              <>
-                <li>
-                  <NavLink to="/bitacoras" className={({ isActive }) => (isActive ? "active" : "")}>
-                    <FaBook className="nav-icon" />
-                    <span>Bitácoras</span>
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/turnos" className={({ isActive }) => (isActive ? "active" : "")}>
-                    <FaClock className="nav-icon" />
-                    <span>Turnos</span>
-                  </NavLink>
-                </li>
-              </>
-            )}
+{(userRole === "administrador" || userRole === "consultor") && (
+  <>
+    <li>
+      <NavLink to="/bitacoras" className={({ isActive }) => (isActive ? "active" : "")}>
+        <FaBook className="nav-icon" />
+        <span>Bitácoras</span>
+      </NavLink>
+    </li>
+    <li>
+      <NavLink to="/turnos" className={({ isActive }) => (isActive ? "active" : "")}>
+        <FaClock className="nav-icon" />
+        <span>Turnos</span>
+      </NavLink>
+    </li>
+    <li>
+      <NavLink to="/horarios" className={({ isActive }) => (isActive ? "active" : "")}>
+        <FaCalendarAlt className="nav-icon" />
+        <span>Horarios</span>
+      </NavLink>
+    </li>
+  </>
+)}
 
             {userRole === "administrador" && (
               <li>
