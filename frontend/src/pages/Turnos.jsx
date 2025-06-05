@@ -5,7 +5,7 @@ import '@styles/turnos.css';
 const Turnos = () => {
   return (
     <div className="turnos-container">
-      <h1>Turnos de Consultores</h1>
+      <h9>Gestión de Turnos</h9>
       <TurnosTable />
     </div>
   );
