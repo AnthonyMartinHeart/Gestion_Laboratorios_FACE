@@ -39,9 +39,9 @@ const Bitacoras = () => {
 
       {selectedDate && (
         <>
-          {renderLaboratorio('Laboratorio 1', 40, 1)}
-          {renderLaboratorio('Laboratorio 2', 20, 41)}
-          {renderLaboratorio('Laboratorio 3', 20, 61)}
+          {renderLaboratorio('Bitacora Laboratorio 1', 40, 1)}
+          {renderLaboratorio('Bitacora Laboratorio 2', 20, 41)}
+          {renderLaboratorio('Bitacora Laboratorio 3', 20, 61)}
         </>
       )}
     </div>
