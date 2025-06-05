@@ -1,28 +1,40 @@
-
-/* Contenedor principal con fondo */
 .home-container::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: url('/image8.jpg') center center / cover no-repeat;
-    z-index: -1;
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('/image8.jpg') center center / cover no-repeat;
+  z-index: -1;
+  transition: background-image 0.5s ease;
 }
 
-/* Contenedor principal con fondo */
-.home-container {
-   
+/* Cambiar fondo con clases */
+.home-container.lab1::before {
+  background-image: url('/GL-LAB1.png');
+}
 
-    min-height: 100vh;
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
+.home-container.lab2::before {
+  background-image: url('/GL-LAB2.png');
+}
+
+.home-container.lab3::before {
+  background-image: url('/GL-LAB3.png');
+}
+
+/* El resto igual */
+.home-container {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 0;
 }
 
 /* Estilos para el título */
@@ -39,9 +51,27 @@ h2 {
     font-size: 2.5rem;
     color: #231b91;
     text-align: center;
-    margin-top: 0; /* Elimina espacio innecesario */
+    margin: 10px 0;
+    padding: 10px 20px; /* espacio dentro del cuadrito */
+    background: rgba(255, 255, 255, 0.8); /* fondo blanco semi-transparente */
+    border-radius: 8px; /* bordes redondeados */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7); /* sombra blanca alrededor */
+    display: inline-block; /* para que el ancho sea del contenido */
 }
 
+@keyframes bounceDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+.emoji-animate {
+  display: inline-block;
+  animation: bounceDown 1.5s ease-in-out infinite;
+}
 
 /* Contenedor de los botones */
 .lab-buttons {
@@ -88,13 +118,13 @@ h2 {
 
 /* Hover: muestra la imagen */
 .lab1-button::before {
-    background-image: url('/lab1.jpg');
+    background-image: url('/GL-LAB1.png');
 }
 .lab2-button::before {
-    background-image: url('/lab2.jpg');
+    background-image: url('/GL-LAB2.png');
 }
 .lab3-button::before {
-    background-image: url('/lab3.jpg');
+    background-image: url('/GL-LAB3.png');
 }
 
 .lab-button:hover::before {
