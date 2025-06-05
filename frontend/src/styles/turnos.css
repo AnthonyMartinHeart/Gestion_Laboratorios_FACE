@@ -1,98 +1,138 @@
+.turnos-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
 
 .turnos-container {
-    background: url('/Math.jpg') no-repeat center center fixed;
-    background-size: cover;
     min-height: 100vh;
-    justify-content: center;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    text-align: center;
     padding: 20px;
 }
 
 /* Título */
-h1 {
+h9 {
   margin-top: 120px;
   font-size: 24px;
   font-weight: bold;
   text-align: center;
-  color: #0d3b66;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3); /* Agrega la sombra */
+}
+
+
+
+
+/* Contenedor principal */
+.turnos-table {
+  width: 100%;
+  max-width: 1200px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* Tabla */
-.turnos-table {
-  width: 100%;
-  min-width: 800px;
-  border-radius: 12px;
-  background-color: #f9fafb;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border: 2px solid black;
-  overflow-x: auto;
-}
-
 .turnos-table table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
-  border-radius: 12px;
-  overflow: hidden;
 }
 
-.turnos-table th,
+/* Encabezados */
+.turnos-table th {
+  background-color: #1e3a8a;
+  color: #ffffff;
+  border: 1px solid #1b1a1a;
+  padding: 14px 10px;
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* Celdas */
 .turnos-table td {
   padding: 12px 10px;
   text-align: center;
   vertical-align: middle;
-  border-bottom: 1px solid #d1d5db;
-  min-width: 100px;
-  border: 1px solid black;
-}
-
-.turnos-table th {
-  background-color: #0d3b66;
-  color: #ffffff;
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border: 1px solid #1b1a1a;
 }
 
 .nombre-cell {
-  background-color: #d9e8f5;
+  background-color: #eef2ff;
   font-weight: 600;
+  color: #1e293b;
 }
 
 .turno-cell {
-  background-color: #fef3c7;
+  background-color: #fefce8;
 }
 
+.observacion-cell {
+  background-color: #f3f4f6;
+}
+
+/* Select */
 .turno-cell select {
-  margin-top: 4px;
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   font-size: 14px;
-  width: 100px;
+  width: 110px;
+  transition: box-shadow 0.2s;
 }
 
-.guardar-button {
-  margin-top: 10px;
-  padding: 6px 10px;
+.turno-cell select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+/* Observaciones */
+.observacion-cell input {
+  width: 90%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: box-shadow 0.2s;
+  margin-bottom: 8px;
+}
+
+.observacion-cell input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+/* Botones */
+.guardar-button,
+.guardar-observacion-button {
+  padding: 8px 14px;
   background-color: #10b981;
-  color: #ffffff;
-  font-size: 12px;
+  color: white;
   font-weight: bold;
-  border: 2px solid black;
-  border-radius: 6px;
+  border: 1.5px solid black; /* Borde negro agregado */
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s;
-  width: fit-content;
+  font-size: 14px;
+  transition: transform 0.2s, background-color 0.3s;
+  margin-top: 6px;
 }
 
-.guardar-button:hover {
+
+.guardar-button:hover,
+.guardar-observacion-button:hover {
   background-color: #059669;
   transform: scale(1.05);
 }
@@ -106,28 +146,33 @@ h1 {
 
 .button-cell span {
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
   color: #374151;
 }
 
 .button-cell button {
-  font-size: 18px;
-  border: 2px solid black;
-  border-radius: 10px;
+  font-size: 16px;
   padding: 8px 16px;
-  background-color: #2563eb;
-  color: #ffffff;
+  border-radius: 8px;
   font-weight: 600;
+  border: 2.5px solid black; /* Borde negro agregado */
+  color: white;
+  background-color: #ffffff;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s;
+  transition: transform 0.2s, background-color 0.3s;
 }
+
 
 .button-cell button:hover {
   transform: scale(1.05);
 }
 
+.entrada-button {
+  background-color: #8affad;
+}
+
 .entrada-button:hover {
-  background-color: #10b981;
+  background-color: #8affad;
 }
 
 .salida-button {
@@ -138,55 +183,21 @@ h1 {
   background-color: #dc2626;
 }
 
-.observacion-cell {
-  background-color: #f3f4f6;
+/* Alternar filas */
+.turnos-table tr:nth-child(even) td {
+  background-color: #f0f4ff;
 }
 
-.observacion-cell input {
-  width: 90%;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
-}
-
-.turno-designado {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.turno-designado div {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.turnos-table tr:nth-child(even) {
-  background-color: #f9fafb;
-}
-
-/* MEDIA QUERIES PARA MÓVILES */
+/* Responsive */
 @media (max-width: 768px) {
-  h1 {
-    font-size: 20px;
-    margin-top: 100px;
-  }
-
-  .turnos-container {
-    padding: 10px;
-  }
-
   .turnos-table {
     min-width: 100%;
-    overflow-x: auto;
   }
 
   .turnos-table th,
   .turnos-table td {
-    padding: 8px 6px;
-    font-size: 12px;
-    min-width: 80px;
+    padding: 10px 6px;
+    font-size: 13px;
   }
 
   .turno-cell select {
@@ -194,33 +205,28 @@ h1 {
     font-size: 13px;
   }
 
-  .guardar-button {
-    font-size: 11px;
-    padding: 5px 8px;
+  .guardar-button,
+  .guardar-observacion-button {
+    font-size: 13px;
+    padding: 6px 10px;
   }
 
   .button-cell button {
-    font-size: 16px;
-    padding: 6px 12px;
+    font-size: 14px;
+    padding: 6px 10px;
   }
 
   .observacion-cell input {
     width: 85%;
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 
 @media (max-width: 480px) {
-  h1 {
-    font-size: 18px;
-    margin-top: 80px;
-  }
-
   .turnos-table th,
   .turnos-table td {
-    padding: 6px 4px;
-    font-size: 11px;
-    min-width: 70px;
+    padding: 8px 4px;
+    font-size: 12px;
   }
 
   .turno-cell select {
@@ -228,18 +234,20 @@ h1 {
     font-size: 12px;
   }
 
-  .guardar-button {
-    font-size: 10px;
-    padding: 4px 6px;
+  .guardar-button,
+  .guardar-observacion-button {
+    font-size: 12px;
+    padding: 5px 8px;
   }
 
   .button-cell button {
-    font-size: 14px;
-    padding: 5px 10px;
+    font-size: 13px;
+    padding: 5px 8px;
   }
 
   .observacion-cell input {
     width: 80%;
-    font-size: 11px;
+    font-size: 12px;
   }
 }
+
