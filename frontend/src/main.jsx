@@ -8,7 +8,8 @@ import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
 import ProtectedRoute from '@components/ProtectedRoute';
 import SelectPC from '@pages/SelectPC';
-import Turnos from '@pages/Turnos';      
+import Turnos from '@pages/Turnos';   
+import Horarios from '@pages/Horarios';   
 import Bitacoras from '@pages/Bitacoras'; 
 import MiPerfil from '@pages/MiPerfil';
 import '@styles/styles.css';
@@ -56,6 +57,15 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['administrador', 'consultor', 'usuario']}>
             <MiPerfil />
+          </ProtectedRoute>
+        ),
+      },
+
+            {
+        path: '/horarios',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+            <Horarios />
           </ProtectedRoute>
         ),
       },
