@@ -254,7 +254,7 @@ input {
 }
 
 .form-logo-img {
-    max-width: 110px; /* Más pequeño para no sobresaturar el encabezado del form */
+    max-width: 200px; /* Más pequeño para no sobresaturar el encabezado del form */
     height: auto;
 }
 
