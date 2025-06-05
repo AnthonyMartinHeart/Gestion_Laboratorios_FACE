@@ -1,7 +1,15 @@
+/* Contenedor principal con fondo */
+.bitacoras-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
 .bitacoras-container {
-    background: url('/Math.jpg') no-repeat center center fixed;
-    background-size: cover;
-    background-color: #f5f5f5;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -11,24 +19,21 @@
     padding: 60px 20px 20px 20px; 
 }
 
-.bitacoras-container {
-    padding: 120px 20px 20px 20px; /* Ajusté el padding superior para móviles */
-    background-color: #f5f5f5;
-    min-height: 100vh;
-}
 
 .bitacoras-container h1 {
     text-align: center;
     margin-bottom: 40px;
-    font-size: 1.8rem; /* Tamaño para móviles */
-    color: #333;
+    font-size: 1.9rem; /* Tamaño para móviles */
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .bitacoras-container h2 {
     text-align: center;          
-    margin: 30px 0 10px 0;
+    margin: 30px 0 0.1px 0;
     font-size: 1.2rem;
-    color: #222;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -54,14 +59,14 @@
 
 .bitacora-table th,
 .bitacora-table td {
-    border: 1px solid #ddd;
+    border: 1px solid #1b1a1a;
     padding: 10px;
     text-align: center;
     font-size: 0.95rem;
 }
 
 .bitacora-table th {
-    background-color: #007bff;
+    background-color: #033163;
     color: white;
     font-weight: bold;
 }
@@ -134,7 +139,7 @@
   }
   
   .export-btn {
-    background-color: #007bff;
+    background-color: #995906f8;
     color: #fff;
     border: none;
     padding: 8px 16px;
