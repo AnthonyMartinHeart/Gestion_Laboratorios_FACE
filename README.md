@@ -2,7 +2,7 @@
 
 # Arquitectura del Proyecto: Gestor de Bitácoras y Asistencia para Consultores
 
-![image](https://github.com/user-attachments/assets/c7bd760f-6cfd-4558-b57a-0b54e579c25f)
+![image](https://github.com/user-attachments/assets/1a81d7f7-3c3a-4ce8-b568-2035d7c3ad0c)
 
 
 1. Frontend (JavaScript)
