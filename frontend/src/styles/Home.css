@@ -1,32 +1,47 @@
-/* Estilos para el título */
 
+/* Contenedor principal con fondo */
+.home-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image8.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+/* Contenedor principal con fondo */
 .home-container {
-    background: url('/Math.jpg') no-repeat center center fixed;
-    background-size: cover;
+   
+
     min-height: 100vh;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     padding: 20px;
+    box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
 }
 
 /* Estilos para el título */
 h5 {
     font-size: 4rem;
-    color: #141313; /* Color de la paleta */
-    margin-top: 15px; /* Ajusta este valor para mover el título más arriba */
+    color: #ffffff;
+    margin-top: 15px;
+    margin-bottom: 10px; /* Espacio controlado hacia abajo */
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
-
 
 /* Estilos para el subtítulo */
 h2 {
     font-size: 2.5rem;
-    color: #231b91; /* Color Coffee */
+    color: #231b91;
     text-align: center;
-    margin-top: 1px; /* Aumento el margen para bajarlo más */
+    margin-top: 0; /* Elimina espacio innecesario */
 }
+
 
 /* Contenedor de los botones */
 .lab-buttons {
@@ -36,33 +51,75 @@ h2 {
     margin-top: 15px; /* Aumento el margen para mover los botones más abajo */
 }
 
-/* Estilos para los botones (cubitos) */
+/* Estilos generales para los botones */
 .lab-button {
-    background-color: #586192; /* Color customizado */
+    background-color: #586192; /* Azul por defecto */
     color: white;
-    border: none;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+    border: 4px solid #000;
     border-radius: 10px;
     width: 150px;
     height: 150px;
     font-size: 2rem;
     cursor: pointer;
-    transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para el efecto de elevación */
-    border: 4px solid #000; /* 🆕 Bordecito negro */
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Por defecto: sin imagen visible */
+.lab-button::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+/* Hover: muestra la imagen */
+.lab1-button::before {
+    background-image: url('/lab1.jpg');
+}
+.lab2-button::before {
+    background-image: url('/lab2.jpg');
+}
+.lab3-button::before {
+    background-image: url('/lab3.jpg');
+}
+
+.lab-button:hover::before {
+    opacity: 1;
+}
+
+/* Asegura que el texto esté por encima */
+.lab-button {
+    position: relative;
+    z-index: 1;
+}
+
+/* Texto por encima de la imagen */
+.lab-button span {
+    position: relative;
+    z-index: 2;
+}
+
+/* Efecto hover adicional */
 .lab-button:hover {
-    background-color: #220b67; /* Cambio de color al pasar el mouse */
-    transform: translateY(-5px); /* Efecto de elevarse ligeramente */
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 .lab-button:active {
-    transform: translateY(4px) scale(0.95); /* Animación de presión (se reduce y baja) */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra más pequeña cuando se presiona */
+    transform: translateY(4px) scale(0.95);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
-
-
-
-
-
-
