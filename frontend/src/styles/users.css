@@ -1,6 +1,17 @@
+/* Contenedor principal con fondo */
+.users-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+
+
 .users-container {
-    background: url('/Math.jpg') no-repeat center center fixed;
-    background-size: cover;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -23,7 +34,8 @@
 }
 
 .title-table {
-    color: #003366;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
     margin-left: 70px;
 }
 
