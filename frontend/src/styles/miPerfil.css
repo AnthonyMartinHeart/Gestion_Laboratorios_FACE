@@ -1,6 +1,15 @@
-.perfil-container {
-    background: url('/Math.jpg') no-repeat center center fixed;
-    background-size: cover;
+/* Contenedor principal con fondo */
+.perfil-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.perfil-container {  
     min-height: 100vh;
     justify-content: center;
     align-items: center;
