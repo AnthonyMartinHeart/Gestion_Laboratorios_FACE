@@ -19,9 +19,34 @@ const checkPcInLab = (value, helpers) => {
   return value;
 };
 
+const carrerasValidas = ["CPA", "ICO", "ICINF", "IECI", "DRCH"];
+
+
+const horariosInicio = [
+  "08:10",
+  "09:40",
+  "11:10",
+  "12:40",
+  "14:10",
+  "15:40",
+  "17:10",
+];
+
+const horariosTermino = [
+  "09:30",
+  "11:00",
+  "12:30",
+  "14:00",
+  "15:30",
+  "17:00",
+  "18:30",
+  "20:00",
+];
+
 export const reservationValidation = Joi.object({
   rut: Joi.string()
-    .min(9).max(12)
+    .min(9)
+    .max(12)
     .pattern(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
     .required()
     .messages({
@@ -29,27 +54,39 @@ export const reservationValidation = Joi.object({
       "string.empty": "El rut no puede estar vacío.",
       "string.pattern.base": "Formato RUT inválido.",
     }),
-  carrera: Joi.string().min(2).max(100).required(),
+
+  carrera: Joi.string()
+    .valid(...carrerasValidas)
+    .required()
+    .messages({
+      "any.only": "Carrera no válida. Debe seleccionar una de las opciones permitidas.",
+    }),
+
   horaInicio: Joi.string()
-    .pattern(/^([0-1]\d|2[0-3]):[0-5]\d$/)
+    .valid(...horariosInicio)
     .required()
     .messages({
-      "string.pattern.base": "Hora de inicio debe tener formato HH:mm.",
+      "any.only": "Hora de inicio inválida. Debe seleccionar una de las opciones disponibles.",
     }),
+
   horaTermino: Joi.string()
-    .pattern(/^([0-1]\d|2[0-3]):[0-5]\d$/)
+    .valid(...horariosTermino)
     .required()
     .messages({
-      "string.pattern.base": "Hora de término debe tener formato HH:mm.",
+      "any.only": "Hora de término inválida. Debe seleccionar una de las opciones disponibles.",
     }),
+
   labId: Joi.number()
-    .integer().valid(1, 2, 3)
+    .integer()
+    .valid(1, 2, 3)
     .required()
     .messages({
       "any.only": "LabId debe ser 1, 2 o 3.",
     }),
+
   pcId: Joi.number()
-    .integer().positive()
+    .integer()
+    .positive()
     .required()
     .custom(checkPcInLab, "Validación de PC dentro del laboratorio"),
 });
