@@ -15,20 +15,23 @@ export async function loginService(user) {
       message
     });
 
+    // Buscamos al usuario por su correo electrónico (en minúsculas)
     const userFound = await userRepository.findOne({
-      where: { email }
+      where: { email: email.toLowerCase() },  // Comparamos el correo en minúsculas
     });
 
     if (!userFound) {
       return [null, createErrorMessage("email", "El correo electrónico es incorrecto")];
     }
 
-    const isMatch = await comparePassword(password, userFound.password);
+    // Comparamos la contraseña ingresada (convertida a minúsculas) con la almacenada (que ya está en minúsculas)
+    const isMatch = await comparePassword(password.toLowerCase(), userFound.password);
 
     if (!isMatch) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
+    // Si la contraseña es correcta, generamos el token JWT
     const payload = {
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
@@ -52,40 +55,39 @@ export async function registerService(user) {
   try {
     const userRepository = AppDataSource.getRepository(User);
 
-    const { nombreCompleto, rut, email } = user;
+    const { nombreCompleto, rut, email, password } = user;
 
     const createErrorMessage = (dataInfo, message) => ({
       dataInfo,
       message
     });
 
+    // Verificar si el correo electrónico ya está en uso
     const existingEmailUser = await userRepository.findOne({
-      where: {
-        email,
-      },
+      where: { email: email.toLowerCase() },  // Comparamos el correo en minúsculas
     });
     
     if (existingEmailUser) return [null, createErrorMessage("email", "Correo electrónico en uso")];
 
+    // Verificar si el RUT ya está asociado a otra cuenta
     const existingRutUser = await userRepository.findOne({
-      where: {
-        rut,
-      },
+      where: { rut },
     });
 
     if (existingRutUser) return [null, createErrorMessage("rut", "Rut ya asociado a una cuenta")];
 
+    // Convertimos la contraseña a minúsculas antes de guardarla
     const newUser = userRepository.create({
       nombreCompleto,
-      email,
+      email: email.toLowerCase(), // Guardamos el correo en minúsculas
       rut,
-      password: await encryptPassword(user.password),
+      password: await encryptPassword(password.toLowerCase()),  // Convertir solo la contraseña a minúsculas
       rol: "usuario",
     });
 
     await userRepository.save(newUser);
 
-    const { password, ...dataUser } = newUser;
+    const { password: _, ...dataUser } = newUser;
 
     return [dataUser, null];
   } catch (error) {
@@ -93,3 +95,4 @@ export async function registerService(user) {
     return [null, "Error interno del servidor"];
   }
 }
+
