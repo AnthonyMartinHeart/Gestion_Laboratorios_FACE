@@ -1,3 +1,5 @@
+
+
 /* Contenedor principal con fondo */
 .bitacoras-container::before {
     content: "";
@@ -10,6 +12,7 @@
 }
 
 .bitacoras-container {
+    
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -20,6 +23,8 @@
 }
 
 
+
+
 .bitacoras-container h1 {
     text-align: center;
     margin-bottom: 40px;
@@ -28,25 +33,51 @@
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-.bitacoras-container h2 {
-    text-align: center;          
-    margin: 30px 0 0.1px 0;
-    font-size: 1.2rem;
-    color: #ffffff;
-    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;                  
-  }
-  
+h7 {
+    font-size: 2.5rem;
+    color: #231b91;
+    text-align: center;
+    margin: 55px 0 10px 0;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    display: inline-block;
+    font-weight: bold; 
+}
+
+/* Título */
+h8 {
+  margin: 55px 0 20px 0;
+  font-size: 50px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3); /* Agrega la sombra */
+}
+
+.bitacora-titulo {
+  font-size: 2rem;
+  text-align: center;
+  margin: 30px 0 0.1px 0;
+  font-size: 1.2rem;
+  color: #231b91;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+  display: inline-block;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
 
 .bitacora-table {
     overflow-x: auto;
     background-color: white;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 40px;
+    margin-bottom: 1px;
     width: 100%; /* Hacer que la tabla ocupe todo el ancho disponible */
     max-width: 100%;
 }
@@ -138,28 +169,34 @@
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   }
   
-  .export-btn {
-    background-color: #995906f8;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    top: -1px; 
-  }
-  
-  .export-btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-  }
-  
-  .export-btn:active {
-    transform: scale(0.97);
-  }
+.export-container {
+  margin-top: 8px; 
+  text-align: center;
+}
+
+
+.export-btn {
+  background-color: #210fc2; /* color naranja más visible */
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:hover {
+  background-color: #e67e00;
+  transform: translateY(-2px);
+}
+
+.export-btn:active {
+  transform: scale(0.97);
+}
+
   
   label[for="fecha"] {
     display: block;
