@@ -44,10 +44,10 @@ export default function Popup({ show, setShow, data, action }) {
                               type: "email",
                               required: true,
                               minLength: 15,
-                              maxLength: 40,
+                              maxLength: 50,
                               pattern: /^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/,
                               patternMessage: "El correo debe ser @gmail.cl o @alumnos.ubiobio.cl",
-}
+                             }
 ,
                             {
                                 label: "Rut",
@@ -67,16 +67,17 @@ export default function Popup({ show, setShow, data, action }) {
                                 name: "rol",
                                 fieldType: 'select',
                                 options: [
-                                    { value: 'administrador', label: 'Administrador' },
-                                    { value: 'usuario', label: 'Usuario' },
-                                ],
-                                required: true,
-                                defaultValue: userData.rol || "",
-                            },
+                            { value: 'administrador', label: 'Administrador' },
+                            { value: 'usuario', label: 'Usuario' },
+                            { value: 'consultor', label: 'Consultor' },
+                                         ],
+                              required: true,
+                              defaultValue: userData.rol || "",
+                             },
                             {
                                 label: (
                                     <span>
-                                        Nueva contraseña
+                                        Ingresar Contraseña
                                         <span className='tooltip-icon'>
                                             <img src={QuestionIcon} />
                                             <span className='tooltip-text'>Este campo es opcional</span>
