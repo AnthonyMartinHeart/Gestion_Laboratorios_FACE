@@ -8,24 +8,30 @@ const Bitacoras = () => {
 
   const handleDateChange = (e) => setSelectedDate(e.target.value);
 
-  const renderLaboratorio = (titulo, numEquipos, startIndex) => (
-    <div className="laboratorio-section">
+  const renderLaboratorio = (titulo, numEquipos, startIndex, labNumber) => (
+    <div className="laboratorio-section" key={labNumber}>
       <div className="laboratorio-header">
-        <h2>{titulo}</h2>
+        <h7>{titulo}</h7>
+      </div>
+      <BitacoraTable
+        numEquipos={numEquipos}
+        startIndex={startIndex}
+        date={selectedDate}
+      />
+      <div className="export-container">
         <button
           className="export-btn"
           onClick={() => exportToExcel(numEquipos, startIndex, selectedDate)}
         >
-          Exportar a Excel
+          Exportar Bitácora {labNumber}
         </button>
       </div>
-      <BitacoraTable numEquipos={numEquipos} startIndex={startIndex} date={selectedDate} />
     </div>
   );
 
   return (
     <div className="bitacoras-container">
-      <h1 className="titulo-principal">Gestión de Bitácoras</h1>
+      <h8 className="titulo-principal">Gestión de Bitácoras</h8>
       <div className="fecha-selector">
         <label htmlFor="fecha">Selecciona una fecha 📅</label>
         <input
@@ -39,9 +45,9 @@ const Bitacoras = () => {
 
       {selectedDate && (
         <>
-          {renderLaboratorio('Bitacora Laboratorio 1', 40, 1)}
-          {renderLaboratorio('Bitacora Laboratorio 2', 20, 41)}
-          {renderLaboratorio('Bitacora Laboratorio 3', 20, 61)}
+          {renderLaboratorio('BITÁCORA LABORATORIO 1', 40, 1, 1)}
+          {renderLaboratorio('BITÁCORA LABORATORIO 2', 20, 41, 2)}
+          {renderLaboratorio('BITÁCORA LABORATORIO 3', 20, 61, 3)}
         </>
       )}
     </div>
