@@ -1,0 +1,253 @@
+.turnos-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.turnos-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Título */
+h9 {
+  margin-top: 120px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3); /* Agrega la sombra */
+}
+
+
+
+
+/* Contenedor principal */
+.turnos-table {
+  width: 100%;
+  max-width: 1200px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Tabla */
+.turnos-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+}
+
+/* Encabezados */
+.turnos-table th {
+  background-color: #1e3a8a;
+  color: #ffffff;
+  border: 1px solid #1b1a1a;
+  padding: 14px 10px;
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* Celdas */
+.turnos-table td {
+  padding: 12px 10px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border: 1px solid #1b1a1a;
+}
+
+.nombre-cell {
+  background-color: #eef2ff;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.turno-cell {
+  background-color: #fefce8;
+}
+
+.observacion-cell {
+  background-color: #f3f4f6;
+}
+
+/* Select */
+.turno-cell select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 14px;
+  width: 110px;
+  transition: box-shadow 0.2s;
+}
+
+.turno-cell select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+/* Observaciones */
+.observacion-cell input {
+  width: 90%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: box-shadow 0.2s;
+  margin-bottom: 8px;
+}
+
+.observacion-cell input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+/* Botones */
+.guardar-button,
+.guardar-observacion-button {
+  padding: 8px 14px;
+  background-color: #10b981;
+  color: white;
+  font-weight: bold;
+  border: 1.5px solid black; /* Borde negro agregado */
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s, background-color 0.3s;
+  margin-top: 6px;
+}
+
+
+.guardar-button:hover,
+.guardar-observacion-button:hover {
+  background-color: #059669;
+  transform: scale(1.05);
+}
+
+.button-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.button-cell span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.button-cell button {
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 2.5px solid black; /* Borde negro agregado */
+  color: white;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+
+.button-cell button:hover {
+  transform: scale(1.05);
+}
+
+.entrada-button {
+  background-color: #8affad;
+}
+
+.entrada-button:hover {
+  background-color: #8affad;
+}
+
+.salida-button {
+  background-color: #ef4444;
+}
+
+.salida-button:hover {
+  background-color: #dc2626;
+}
+
+/* Alternar filas */
+.turnos-table tr:nth-child(even) td {
+  background-color: #f0f4ff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .turnos-table {
+    min-width: 100%;
+  }
+
+  .turnos-table th,
+  .turnos-table td {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+
+  .turno-cell select {
+    width: 90px;
+    font-size: 13px;
+  }
+
+  .guardar-button,
+  .guardar-observacion-button {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  .button-cell button {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .observacion-cell input {
+    width: 85%;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .turnos-table th,
+  .turnos-table td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .turno-cell select {
+    width: 80px;
+    font-size: 12px;
+  }
+
+  .guardar-button,
+  .guardar-observacion-button {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+
+  .button-cell button {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+
+  .observacion-cell input {
+    width: 80%;
+    font-size: 12px;
+  }
+}
+

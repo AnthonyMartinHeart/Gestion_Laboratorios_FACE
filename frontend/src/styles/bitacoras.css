@@ -1,0 +1,341 @@
+/* FONDO */
+.bitacoras-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.bitacoras-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    padding: 60px 20px 20px 20px; 
+}
+
+/* TÍTULOS */
+.bitacoras-container h1 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 1.9rem;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+h7 {
+    font-size: 2.5rem;
+    color: #231b91;
+    text-align: center;
+    margin: 55px 0 10px 0;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    display: inline-block;
+    font-weight: bold; 
+}
+
+h8 {
+  margin: 55px 0 20px 0;
+  font-size: 50px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.bitacora-titulo {
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 30px 0 0.1px 0;
+  color: #231b91;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+  display: inline-block;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* TABLA */
+.bitacora-table {
+    overflow-x: auto;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%;
+    background-color: transparent;
+    padding: 10px;
+    scrollbar-width: thin; /* Para Firefox */
+    scrollbar-color: #586192 rgba(255, 255, 255, 0.1); /* Para Firefox */
+}
+
+/* Estilo del scrollbar */
+.bitacora-table::-webkit-scrollbar {
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.bitacora-table::-webkit-scrollbar-thumb {
+    background-color: #586192;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.bitacora-table::-webkit-scrollbar-thumb:hover {
+    background-color: #39417a;
+}
+
+.bitacora-table::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.bitacora-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* Asegura que la tabla sea lo suficientemente ancha */
+    background-color: white;
+}
+
+.bitacora-table th,
+.bitacora-table td {
+    border: 1px solid #000000;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.95rem;
+    background-color: white;
+    color: black;
+}
+
+/* CABECERA HORIZONTAL */
+.bitacora-table thead th {
+    background-color: #033163;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+/* PRIMERA COLUMNA (PCs) AZUL GRISÁCEO */
+.bitacora-table tbody td:first-child {
+    background-color: #a6b2bd;
+    font-weight: bold;
+    color: #001f3f;
+    border: 1px solid #000; /* borde negro */
+}
+
+/* CELDAS RESTANTES CON BORDES NEGROS */
+.bitacora-table tbody td:not(:first-child) {
+    border: 1px solid #000; /* borde negro */
+}
+
+/* OTRAS FILAS INTERCALADAS (visuales con fondo blanco o gris) */
+.bitacora-table tbody tr:nth-child(even) td:not(:first-child) {
+    background-color: #ffffff;
+}
+.bitacora-table tbody tr:nth-child(odd) td:not(:first-child) {
+    background-color: #f9f9f9;
+}
+
+
+/* RESERVA */
+.bitacora-table td.reservado {
+    background-color: #e6f3ff;  /* Fondo celeste suave */
+    font-weight: bold;
+    padding: 4px;
+}
+
+/* INFO RESERVA */
+.reservation-info {
+    background-color: white;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 0.9em;
+}
+
+.reservation-info div:first-child {
+    color: #0066cc;  /* RUT en azul */
+}
+
+.reservation-info div:last-child {
+    color: #000000;  /* Carrera en negro */
+}
+
+/* EXPORTAR Y DATE */
+.bitacoras-container input[type="date"] {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+  
+.export-container {
+  margin-top: 8px; 
+  text-align: center;
+}
+
+.export-btn {
+  background-color: #210fc2;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:hover {
+  background-color: #e67e00;
+  transform: translateY(-2px);
+}
+
+.export-btn:active {
+  transform: scale(0.97);
+}
+
+label[for="fecha"] {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+  background-color: #f0f4ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Controles de Zoom */
+.zoom-controls {
+    display: flex;
+    gap: 5px;
+    margin: 10px auto 20px;  /* Margen superior e inferior, auto en los lados para centrar */
+    justify-content: center;
+    align-items: center;
+    padding: 3px;
+    background-color: rgba(248, 249, 250, 0.1);
+    border-radius: 4px;
+    backdrop-filter: blur(5px);
+    width: fit-content;
+    position: relative;  /* Para mantener el flujo del documento */
+    z-index: 1;  /* Para asegurar que esté sobre otros elementos */
+}
+
+.zoom-button {
+    background-color: #586192;
+    color: white;
+    border: none;
+    padding: 4px 8px;  /* Reducido el padding */
+    border-radius: 3px;  /* Reducido el radio del borde */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 3px;  /* Reducido el espacio entre icono y texto */
+    font-size: 12px;  /* Reducido el tamaño de la fuente */
+}
+
+.zoom-button:hover {
+    background-color: #39417a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.zoom-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.zoom-button i {
+    font-size: 14px;
+}
+
+.zoom-info {
+    background: rgba(240, 240, 240, 0.1);
+    color: white;
+    padding: 3px 6px;  /* Reducido el padding */
+    border-radius: 3px;  /* Reducido el radio del borde */
+    font-size: 11px;  /* Reducido el tamaño de la fuente */
+    min-width: 40px;  /* Reducido el ancho mínimo */
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+}
+
+/* Contenedor de la tabla con zoom */
+.table-container {
+    overflow: auto;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bitacora-table table {
+    transition: transform 0.3s ease;
+    transform-origin: top left;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .bitacoras-container {
+        padding: 100px 10px 10px 10px;
+    }
+
+    .bitacoras-container h1 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    .bitacora-table th,
+    .bitacora-table td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .bitacoras-container {
+        padding: 80px 10px 10px 10px; 
+    }
+
+    .bitacoras-container h1 {
+        font-size: 1.3rem;
+    }
+
+    .bitacora-table th,
+    .bitacora-table td {
+        padding: 6px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Centrado del contenido dentro de las celdas de reserva */
+.reservation-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra horizontalmente */
+    justify-content: center; /* Centra verticalmente si hay altura disponible */
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+    text-align: center; /* Asegura el texto centrado */
+}

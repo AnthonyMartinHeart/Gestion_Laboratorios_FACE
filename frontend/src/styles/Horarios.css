@@ -1,0 +1,74 @@
+/* Contenedor principal con fondo */
+.horario-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.horario-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Título */
+.hh {
+  margin-top: 120px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Tabla con fondo blanco */
+.horario-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.9rem;
+  background-color: white; /* Fondo blanco para toda la tabla */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+.horario-table th,
+.horario-table td {
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  min-width: 100px;
+  background-color: white; /* Fondo blanco para celdas */
+  color: #000; /* Texto negro para buen contraste */
+}
+
+.horario-table th {
+  background-color: #e2e8f0; /* Un gris claro para headers */
+  font-weight: bold;
+}
+
+.editable-cell {
+  width: 100%;
+  border: none;
+  background-color: transparent;
+  text-align: center;
+  padding: 4px;
+  font-size: 0.85rem;
+  color: #000; /* Texto negro dentro de inputs */
+}
+
+.editable-cell:focus {
+  outline: none;
+  background-color: #e0f2fe;
+  color: #000;
+}
