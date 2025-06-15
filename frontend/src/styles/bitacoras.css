@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 /* FONDO */
+=======
+
+
+/* Contenedor principal con fondo */
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 .bitacoras-container::before {
     content: "";
     position: fixed;
@@ -10,6 +16,10 @@
 }
 
 .bitacoras-container {
+<<<<<<< HEAD
+=======
+    
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -19,11 +29,21 @@
     padding: 60px 20px 20px 20px; 
 }
 
+<<<<<<< HEAD
 /* TÍTULOS */
 .bitacoras-container h1 {
     text-align: center;
     margin-bottom: 40px;
     font-size: 1.9rem;
+=======
+
+
+
+.bitacoras-container h1 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 1.9rem; /* Tamaño para móviles */
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     color: #ffffff;
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
@@ -41,6 +61,10 @@ h7 {
     font-weight: bold; 
 }
 
+<<<<<<< HEAD
+=======
+/* Título */
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 h8 {
   margin: 55px 0 20px 0;
   font-size: 50px;
@@ -49,6 +73,7 @@ h8 {
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+<<<<<<< HEAD
   text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
 }
 
@@ -56,6 +81,16 @@ h8 {
   font-size: 1.2rem;
   text-align: center;
   margin: 30px 0 0.1px 0;
+=======
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3); /* Agrega la sombra */
+}
+
+.bitacora-titulo {
+  font-size: 2rem;
+  text-align: center;
+  margin: 30px 0 0.1px 0;
+  font-size: 1.2rem;
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   color: #231b91;
   text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
   display: inline-block;
@@ -64,6 +99,7 @@ h8 {
   gap: 10px;
 }
 
+<<<<<<< HEAD
 /* TABLA */
 .bitacora-table {
     overflow-x: auto;
@@ -97,17 +133,33 @@ h8 {
 .bitacora-table::-webkit-scrollbar-track {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
+=======
+
+.bitacora-table {
+    overflow-x: auto;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1px;
+    width: 100%; /* Hacer que la tabla ocupe todo el ancho disponible */
+    max-width: 100%;
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 }
 
 .bitacora-table table {
     width: 100%;
     border-collapse: collapse;
+<<<<<<< HEAD
     min-width: 800px; /* Asegura que la tabla sea lo suficientemente ancha */
     background-color: white;
+=======
+    min-width: 600px;
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 }
 
 .bitacora-table th,
 .bitacora-table td {
+<<<<<<< HEAD
     border: 1px solid #000000;
     padding: 10px;
     text-align: center;
@@ -142,10 +194,26 @@ h8 {
     background-color: #ffffff;
 }
 .bitacora-table tbody tr:nth-child(odd) td:not(:first-child) {
+=======
+    border: 1px solid #1b1a1a;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.bitacora-table th {
+    background-color: #033163;
+    color: white;
+    font-weight: bold;
+}
+
+.bitacora-table tr:nth-child(even) {
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     background-color: #f9f9f9;
 }
 
 
+<<<<<<< HEAD
 /* RESERVA */
 .bitacora-table td.reservado {
     background-color: #e6f3ff;  /* Fondo celeste suave */
@@ -170,6 +238,58 @@ h8 {
 }
 
 /* EXPORTAR Y DATE */
+=======
+@media (max-width: 768px) {
+    .bitacoras-container {
+        padding: 100px 10px 10px 10px; /* Ajusta el padding para pantallas pequeñas */
+    }
+
+    .bitacoras-container h1 {
+        font-size: 1.5rem; /* Título más pequeño */
+        margin-bottom: 20px;
+    }
+
+    .bitacoras-container h2 {
+        font-size: 1.1rem; /* Título más pequeño en móviles */
+        margin: 20px 0 10px 0; 
+    }
+
+    .bitacora-table th,
+    .bitacora-table td {
+        padding: 8px;
+        font-size: 0.85rem; /* Tamaño de texto más pequeño */
+    }
+
+    /* Asegurando que la tabla sea completamente visible en pantallas pequeñas */
+    .bitacora-table {
+        margin-bottom: 20px;
+        overflow-x: auto; /* Habilitar desplazamiento horizontal si la tabla es muy ancha */
+    }
+}
+
+/* Adaptación aún más para pantallas muy pequeñas (por ejemplo, móviles en apaisado o pantallas más pequeñas) */
+@media (max-width: 480px) {
+    .bitacoras-container {
+        padding: 80px 10px 10px 10px; 
+    }
+
+    .bitacoras-container h1 {
+        font-size: 1.3rem; /* Título más pequeño */
+    }
+
+    .bitacoras-container h2 {
+        font-size: 1rem; /* Título más pequeño */
+        margin: 15px 0 5px 0; 
+    }
+
+    .bitacora-table th,
+    .bitacora-table td {
+        padding: 6px;
+        font-size: 0.75rem; /* para hacerla más pequeña */
+    }
+}
+
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 .bitacoras-container input[type="date"] {
     padding: 10px 15px;
     font-size: 1rem;
@@ -180,15 +300,25 @@ h8 {
     width: 100%;
     max-width: 300px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+<<<<<<< HEAD
 }
+=======
+  }
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   
 .export-container {
   margin-top: 8px; 
   text-align: center;
 }
 
+<<<<<<< HEAD
 .export-btn {
   background-color: #210fc2;
+=======
+
+.export-btn {
+  background-color: #210fc2; /* color naranja más visible */
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   color: #fff;
   border: none;
   padding: 12px 24px;
@@ -209,6 +339,7 @@ h8 {
   transform: scale(0.97);
 }
 
+<<<<<<< HEAD
 label[for="fecha"] {
   display: block;
   font-weight: 600;
@@ -339,3 +470,19 @@ label[for="fecha"] {
     font-size: 13px;
     text-align: center; /* Asegura el texto centrado */
 }
+=======
+  
+  label[for="fecha"] {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 1.3rem;
+    background-color: #f0f4ff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    width: fit-content;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052

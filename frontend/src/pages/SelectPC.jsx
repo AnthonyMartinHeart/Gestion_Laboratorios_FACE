@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import '@styles/SelectPC.css';
@@ -7,6 +8,15 @@ import useCreateReservation from '@hooks/reservation/useCreateReservation.jsx';
 import { formatRut } from '@helpers/rutFormatter.js';
 
 const SelectPC = ({ onReservaCreada }) => {
+=======
+import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+import '@styles/SelectPC.css';
+
+import { useCreateReservation } from '@hooks/useReservations.jsx';
+
+const SelectPC = () => {
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   const { labId } = useParams();
   const navigate = useNavigate();
 
@@ -16,6 +26,7 @@ const SelectPC = ({ onReservaCreada }) => {
 
   const pcs = Array.from({ length: pcEnd - pcStart + 1 }, (_, i) => pcStart + i);
 
+<<<<<<< HEAD
   const carrerasMap = {
     "Contador Público y Auditor": "CPA",
     "Ingeniería Comercial": "ICO",
@@ -25,6 +36,15 @@ const SelectPC = ({ onReservaCreada }) => {
   };
 
   const carreras = Object.keys(carrerasMap);
+=======
+  const carreras = [
+    "CPA",
+    "ICO",
+    "ICINF",
+    "IECI",
+    "DRCH"
+  ];
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 
   const horasInicio = [
     "08:10", "09:40", "11:10", "12:40",
@@ -45,6 +65,7 @@ const SelectPC = ({ onReservaCreada }) => {
     horaTermino: ''
   });
 
+<<<<<<< HEAD
   const [reservedPCs, setReservedPCs] = useState(() => {
     // Intentar cargar las reservas guardadas al iniciar
     try {
@@ -148,6 +169,9 @@ const SelectPC = ({ onReservaCreada }) => {
   const isReserved = useCallback((pcNumber) => {
     return reservedPCs.has(pcNumber);
   }, [reservedPCs]);
+=======
+  const { mutate: createReservation, loading } = useCreateReservation();
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -159,6 +183,7 @@ const SelectPC = ({ onReservaCreada }) => {
     return () => clearTimeout(timeout);
   }, [selectedPC, navigate]);
 
+<<<<<<< HEAD
   // Limpiar los timers cuando el componente se desmonta
   useEffect(() => {
     return () => {
@@ -176,11 +201,15 @@ const SelectPC = ({ onReservaCreada }) => {
       Swal.fire('Equipo reservado', `Este PC está reservado desde ${reserva.horaInicio} hasta ${reserva.horaTermino}. Por favor selecciona otro.`, 'info');
       return;
     }
+=======
+  const handlePCClick = (pcNumber) => {
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     setSelectedPC(pcNumber);
     setShowForm(true);
   };
 
   const handleChange = (e) => {
+<<<<<<< HEAD
     if (e.target.name === 'carrera') {
       // Cuando se selecciona una carrera, guardamos la abreviatura
       setFormData({ 
@@ -192,12 +221,19 @@ const SelectPC = ({ onReservaCreada }) => {
     }
   };
 
+=======
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Validar formato básico RUT (acepta puntos y guion)
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   const validarRut = (rut) => {
     const rutLimpio = rut.replace(/\./g, '');
     const regex = /^\d{7,8}-?[\dkK]$/i;
     return regex.test(rutLimpio);
   };
 
+<<<<<<< HEAD
   const configurarTimerReserva = (pcNumber, horaInicio, horaTermino) => {
     const startTime = horaAMilisegundos(horaInicio);
     const endTime = horaAMilisegundos(horaTermino);
@@ -217,11 +253,21 @@ const SelectPC = ({ onReservaCreada }) => {
     }, duracion);
 
     return { timer, endTime };
+=======
+  // Convertir "HH:MM" a minutos
+  const horaAMinutos = (hora) => {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+<<<<<<< HEAD
+=======
+    // Limpiar puntos para validación y envío
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     const rutLimpio = formData.rut.replace(/\./g, '');
 
     if (!validarRut(formData.rut)) {
@@ -229,8 +275,12 @@ const SelectPC = ({ onReservaCreada }) => {
       return;
     }
 
+<<<<<<< HEAD
     // Validamos que la carrera sea una de las abreviaturas válidas
     if (!Object.values(carrerasMap).includes(formData.carrera)) {
+=======
+    if (!carreras.includes(formData.carrera)) {
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
       Swal.fire('Error', 'La carrera seleccionada no es válida.', 'error');
       return;
     }
@@ -255,6 +305,7 @@ const SelectPC = ({ onReservaCreada }) => {
       return;
     }
 
+<<<<<<< HEAD
     if (isReserved(selectedPC)) {
       Swal.fire('Error', 'El PC ya está reservado. Por favor selecciona otro.', 'error');
       return;
@@ -304,6 +355,27 @@ const SelectPC = ({ onReservaCreada }) => {
     } catch (error) {
       console.error('Error en handleSubmit:', error);
       Swal.fire('Error', 'Error en el servidor. Por favor, intenta nuevamente más tarde.', 'error');
+=======
+    const reservationData = {
+      rut: rutLimpio,  // enviamos sin puntos
+      carrera: formData.carrera,
+      horaInicio: formData.horaInicio,
+      horaTermino: formData.horaTermino,
+      labId: labId === 'lab1' ? 1 : labId === 'lab2' ? 2 : 3,
+      pcId: selectedPC,
+      fechaReserva: new Date().toISOString().split('T')[0],
+    };
+
+    const { success, error } = await createReservation(reservationData);
+
+    if (success) {
+      Swal.fire('¡Reserva creada!', `Tu reserva para el PC ${selectedPC} fue registrada con éxito.`, 'success');
+      setShowForm(false);
+      setFormData({ rut: '', carrera: '', horaInicio: '', horaTermino: '' });
+      setSelectedPC(null);
+    } else {
+      Swal.fire('Error', error || 'No se pudo crear la reserva. Inténtalo nuevamente.', 'error');
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     }
   };
 
@@ -316,9 +388,15 @@ const SelectPC = ({ onReservaCreada }) => {
         {pcs.map((pcNumber) => (
           <div
             key={pcNumber}
+<<<<<<< HEAD
             className={`pc-icon ${isReserved(pcNumber) ? 'reserved' : ''}`}
             onClick={() => handlePCClick(pcNumber)}
             style={{ cursor: isReserved(pcNumber) ? 'not-allowed' : 'pointer' }}
+=======
+            className="pc-icon"
+            onClick={() => handlePCClick(pcNumber)}
+            style={{ cursor: 'pointer' }}
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
           >
             <i className="fas fa-desktop"></i>
             <span>{pcNumber}</span>
@@ -347,16 +425,24 @@ const SelectPC = ({ onReservaCreada }) => {
               <label>Carrera:</label>
               <select
                 name="carrera"
+<<<<<<< HEAD
                 value={Object.keys(carrerasMap).find(key => carrerasMap[key] === formData.carrera) || ''}
+=======
+                value={formData.carrera}
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
                 onChange={handleChange}
                 required
                 disabled={loading}
               >
                 <option value="">Selecciona tu carrera</option>
                 {carreras.map((carrera) => (
+<<<<<<< HEAD
                   <option key={carrera} value={carrera}>
                     {carrera}
                   </option>
+=======
+                  <option key={carrera} value={carrera}>{carrera}</option>
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
                 ))}
               </select>
 

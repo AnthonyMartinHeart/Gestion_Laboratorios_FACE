@@ -56,6 +56,7 @@ async function createUsers() {
           rol: "consultor",
         }),
       ),
+<<<<<<< HEAD
             userRepository.save(
         userRepository.create({
           nombreCompleto: "Jorge Antonio Martinez Henriquez",
@@ -65,6 +66,8 @@ async function createUsers() {
           rol: "consultor",
         }),
       ),
+=======
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 await userRepository.save(
   userRepository.create({
     nombreCompleto: "Camila Fernanda Soto Vargas",

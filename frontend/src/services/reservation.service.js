@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 import axios from './root.service.js'; 
 
 // Manejo centralizado de errores
 function handleError(error) {
   console.error('Error en la petición:', error);
+=======
+import axios from './root.service.js'; // Ya con baseURL y token
+
+// Manejo centralizado de errores
+function handleError(error) {
+  // Retorna error del backend si existe, si no, mensaje genérico
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   return error.response?.data || { error: 'Error desconocido' };
 }
 
@@ -30,6 +38,7 @@ export async function getReservationsByPC(pcId, fechaReserva) {
 
 export async function getAllReservations() {
   try {
+<<<<<<< HEAD
     const { data } = await axios.get('/reservas/all', {
       headers: {
         'Cache-Control': 'no-cache',
@@ -54,6 +63,12 @@ export async function getAllReservations() {
   } catch (error) {
     console.error('Error al obtener reservas:', error);
     throw error;
+=======
+    const { data: response } = await axios.get('/reservas/all');
+    return response;
+  } catch (error) {
+    return handleError(error);
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   }
 }
 

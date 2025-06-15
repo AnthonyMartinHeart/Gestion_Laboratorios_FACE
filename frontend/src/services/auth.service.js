@@ -48,4 +48,8 @@ export async function logout() {
     } catch (error) {
         console.error('Error al cerrar sesión:', error);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e7a17904b413b5f100201b433da5f612b375b052
