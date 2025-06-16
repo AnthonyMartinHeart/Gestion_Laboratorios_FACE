@@ -29,14 +29,14 @@ async function createUsers() {
           rol: "administrador",
         })
       ),
-        userRepository.save(
-          userRepository.create({
-            nombreCompleto: "Verónica María Venegas Herrera",
-            rut: "12.697.072-2",
-            email: "Verovenegas.2025@gmail.cl",
-            password: await encryptPassword("vero5234"),
-            rol: "administrador",
-          }),
+      userRepository.save(
+        userRepository.create({
+          nombreCompleto: "Verónica María Venegas Herrera",
+          rut: "12.697.072-2",
+          email: "Verovenegas.2025@gmail.cl",
+          password: await encryptPassword("vero5234"),
+          rol: "administrador",
+        }),
       ),
       userRepository.save(
         userRepository.create({
@@ -56,37 +56,36 @@ async function createUsers() {
           rol: "consultor",
         }),
       ),
-<<<<<<< HEAD
-            userRepository.save(
+      userRepository.save(
         userRepository.create({
-          nombreCompleto: "Jorge Antonio Martinez Henriquez",
-          rut: "21.069.508-7",
-          email: "jorge.martinez2101@alumnos.ubiobio.cl",
-          password: await encryptPassword("SW5QA1O4"),
-          rol: "consultor",
+          nombreCompleto: "Camila Fernanda Soto Vargas",
+          rut: "19.524.639-8",
+          email: "c.soto2025@gmail.cl",
+          password: await encryptPassword("user1234"),
+          rol: "usuario",
         }),
       ),
-=======
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
-await userRepository.save(
-  userRepository.create({
-    nombreCompleto: "Camila Fernanda Soto Vargas",
-    rut: "19.524.639-8",
-    email: "c.soto2025@gmail.cl",
-    password: await encryptPassword("user1234"),
-    rol: "usuario",
+      userRepository.save(
+        userRepository.create({
+          nombreCompleto: "Matías Andrés Navarro Pérez",
+          rut: "22.684.120-5",
+          email: "m.navarro2025@gmail.cl",
+          password: await encryptPassword("user1234"),
+          rol: "usuario",
         }),
       ),
-await userRepository.save(
-  userRepository.create({
-    nombreCompleto: "Matías Andrés Navarro Pérez",
-    rut: "22.684.120-5",
-    email: "m.navarro2025@gmail.cl",
-    password: await encryptPassword("user1234"),
-    rol: "usuario",
+      // Usuario de prueba agregado
+      userRepository.save(
+        userRepository.create({
+          nombreCompleto: "Usuario de Prueba",
+          rut: "17.456.321-9",
+          email: "prueba.usuario2025@gmail.cl",
+          password: await encryptPassword("CONTRA1234"), // Contraseña aleatoria
+          rol: "usuario",
         }),
       ),
     ]);
+
     console.log("* => Usuarios creados exitosamente");
   } catch (error) {
     console.error("Error al crear usuarios:", error);
