@@ -45,7 +45,6 @@ h6 {
   .pc-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr); /* 5 columnas */
-<<<<<<< HEAD
     gap: 20px; /* Aumentado más el espacio entre los iconos */
     margin-top: 30px;
     padding: 25px; /* Más padding para el nuevo tamaño */
@@ -56,21 +55,10 @@ h6 {
     height: 100px; /* Aumentado de 80px a 100px */
     display: flex;
     flex-direction: column;
-=======
-    gap: 10px; /* Reduce el espacio entre los iconos */
-    margin-top: 30px;
-  }
-  
-  .pc-icon {
-    width: 62px;
-    height: 62px;
-    display: flex;
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     justify-content: center;
     align-items: center;
     background-color: #586192;
     color: white;
-<<<<<<< HEAD
     border-radius: 15px; /* Aumentado para mantener proporción */
     font-size: 2.2rem; /* Aumentado de 1.8rem */
     cursor: pointer;
@@ -94,24 +82,24 @@ h6 {
     box-shadow: none;
   }
   
+  /* PCs en mantenimiento */
+  .pc-icon.maintenance {
+    background-color: #9b59b6;
+    cursor: not-allowed;
+    border-color: #8e44ad;
+    transform: none;
+  }
+
+  .pc-icon.maintenance:hover {
+    transform: none;
+    background-color: #9b59b6;
+    box-shadow: none;
+  }
+  
   /* 💫 Animación al pasar el mouse (solo para PCs no reservados) */
   .pc-icon:not(.reserved):hover {
     transform: scale(1.1) rotate(2deg);
     background-color: #45d24c;
-=======
-    border-radius: 10px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
-    border: 4px solid #000; /* 🆕 Bordecito negro */
-  }
-  
-  /* 💫 Animación al pasar el mouse */
-  .pc-icon:hover {
-    transform: scale(1.1) rotate(2deg);
-    background-color: #39417a;
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
   }
   
@@ -121,25 +109,15 @@ h6 {
   }
   
   .pc-icon i {
-<<<<<<< HEAD
     font-size: 2.5rem; /* Aumentado de 2rem */
     margin-bottom: 8px; /* Más espacio entre icono y número */
-=======
-    font-size: 1.5rem;
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   }
   
   .pc-icon span {
     position: absolute;
-<<<<<<< HEAD
     bottom: 10px; /* Ajustado para la nueva altura */
     right: 10px; /* Ajustado para la nueva anchura */
     font-size: 1.4rem; /* Aumentado de 1.1rem */
-=======
-    bottom: 5px;
-    right: 5px;
-    font-size: 0.8rem;
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     font-weight: bold;
   }
   
@@ -351,7 +329,6 @@ h6 {
   color: white;
 }
 
-<<<<<<< HEAD
 /* PCs reservados */
 .pc-icon.reserved {
   background-color: #dc3545;
@@ -374,5 +351,55 @@ h6 {
   white-space: nowrap;
   z-index: 1;
 }
-=======
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.action-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reset-button {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.reset-button:hover {
+    background-color: #9f0812;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.back-button {
+    background-color: #2980b9;
+    color: white;
+}
+
+.back-button:hover {
+    background-color: #00913f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.maintenance-button {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.maintenance-button:hover {
+    background-color: #8e44ad;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
