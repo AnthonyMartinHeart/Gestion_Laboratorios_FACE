@@ -15,27 +15,31 @@ const MiPerfil = () => {
     }
     setUserData(user);
 
-    const fotoGuardada = sessionStorage.getItem("fotoPerfil");
-    if (fotoGuardada) {
-      setFotoPerfil(fotoGuardada);
+    if (user && user.email) {
+      const fotoGuardada = sessionStorage.getItem(`fotoPerfil_${user.email}`);
+      if (fotoGuardada) {
+        setFotoPerfil(fotoGuardada);
+      }
     }
   }, []);
 
   const manejarCambioFoto = (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (file && userData && userData.email) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setFotoPerfil(reader.result);
-        sessionStorage.setItem("fotoPerfil", reader.result);
+        sessionStorage.setItem(`fotoPerfil_${userData.email}`, reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const eliminarFoto = () => {
-    setFotoPerfil(null);
-    sessionStorage.removeItem("fotoPerfil");
+    if (userData && userData.email) {
+      setFotoPerfil(null);
+      sessionStorage.removeItem(`fotoPerfil_${userData.email}`);
+    }
   };
 
   if (!userData) {
@@ -68,8 +72,8 @@ const MiPerfil = () => {
       </div>
 
       <div className="perfil-details">
-        <p><strong>Nombre:</strong> {userData.nombre}</p>
-        <p><strong>Correo:</strong> {userData.correo}</p>
+        <p><strong>Nombre:</strong> {userData.nombreCompleto}</p>
+        <p><strong>Correo:</strong> {userData.email}</p>
         <p><strong>Rol:</strong> {userData.rol}</p>
       </div>
 
