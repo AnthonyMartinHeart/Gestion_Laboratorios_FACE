@@ -1,24 +1,23 @@
 import { useParams, useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
 import { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import '@styles/SelectPC.css';
+import { useAuth } from '@context/AuthContext';
 
 import useCreateReservation from '@hooks/reservation/useCreateReservation.jsx';
 import { formatRut } from '@helpers/rutFormatter.js';
 
 const SelectPC = ({ onReservaCreada }) => {
-=======
-import { useState, useEffect } from 'react';
-import Swal from 'sweetalert2';
-import '@styles/SelectPC.css';
-
-import { useCreateReservation } from '@hooks/useReservations.jsx';
-
-const SelectPC = () => {
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   const { labId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const isAuthorized = user && (user.rol === 'administrador' || user.rol === 'consultor');
+
+  const [maintenancePCs, setMaintenancePCs] = useState(() => {
+    const saved = localStorage.getItem('maintenancePCs');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
 
   let pcStart = 1, pcEnd = 40;
   if (labId === 'lab2') { pcStart = 41; pcEnd = 60; }
@@ -26,7 +25,6 @@ const SelectPC = () => {
 
   const pcs = Array.from({ length: pcEnd - pcStart + 1 }, (_, i) => pcStart + i);
 
-<<<<<<< HEAD
   const carrerasMap = {
     "Contador Público y Auditor": "CPA",
     "Ingeniería Comercial": "ICO",
@@ -36,15 +34,6 @@ const SelectPC = () => {
   };
 
   const carreras = Object.keys(carrerasMap);
-=======
-  const carreras = [
-    "CPA",
-    "ICO",
-    "ICINF",
-    "IECI",
-    "DRCH"
-  ];
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 
   const horasInicio = [
     "08:10", "09:40", "11:10", "12:40",
@@ -65,7 +54,6 @@ const SelectPC = () => {
     horaTermino: ''
   });
 
-<<<<<<< HEAD
   const [reservedPCs, setReservedPCs] = useState(() => {
     // Intentar cargar las reservas guardadas al iniciar
     try {
@@ -169,9 +157,6 @@ const SelectPC = () => {
   const isReserved = useCallback((pcNumber) => {
     return reservedPCs.has(pcNumber);
   }, [reservedPCs]);
-=======
-  const { mutate: createReservation, loading } = useCreateReservation();
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -183,7 +168,6 @@ const SelectPC = () => {
     return () => clearTimeout(timeout);
   }, [selectedPC, navigate]);
 
-<<<<<<< HEAD
   // Limpiar los timers cuando el componente se desmonta
   useEffect(() => {
     return () => {
@@ -195,21 +179,86 @@ const SelectPC = () => {
     };
   }, [reservedPCs]);
 
+  const handleMaintenance = async () => {
+    // Mostrar lista de PCs en mantenimiento primero
+    const pcsEnMantenimiento = [...maintenancePCs].map(pc => `Equipo ${pc}`).join(', ');
+    const currentPCs = pcsEnMantenimiento.length > 0 ? `\n\nEquipos actualmente en mantenimiento: ${pcsEnMantenimiento}` : '';
+
+    const { value: action } = await Swal.fire({
+      title: 'Gestión de Mantenimiento',
+      text: `¿Qué acción desea realizar?${currentPCs}`,
+      icon: 'question',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Marcar PC en mantenimiento',
+      denyButtonText: 'Desmarcar PC de mantenimiento',
+      cancelButtonText: 'Cancelar',
+      cancelButtonColor: '#6c757d'
+    });
+
+    if (!action && action !== false) return; // Si el usuario cierra el diálogo
+
+    const { value: pcNumber } = await Swal.fire({
+      title: action ? 'Marcar en Mantenimiento' : 'Desmarcar de Mantenimiento',
+      input: 'number',
+      inputLabel: 'Número de PC',
+      inputPlaceholder: 'Ingrese el número del PC',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        const num = parseInt(value);
+        if (!value) {
+          return 'Debe ingresar un número de PC';
+        }
+        if (num < pcStart || num > pcEnd) {
+          return `El número debe estar entre ${pcStart} y ${pcEnd}`;
+        }
+        if (action) { // Si vamos a marcar en mantenimiento
+          if (maintenancePCs.has(num)) {
+            return 'Este PC ya está en mantenimiento';
+          }
+          if (reservedPCs.has(num)) {
+            return 'No se puede marcar en mantenimiento un PC reservado';
+          }
+        } else { // Si vamos a desmarcar
+          if (!maintenancePCs.has(num)) {
+            return 'Este PC no está en mantenimiento';
+          }
+        }
+      }
+    });
+
+    if (pcNumber) {
+      const pc = parseInt(pcNumber);
+      setMaintenancePCs(prev => {
+        const newSet = new Set(prev);
+        if (action) {
+          newSet.add(pc);
+          Swal.fire('¡Listo!', `PC ${pc} ha sido marcado en mantenimiento`, 'success');
+        } else {
+          newSet.delete(pc);
+          Swal.fire('¡Listo!', `PC ${pc} ha sido desmarcado de mantenimiento`, 'success');
+        }
+        localStorage.setItem('maintenancePCs', JSON.stringify([...newSet]));
+        return newSet;
+      });
+    }
+  };
+
   const handlePCClick = (pcNumber) => {
+    if (maintenancePCs.has(pcNumber)) {
+      Swal.fire('Equipo en mantenimiento', 'Este equipo no está disponible temporalmente', 'info');
+      return;
+    }
     if (isReserved(pcNumber)) {
       const reserva = reservedPCs.get(pcNumber);
       Swal.fire('Equipo reservado', `Este PC está reservado desde ${reserva.horaInicio} hasta ${reserva.horaTermino}. Por favor selecciona otro.`, 'info');
       return;
     }
-=======
-  const handlePCClick = (pcNumber) => {
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     setSelectedPC(pcNumber);
     setShowForm(true);
   };
 
   const handleChange = (e) => {
-<<<<<<< HEAD
     if (e.target.name === 'carrera') {
       // Cuando se selecciona una carrera, guardamos la abreviatura
       setFormData({ 
@@ -221,19 +270,12 @@ const SelectPC = () => {
     }
   };
 
-=======
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Validar formato básico RUT (acepta puntos y guion)
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   const validarRut = (rut) => {
     const rutLimpio = rut.replace(/\./g, '');
     const regex = /^\d{7,8}-?[\dkK]$/i;
     return regex.test(rutLimpio);
   };
 
-<<<<<<< HEAD
   const configurarTimerReserva = (pcNumber, horaInicio, horaTermino) => {
     const startTime = horaAMilisegundos(horaInicio);
     const endTime = horaAMilisegundos(horaTermino);
@@ -253,21 +295,11 @@ const SelectPC = () => {
     }, duracion);
 
     return { timer, endTime };
-=======
-  // Convertir "HH:MM" a minutos
-  const horaAMinutos = (hora) => {
-    const [h, m] = hora.split(':').map(Number);
-    return h * 60 + m;
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-<<<<<<< HEAD
-=======
-    // Limpiar puntos para validación y envío
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     const rutLimpio = formData.rut.replace(/\./g, '');
 
     if (!validarRut(formData.rut)) {
@@ -275,12 +307,8 @@ const SelectPC = () => {
       return;
     }
 
-<<<<<<< HEAD
     // Validamos que la carrera sea una de las abreviaturas válidas
     if (!Object.values(carrerasMap).includes(formData.carrera)) {
-=======
-    if (!carreras.includes(formData.carrera)) {
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
       Swal.fire('Error', 'La carrera seleccionada no es válida.', 'error');
       return;
     }
@@ -305,7 +333,6 @@ const SelectPC = () => {
       return;
     }
 
-<<<<<<< HEAD
     if (isReserved(selectedPC)) {
       Swal.fire('Error', 'El PC ya está reservado. Por favor selecciona otro.', 'error');
       return;
@@ -355,56 +382,82 @@ const SelectPC = () => {
     } catch (error) {
       console.error('Error en handleSubmit:', error);
       Swal.fire('Error', 'Error en el servidor. Por favor, intenta nuevamente más tarde.', 'error');
-=======
-    const reservationData = {
-      rut: rutLimpio,  // enviamos sin puntos
-      carrera: formData.carrera,
-      horaInicio: formData.horaInicio,
-      horaTermino: formData.horaTermino,
-      labId: labId === 'lab1' ? 1 : labId === 'lab2' ? 2 : 3,
-      pcId: selectedPC,
-      fechaReserva: new Date().toISOString().split('T')[0],
-    };
-
-    const { success, error } = await createReservation(reservationData);
-
-    if (success) {
-      Swal.fire('¡Reserva creada!', `Tu reserva para el PC ${selectedPC} fue registrada con éxito.`, 'success');
-      setShowForm(false);
-      setFormData({ rut: '', carrera: '', horaInicio: '', horaTermino: '' });
-      setSelectedPC(null);
-    } else {
-      Swal.fire('Error', error || 'No se pudo crear la reserva. Inténtalo nuevamente.', 'error');
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
     }
+  };
+
+  const resetAllReservations = () => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esto reiniciará todas las reservas y los computadores volverán a estar disponibles',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, reiniciar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Limpiar todas las reservas
+        reservedPCs.forEach((reserva) => {
+          if (reserva.timer) {
+            clearTimeout(reserva.timer);
+          }
+        });
+        setReservedPCs(new Map());
+        localStorage.removeItem('reservedPCs');
+        
+        Swal.fire(
+          '¡Reiniciado!',
+          'Todos los computadores están disponibles nuevamente.',
+          'success'
+        );
+      }
+    });
   };
 
   return (
     <div className="pc-selection-container">
       <h3>Computadores Disponibles para {labId.toUpperCase()}</h3>
       <h6>Selecciona Tu PC 👇</h6>
+      
+      <div className="button-container">
+        {isAuthorized && (
+          <>
+            <button 
+              onClick={resetAllReservations}
+              className="action-button reset-button"
+            >
+              Reiniciar todas las reservas
+            </button>
+            <button 
+              onClick={handleMaintenance}
+              className="action-button maintenance-button"
+            >
+              Gestionar Mantenimiento
+            </button>
+          </>
+        )}
+        <button 
+          onClick={() => navigate('/home')}
+          className="action-button back-button"
+        >
+          Volver a la página principal
+        </button>
+      </div>
 
       <div className="pc-grid">
         {pcs.map((pcNumber) => (
           <div
             key={pcNumber}
-<<<<<<< HEAD
-            className={`pc-icon ${isReserved(pcNumber) ? 'reserved' : ''}`}
+            className={`pc-icon ${isReserved(pcNumber) ? 'reserved' : ''} ${maintenancePCs.has(pcNumber) ? 'maintenance' : ''} ${selectedPC === pcNumber ? 'selected' : ''}`}
             onClick={() => handlePCClick(pcNumber)}
-            style={{ cursor: isReserved(pcNumber) ? 'not-allowed' : 'pointer' }}
-=======
-            className="pc-icon"
-            onClick={() => handlePCClick(pcNumber)}
-            style={{ cursor: 'pointer' }}
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
+            style={{ cursor: isReserved(pcNumber) || maintenancePCs.has(pcNumber) ? 'not-allowed' : 'pointer' }}
           >
             <i className="fas fa-desktop"></i>
             <span>{pcNumber}</span>
           </div>
         ))}
       </div>
-
-      <button onClick={() => navigate('/home')}>Volver a la página principal</button>
 
       {showForm && (
         <div className="popup-overlay">
@@ -425,24 +478,16 @@ const SelectPC = () => {
               <label>Carrera:</label>
               <select
                 name="carrera"
-<<<<<<< HEAD
                 value={Object.keys(carrerasMap).find(key => carrerasMap[key] === formData.carrera) || ''}
-=======
-                value={formData.carrera}
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
                 onChange={handleChange}
                 required
                 disabled={loading}
               >
                 <option value="">Selecciona tu carrera</option>
                 {carreras.map((carrera) => (
-<<<<<<< HEAD
                   <option key={carrera} value={carrera}>
                     {carrera}
                   </option>
-=======
-                  <option key={carrera} value={carrera}>{carrera}</option>
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
                 ))}
               </select>
 
