@@ -47,7 +47,6 @@ export async function getReservationsByPC(req, res) {
   
   export async function getAllReservations(req, res) {
     try {
-<<<<<<< HEAD
         // Prevenir caché
         res.set({
             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -88,16 +87,6 @@ export async function getReservationsByPC(req, res) {
         handleErrorServer(res, 500, e.message);
     }
 }
-=======
-      const [list, err] = await getAllReservationsService();
-      if (err) return handleErrorClient(res, 404, err);
-  
-      handleSuccess(res, 200, "Reservas encontradas", list);
-    } catch (e) {
-      handleErrorServer(res, 500, e.message);
-    }
-  }
->>>>>>> e7a17904b413b5f100201b433da5f612b375b052
 
 export async function updateReservation(req, res) {
   try {
