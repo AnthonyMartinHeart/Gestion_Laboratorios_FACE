@@ -7,10 +7,16 @@ export default function Popup({ show, setShow, data, action }) {
     const userData = data && data.length > 0 ? data[0] : {};
 
     const handleSubmit = (formData) => {
+        // Asegura que 'activo' sea booleano si existe
+        if (formData.hasOwnProperty('activo')) {
+            if (formData.activo === 'true' || formData.activo === true) formData.activo = true;
+            else if (formData.activo === 'false' || formData.activo === false) formData.activo = false;
+        }
         action(formData);
     };
 
     const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/);
+    const isAlumno = userData.email && userData.email.endsWith('@alumnos.ubiobio.cl');
     return (
         <div>
             { show && (
@@ -45,10 +51,9 @@ export default function Popup({ show, setShow, data, action }) {
                               required: true,
                               minLength: 15,
                               maxLength: 50,
-                              pattern: /^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/,
-                              patternMessage: "El correo debe ser @gmail.cl o @alumnos.ubiobio.cl",
-                             }
-,
+                              pattern: /^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/,
+                              patternMessage: "El correo debe ser @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl",
+                             },
                             {
                                 label: "Rut",
                                 name: "rut",
@@ -67,13 +72,53 @@ export default function Popup({ show, setShow, data, action }) {
                                 name: "rol",
                                 fieldType: 'select',
                                 options: [
-                            { value: 'administrador', label: 'Administrador' },
-                            { value: 'usuario', label: 'Usuario' },
-                            { value: 'consultor', label: 'Consultor' },
-                                         ],
-                              required: true,
-                              defaultValue: userData.rol || "",
-                             },
+                                    { value: 'administrador', label: 'Administrador' },
+                                    { value: 'usuario', label: 'Usuario' },
+                                    { value: 'consultor', label: 'Consultor' },
+                                ],
+                                required: true,
+                                defaultValue: userData.rol || "",
+                            },
+                            ...(isAlumno ? [
+                                {
+                                    label: "Carrera",
+                                    name: "carrera",
+                                    defaultValue: userData.carrera || "",
+                                    placeholder: 'Carrera',
+                                    fieldType: 'input',
+                                    type: "text",
+                                    required: false,
+                                    maxLength: 100,
+                                },
+                                {
+                                    label: "Año de ingreso",
+                                    name: "anioIngreso",
+                                    defaultValue: userData.anioIngreso || "",
+                                    placeholder: 'Año de ingreso',
+                                    fieldType: 'input',
+                                    type: "text",
+                                    required: false,
+                                    maxLength: 10,
+                                },
+                                {
+                                    label: (
+                                        <span>
+                                            Año de egreso (opcional)
+                                            <span className='tooltip-icon'>
+                                                <img src={QuestionIcon} />
+                                                <span className='tooltip-text'>Si se ingresa, la cuenta quedará inactiva</span>
+                                            </span>
+                                        </span>
+                                    ),
+                                    name: "anioEgreso",
+                                    defaultValue: userData.anioEgreso || "",
+                                    placeholder: 'Año de egreso',
+                                    fieldType: 'input',
+                                    type: "text",
+                                    required: false,
+                                    maxLength: 10,
+                                },
+                            ] : []),
                             {
                                 label: (
                                     <span>
@@ -93,7 +138,28 @@ export default function Popup({ show, setShow, data, action }) {
                                 maxLength: 26,
                                 pattern: /^[a-zA-Z0-9]+$/,
                                 patternMessage: "Debe contener solo letras y números",
-                            }
+                            },
+                            ...(isAlumno ? [
+                                {
+                                    label: (
+                                        <span>
+                                            Estado de la cuenta
+                                            <span className='tooltip-icon'>
+                                                <img src={QuestionIcon} />
+                                                <span className='tooltip-text'>Puedes activar o desactivar la cuenta manualmente</span>
+                                            </span>
+                                        </span>
+                                    ),
+                                    name: "activo",
+                                    fieldType: 'select',
+                                    options: [
+                                        { value: true, label: 'Activa' },
+                                        { value: false, label: 'Inactiva' }
+                                    ],
+                                    required: true,
+                                    defaultValue: userData.activo === false ? false : true,
+                                }
+                            ] : []),
                         ]}
                         onSubmit={handleSubmit}
                         buttonText="Editar usuario"
