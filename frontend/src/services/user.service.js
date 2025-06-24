@@ -11,6 +11,15 @@ export async function getUsers() {
     }
 }
 
+export async function getUserByRut(rut) {
+    try {
+        const { data } = await axios.get(`/user/detail/?rut=${rut}`);
+        return formatUserData(data.data);
+    } catch (error) {
+        return error.response.data;
+    }
+}
+
 export async function updateUser(data, rut) {
     try {
         const response = await axios.patch(`/user/detail/?rut=${rut}`, data);
