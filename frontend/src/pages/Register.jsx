@@ -4,6 +4,7 @@ import Form from "@components/Form";
 import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
+import { useState } from 'react';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -13,8 +14,29 @@ const Register = () => {
         errorData,
         handleInputChange
     } = useRegister();
+    const [showAlumnoFields, setShowAlumnoFields] = useState(false);
+    const [carrera, setCarrera] = useState('');
+    const [anioIngreso, setAnioIngreso] = useState('');
+
+    const carreras = [
+        { value: 'CPA', label: 'Contador Público y Auditor' },
+        { value: 'ICO', label: 'Ingeniería Comercial' },
+        { value: 'ICINF', label: 'Ingeniería Civil en Informática' },
+        { value: 'IECI', label: 'Ingeniería de Ejecución en Computación e Informática' },
+        { value: 'DRCH', label: 'Derecho' },
+        { value: 'otro', label: 'Otro' }
+    ];
+
+    const handleEmailChange = (e) => {
+        handleInputChange('email', e.target.value);
+        setShowAlumnoFields(/@alumnos\.ubiobio\.cl$/.test(e.target.value));
+    };
 
     const registerSubmit = async (data) => {
+        if (showAlumnoFields) {
+            data.carrera = carrera;
+            data.anioIngreso = anioIngreso;
+        }
         try {
             const response = await register(data);
             if (response.status === 'Success') {
@@ -51,20 +73,19 @@ const Register = () => {
                         patternMessage: "Debe contener solo letras y espacios",
                     },
                     {
-                    label: "Correo electrónico",
-                    name: "email",
-                    placeholder: "@gmail.cl / @alumnos.ubiobio.cl",
-                    fieldType: 'input',
-                    type: "email",
-                    required: true,
-                    minLength: 15,
-                    maxLength: 50,
-                    pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/,
-                    patternMessage: "Correo inválido. Solo se permiten dominios @gmail.cl y @alumnos.ubiobio.cl",
-                    errorMessageData: errorEmail,
-                    onChange: (e) => handleInputChange('email', e.target.value),
-                    }
-                ,
+                        label: "Correo electrónico",
+                        name: "email",
+                        placeholder: "@gmail.cl / @alumnos.ubiobio.cl / @ubiobio.cl",
+                        fieldType: 'input',
+                        type: "email",
+                        required: true,
+                        minLength: 15,
+                        maxLength: 50,
+                        pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/,
+                        patternMessage: "Correo inválido. Solo se permiten dominios @gmail.cl, @alumnos.ubiobio.cl y @ubiobio.cl",
+                        errorMessageData: errorEmail,
+                        onChange: handleEmailChange,
+                    },
                     {
                         label: "Rut",
                         name: "rut",
@@ -91,6 +112,24 @@ const Register = () => {
                         pattern: /^[a-zA-Z0-9]+$/,
                         patternMessage: "Debe contener solo letras y números",
                     },
+                    ...(showAlumnoFields ? [
+                        {
+                            label: "Carrera",
+                            name: "carrera",
+                            fieldType: 'select',
+                            required: true,
+                            options: carreras,
+                            onChange: (e) => setCarrera(e.target.value),
+                        },
+                        {
+                            label: "Año de ingreso",
+                            name: "anioIngreso",
+                            fieldType: 'input',
+                            type: 'text',
+                            required: true,
+                            onChange: (e) => setAnioIngreso(e.target.value),
+                        }
+                    ] : []),
                 ]}
                 buttonText="Registrarse"
                 onSubmit={registerSubmit}
