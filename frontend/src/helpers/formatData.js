@@ -8,6 +8,9 @@ export function formatUserData(user) {
         nombreCompleto: startCase(user.nombreCompleto),
         rol: startCase(user.rol),
         rut: formatRut(user.rut),
+        carrera: user.carrera ? user.carrera.toUpperCase() : '',
+        anioIngreso: user.anioIngreso || '',
+        anioEgreso: user.anioEgreso && user.anioEgreso.trim() !== '' ? user.anioEgreso : 'N/A',
         createdAt: formatTempo(user.createdAt, "DD-MM-YYYY")
     };
 }
