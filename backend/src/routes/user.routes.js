@@ -7,18 +7,18 @@ import {
   getUser,
   getUsers,
   updateUser,
+  setUserActive,
 } from "../controllers/user.controller.js";
 
 const router = Router();
 
-router
-  .use(authenticateJwt)
-  .use(isAdmin);
+router.use(authenticateJwt); 
 
 router
-  .get("/", getUsers)
-  .get("/detail/", getUser)
-  .patch("/detail/", updateUser)
-  .delete("/detail/", deleteUser);
+  .get("/", isAdmin, getUsers)
+  .get("/detail/", getUser) 
+  .patch("/detail/", isAdmin, updateUser)
+  .delete("/detail/", isAdmin, deleteUser)
+  .patch("/active", isAdmin, setUserActive); 
 
 export default router;
