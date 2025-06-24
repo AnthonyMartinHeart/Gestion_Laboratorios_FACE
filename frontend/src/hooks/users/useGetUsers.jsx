@@ -7,12 +7,10 @@ const useUsers = () => {
     const fetchUsers = async () => {
         try {
             const response = await getUsers();
+            // Usar el rut sin formatear para lógica interna y el formateado solo para mostrar
             const formattedData = response.map(user => ({
-                nombreCompleto: user.nombreCompleto,
-                rut: user.rut,
-                email: user.email,
-                rol: user.rol,
-                createdAt: user.createdAt
+                ...user,
+                rutOriginal: user.rut.replace(/\./g, '').toUpperCase(), // rut sin puntos y con K mayúscula
             }));
             dataLogged(formattedData);
             setUsers(formattedData);
