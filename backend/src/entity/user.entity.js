@@ -36,6 +36,26 @@ const UserSchema = new EntitySchema({
       type: "varchar",
       nullable: false,
     },
+    carrera: {
+      type: "varchar",
+      length: 100,
+      nullable: true, // Solo para alumnos
+    },
+    anioIngreso: {
+      type: "varchar",
+      length: 10,
+      nullable: true, // Solo para alumnos
+    },
+    anioEgreso: {
+      type: "varchar",
+      length: 10,
+      nullable: true, // Solo para alumnos
+    },
+    activo: {
+      type: "boolean",
+      default: true,
+      nullable: false,
+    },
     createdAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
