@@ -1,34 +1,36 @@
 "use strict";
 import Joi from "joi";
 
+// Función personalizada para la validación del dominio de correo
 const domainEmailValidator = (value, helper) => {
   const domain = value.toLowerCase(); // Solo para comparar
 
   if (
     !domain.endsWith("@gmail.cl") &&
-    !domain.endsWith("@alumnos.ubiobio.cl")
+    !domain.endsWith("@alumnos.ubiobio.cl") &&
+    !domain.endsWith("@ubiobio.cl") 
   ) {
     return helper.message(
-      "El correo electrónico debe finalizar en @gmail.cl o @alumnos.ubiobio.cl."
+      "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl."
     );
   }
 
   return value; // ✅ Mantiene el email tal como lo escribió el usuario
 };
 
-
+// Esquema de validación para autenticación (login)
 export const authValidation = Joi.object({
   email: Joi.string()
     .min(15)
     .max(50)
     .email()
-    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/)
+    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/)
     .required()
     .messages({
       "string.empty": "El correo electrónico no puede estar vacío.",
       "any.required": "El correo electrónico es obligatorio.",
       "string.base": "El correo electrónico debe ser de tipo texto.",
-      "string.email": "El correo electrónico debe finalizar en @gmail.cl o @alumnos.ubiobio.cl.",
+      "string.email": "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl.",
       "string.min": "El correo electrónico debe tener al menos 15 caracteres.",
       "string.max": "El correo electrónico debe tener como máximo 50 caracteres.",
     })
@@ -50,6 +52,7 @@ export const authValidation = Joi.object({
   "object.unknown": "No se permiten propiedades adicionales.",
 });
 
+// Esquema de validación para registro (signup)
 export const registerValidation = Joi.object({
   nombreCompleto: Joi.string()
     .min(15)
@@ -64,7 +67,7 @@ export const registerValidation = Joi.object({
       "string.max": "El nombre completo debe tener como máximo 50 caracteres.",
       "string.pattern.base": "El nombre completo solo puede contener letras y espacios.",
     }),
-    rut: Joi.string()
+  rut: Joi.string()
     .min(9)
     .max(12)
     .required()
@@ -80,13 +83,13 @@ export const registerValidation = Joi.object({
     .min(15)
     .max(50)
     .email()
-    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/)
+    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/)
     .required()
     .messages({
       "string.empty": "El correo electrónico no puede estar vacío.",
       "any.required": "El correo electrónico es obligatorio.",
       "string.base": "El correo electrónico debe ser de tipo texto.",
-      "string.email": "El correo electrónico debe finalizar en @gmail.cl o @alumnos.ubiobio.cl.",
+      "string.email": "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl.",
       "string.min": "El correo electrónico debe tener al menos 15 caracteres.",
       "string.max": "El correo electrónico debe tener como máximo 50 caracteres.",
     })
@@ -98,14 +101,20 @@ export const registerValidation = Joi.object({
     .required()
     .messages({
       "string.empty": "La contraseña no puede estar vacía.",
-      "any.required": "La contraseña es obligatorio.",
+      "any.required": "La contraseña es obligatoria.",
       "string.base": "La contraseña debe ser de tipo texto.",
       "string.min": "La contraseña debe tener al menos 8 caracteres.",
       "string.max": "La contraseña debe tener como máximo 26 caracteres.",
       "string.pattern.base": "La contraseña solo puede contener letras y números.",
     }),
+  carrera: Joi.string()
+    .max(100)
+    .allow(null, ''),
+  anioIngreso: Joi.string()
+    .max(10)
+    .allow(null, ''),
 })
   .unknown(false)
   .messages({
-  "object.unknown": "No se permiten propiedades adicionales.",
-});
+    "object.unknown": "No se permiten propiedades adicionales.",
+  });
