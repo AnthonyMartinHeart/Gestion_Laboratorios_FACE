@@ -4,6 +4,7 @@ import {
   getUserService,
   getUsersService,
   updateUserService,
+  setUserActiveService,
 } from "../services/user.service.js";
 import {
   userBodyValidation,
@@ -119,6 +120,21 @@ export async function deleteUser(req, res) {
     if (errorUserDelete) return handleErrorClient(res, 404, "Error eliminado al usuario", errorUserDelete);
 
     handleSuccess(res, 200, "Usuario eliminado correctamente", userDelete);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function setUserActive(req, res) {
+  try {
+    const { rut } = req.query;
+    const { activo } = req.body;
+    if (typeof activo !== 'boolean') {
+      return handleErrorClient(res, 400, 'El campo "activo" debe ser booleano.');
+    }
+    const [user, error] = await setUserActiveService(rut, activo);
+    if (error) return handleErrorClient(res, 400, error);
+    handleSuccess(res, 200, `Usuario ${activo ? 'activado' : 'desactivado'} correctamente`, user);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
