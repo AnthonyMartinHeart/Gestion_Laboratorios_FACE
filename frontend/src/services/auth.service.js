@@ -11,8 +11,8 @@ export async function login(dataUser) {
         });
         const { status, data } = response;
         if (status === 200) {
-            const { nombreCompleto, email, rut, rol } = jwtDecode(data.data.token);
-            const userData = { nombreCompleto, email, rut, rol };
+            const { nombreCompleto, email, rut, rol, carrera } = jwtDecode(data.data.token);
+            const userData = { nombreCompleto, email, rut, rol, carrera };
             sessionStorage.setItem('usuario', JSON.stringify(userData));
             axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
             cookies.set('jwt-auth', data.data.token, {path:'/'});
@@ -26,12 +26,14 @@ export async function login(dataUser) {
 export async function register(data) {
     try {
         const dataRegister = convertirMinusculas(data);
-        const { nombreCompleto, email, rut, password } = dataRegister
+        const { nombreCompleto, email, rut, password, carrera, anioIngreso } = dataRegister;
         const response = await axios.post('/auth/register', {
             nombreCompleto,
             email,
             rut,
-            password
+            password,
+            carrera,
+            anioIngreso
         });
         return response.data;
     } catch (error) {
