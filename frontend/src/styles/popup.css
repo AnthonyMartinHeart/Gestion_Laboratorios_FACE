@@ -1,5 +1,5 @@
 .bg{
-    position: absolute;
+    position: fixed; /* Cambiado de absolute a fixed */
     top: 0;
     bottom: 0;
     left: 0;
@@ -8,6 +8,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: auto; /* Permite scroll si el contenido es grande */
+    z-index: 1000; /* Asegura que esté por encima de todo */
 }
 .popup{
     top: 30px;
