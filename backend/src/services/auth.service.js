@@ -31,12 +31,18 @@ export async function loginService(user) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
+    // Si la cuenta está inactiva y es usuario, rechazar login
+    if (userFound.rol === "usuario" && userFound.activo === false) {
+      return [null, createErrorMessage("activo", "Cuenta desactivada")];
+    }
+
     // Si la contraseña es correcta, generamos el token JWT
     const payload = {
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
       rut: userFound.rut,
       rol: userFound.rol,
+      carrera: userFound.carrera, // Incluimos carrera en el JWT
     };
 
     const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
@@ -49,7 +55,6 @@ export async function loginService(user) {
     return [null, "Error interno del servidor"];
   }
 }
-
 
 export async function registerService(user) {
   try {
@@ -76,13 +81,20 @@ export async function registerService(user) {
 
     if (existingRutUser) return [null, createErrorMessage("rut", "Rut ya asociado a una cuenta")];
 
+    // Modificado: Acepta tanto @alumnos.ubiobio.cl como @ubiobio.cl
+    const isAlumno = email.endsWith('@alumnos.ubiobio.cl') || email.endsWith('@ubiobio.cl');
+
     // Convertimos la contraseña a minúsculas antes de guardarla
     const newUser = userRepository.create({
       nombreCompleto,
-      email: email.toLowerCase(), // Guardamos el correo en minúsculas
+      email: email.toLowerCase(),
       rut,
-      password: await encryptPassword(password.toLowerCase()),  // Convertir solo la contraseña a minúsculas
+      password: await encryptPassword(password.toLowerCase()),
       rol: "usuario",
+      carrera: isAlumno ? user.carrera : null,
+      anioIngreso: isAlumno ? user.anioIngreso : null,
+      anioEgreso: isAlumno ? user.anioEgreso : null,
+      activo: isAlumno && user.anioEgreso && user.anioEgreso.trim() !== "" ? false : true,
     });
 
     await userRepository.save(newUser);
@@ -95,4 +107,3 @@ export async function registerService(user) {
     return [null, "Error interno del servidor"];
   }
 }
-
