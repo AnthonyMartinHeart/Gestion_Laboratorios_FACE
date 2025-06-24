@@ -12,3 +12,35 @@
 .tabulator .tabulator-footer .tabulator-page.active {
     color: #E4332C;
 }
+
+/* Checkboxes azules y feedback visual para selección */
+.tabulator .tabulator-row .tabulator-cell .tabulator-row-selection {
+  accent-color: #0055A4;
+}
+
+/* Mejorar visibilidad de fila seleccionada y checkbox */
+.tabulator .tabulator-row.tabulator-selected {
+  background-color: #e3f0ff !important;
+  transition: background 0.2s;
+}
+
+.tabulator .tabulator-row .tabulator-cell .tabulator-row-selection:checked {
+  accent-color: #0055A4;
+  box-shadow: 0 0 0 2px #0055A4;
+}
+
+/* Borde azul a toda la fila seleccionada */
+.tabulator .tabulator-row.tabulator-selected {
+  outline: 2px solid #0055A4;
+  outline-offset: -2px;
+}
+
+/* Checkbox más grande y visible */
+.tabulator .tabulator-row .tabulator-cell .tabulator-row-selection {
+  width: 22px;
+  height: 22px;
+}
+
+.tabulator .tabulator-row:hover {
+  background-color: #f0f7ff;
+}
