@@ -4,10 +4,11 @@ import Joi from "joi";
 const domainEmailValidator = (value, helper) => {
   if (
     !value.endsWith("@gmail.cl") &&
-    !value.endsWith("@alumnos.ubiobio.cl")
+    !value.endsWith("@alumnos.ubiobio.cl") &&
+    !value.endsWith("@ubiobio.cl")
   ) {
     return helper.message(
-      "El correo electrónico debe ser del dominio @gmail.cl o @alumnos.ubiobio.cl"
+       "El correo electrónico debe ser del dominio @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl."
     );
   }
   return value;
@@ -26,15 +27,13 @@ export const userQueryValidation = Joi.object({
     .min(15)
     .max(50)
     .email()
-    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/)
+    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/) 
     .messages({
       "string.empty": "El correo electrónico no puede estar vacío.",
       "string.base": "El correo electrónico debe ser de tipo string.",
-      "string.email": "El correo electrónico debe finalizar en @gmail.cl o @alumnos.ubiobio.cl.",
-      "string.min":
-        "El correo electrónico debe tener como mínimo 15 caracteres.",
-      "string.max":
-        "El correo electrónico debe tener como máximo 50 caracteres.",
+      "string.email": "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl.",
+      "string.min": "El correo electrónico debe tener como mínimo 15 caracteres.",
+      "string.max": "El correo electrónico debe tener como máximo 50 caracteres.",
     })
     .custom(domainEmailValidator, "Validación dominio email"),
 
@@ -75,15 +74,13 @@ export const userBodyValidation = Joi.object({
     .min(15)
     .max(50)
     .email()
-    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl)$/)
+    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/) 
     .messages({
       "string.empty": "El correo electrónico no puede estar vacío.",
       "string.base": "El correo electrónico debe ser de tipo string.",
-      "string.email": "El correo electrónico debe finalizar en @gmail.cl o @alumnos.ubiobio.cl.",
-      "string.min":
-        "El correo electrónico debe tener como mínimo 15 caracteres.",
-      "string.max":
-        "El correo electrónico debe tener como máximo 50 caracteres.",
+      "string.email": "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl.",
+      "string.min": "El correo electrónico debe tener como mínimo 15 caracteres.",
+      "string.max": "El correo electrónico debe tener como máximo 50 caracteres.",
     })
     .custom(domainEmailValidator, "Validación dominio email"),
   password: Joi.string()
@@ -130,6 +127,16 @@ export const userBodyValidation = Joi.object({
       "string.min": "El rol debe tener como mínimo 4 caracteres.",
       "string.max": "El rol debe tener como máximo 15 caracteres.",
     }),
+  carrera: Joi.string()
+    .max(100)
+    .allow(null, ''),
+  anioIngreso: Joi.string()
+    .max(10)
+    .allow(null, ''),
+  anioEgreso: Joi.string()
+    .max(10)
+    .allow(null, ''),
+  activo: Joi.boolean().default(true),
 })
   .or(
     "nombreCompleto",
