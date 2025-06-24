@@ -3,34 +3,59 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import "tabulator-tables/dist/css/tabulator.min.css";
 import '@styles/table.css';
 
-function useTable({ data, columns, filter, dataToFilter, initialSortName, onSelectionChange }) {
+function useTable({ data, columns, filter, dataToFilter, initialSortName, onSelectionChange, selectedRows = [] }) {
     const tableRef = useRef(null);
-    const [table, setTable] = useState(null);
-    const [isTableBuilt, setIsTableBuilt] = useState(false);
+    const tabulatorRef = useRef(null);
+    const listenersRef = useRef({});
+    const observerRef = useRef(null);
+    const [isTableReady, setIsTableReady] = useState(false);
 
     useEffect(() => {
+        function setCheckboxesTabIndex() {
+            if (!tableRef.current) return;
+            const checkboxes = tableRef.current.querySelectorAll('input[type="checkbox"].tabulator-row-selection');
+            checkboxes.forEach(cb => cb.tabIndex = -1);
+        }
+
+        function preventCheckboxInteraction(e) {
+            if (
+                e.target &&
+                e.target.type === 'checkbox' &&
+                e.target.classList.contains('tabulator-row-selection')
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.target.blur();
+            }
+        }
+
         if (tableRef.current) {
             const updatedColumns = [
-                { 
-                    formatter: "rowSelection", 
-                    titleFormatter: false, 
-                    hozAlign: "center", 
-                    headerSort: false, 
+                {
+                    formatter: "rowSelection",
+                    titleFormatter: "rowSelection",
+                    hozAlign: "center",
+                    headerSort: false,
                     cellClick: function (e, cell) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         cell.getRow().toggleSelect();
-                    } 
+                        return false;
+                    }
                 },
                 ...columns
             ];
-            const tabulatorTable = new Tabulator(tableRef.current, {
+
+            tabulatorRef.current = new Tabulator(tableRef.current, {
                 data: [],
                 columns: updatedColumns,
                 layout: "fitColumns",
                 responsiveLayout: "collapse",
                 pagination: true,
                 paginationSize: 6,
-                selectableRows: 1,
+                selectableRows: true,
                 rowHeight: 46,
+                index: 'rut',
                 langs: {
                     "default": {
                         "pagination": {
@@ -45,40 +70,82 @@ function useTable({ data, columns, filter, dataToFilter, initialSortName, onSele
                     { column: initialSortName, dir: "asc" }
                 ],
             });
-            tabulatorTable.on("rowSelectionChanged", function(selectedData) {
+
+            tabulatorRef.current.on("rowSelectionChanged", function (selectedData) {
                 if (onSelectionChange) {
                     onSelectionChange(selectedData);
                 }
             });
-            tabulatorTable.on("tableBuilt", function() {
-                setIsTableBuilt(true);
+
+            tabulatorRef.current.on("tableBuilt", function () {
+                setIsTableReady(prev => {
+                    if (!prev) {
+                        return true;
+                    }
+                    return prev;
+                });
+
+                const container = tableRef.current;
+                if (container) {
+                    container.addEventListener('click', preventCheckboxInteraction, true);
+                    container.addEventListener('mousedown', preventCheckboxInteraction, true);
+                    container.addEventListener('focusin', preventCheckboxInteraction, true);
+                    setCheckboxesTabIndex();
+
+                    observerRef.current = new MutationObserver(setCheckboxesTabIndex);
+                    observerRef.current.observe(container, { childList: true, subtree: true });
+
+                    listenersRef.current = { preventCheckboxInteraction };
+                }
             });
-            setTable(tabulatorTable);
-            return () => {
-                tabulatorTable.destroy();
-                setIsTableBuilt(false);
-                setTable(null);
-            };
         }
-    }, []);
 
-    useEffect(() => {
-        if (table && isTableBuilt) {
-            table.replaceData(data);
-        }
-    }, [data, table, isTableBuilt]);
-
-    useEffect(() => {
-        if (table && isTableBuilt) {
-            if (filter) {
-                table.setFilter(dataToFilter, "like", filter);
-            } else {
-                table.clearFilter();
+        return () => {
+            setIsTableReady(false);
+            if (tabulatorRef.current) {
+                tabulatorRef.current.destroy();
+                tabulatorRef.current = null;
             }
-            table.redraw();
+
+            const container = tableRef.current;
+            if (container && listenersRef.current.preventCheckboxInteraction) {
+                container.removeEventListener('click', listenersRef.current.preventCheckboxInteraction, true);
+                container.removeEventListener('mousedown', listenersRef.current.preventCheckboxInteraction, true);
+                container.removeEventListener('focusin', listenersRef.current.preventCheckboxInteraction, true);
+            }
+
+            if (observerRef.current) observerRef.current.disconnect();
+        };
+    }, []); // solo se ejecuta una vez al montar
+
+    useEffect(() => {
+        if (tabulatorRef.current && isTableReady) {
+            tabulatorRef.current.replaceData(data);
         }
-    }, [filter, table, dataToFilter, isTableBuilt]);
+    }, [data, isTableReady]);
+
+    useEffect(() => {
+        if (tabulatorRef.current && isTableReady) {
+            if (filter) {
+                tabulatorRef.current.setFilter(dataToFilter, "like", filter);
+            } else {
+                tabulatorRef.current.clearFilter();
+            }
+            tabulatorRef.current.redraw();
+        }
+    }, [filter, dataToFilter, isTableReady]);
+
+    useEffect(() => {
+        if (tabulatorRef.current && isTableReady) {
+            if (selectedRows && selectedRows.length > 0) {
+                tabulatorRef.current.selectRow(selectedRows.map(u => u.rut));
+            } else {
+                tabulatorRef.current.deselectRow();
+            }
+        }
+    }, [selectedRows, isTableReady]);
 
     return { tableRef };
 }
+
 export default useTable;
