@@ -35,20 +35,22 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                     {field.label && <label htmlFor={field.name}>{field.label}</label>}
                     {field.fieldType === 'input' && (
                         <input
-                            {...register(field.name, {
+                            {...(field.value !== undefined ? {} : register(field.name, {
                                 required: field.required ? 'Este campo es obligatorio' : false,
                                 minLength: field.minLength ? { value: field.minLength, message: `Debe tener al menos ${field.minLength} caracteres` } : false,
                                 maxLength: field.maxLength ? { value: field.maxLength, message: `Debe tener máximo ${field.maxLength} caracteres` } : false,
                                 pattern: field.pattern ? { value: field.pattern, message: field.patternMessage || 'Formato no válido' } : false,
                                 validate: field.validate || {},
-                            })}
+                            }))}
                             name={field.name}
                             placeholder={field.placeholder}
                             type={field.type === 'password' && field.name === 'password' ? (showPassword ? 'text' : 'password') :
                                 field.type === 'password' && field.name === 'newPassword' ? (showNewPassword ? 'text' : 'password') :
                                 field.type}
-                            defaultValue={field.defaultValue || ''}
+                            value={field.value}
+                            defaultValue={field.value === undefined ? (field.defaultValue || '') : undefined}
                             disabled={field.disabled}
+                            readOnly={field.readOnly}
                             onChange={field.onChange}
                         />
                     )}
@@ -65,6 +67,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             placeholder={field.placeholder}
                             defaultValue={field.defaultValue || ''}
                             disabled={field.disabled}
+                            readOnly={field.readOnly}
                             onChange={field.onChange}
                         />
                     )}
