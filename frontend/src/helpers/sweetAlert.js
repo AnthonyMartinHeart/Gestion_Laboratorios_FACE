@@ -27,3 +27,18 @@ export const showErrorAlert = (titleMessage, message) => {
     'error'
   );
 };
+
+export const showConfirmAlert = async (title, text, confirmText = 'Confirmar', cancelText = 'Cancelar') => {
+  const result = await Swal.fire({
+    title: title,
+    text: text,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: confirmText,
+    cancelButtonText: cancelText
+  });
+
+  return result.isConfirmed;
+};
