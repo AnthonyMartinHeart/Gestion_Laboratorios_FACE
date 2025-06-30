@@ -19,9 +19,6 @@ const checkPcInLab = (value, helpers) => {
   return value;
 };
 
-const carrerasValidas = ["CPA", "ICO", "ICINF", "IECI", "DRCH"];
-
-
 const horariosInicio = [
   "08:10",
   "09:40",
@@ -56,10 +53,16 @@ export const reservationValidation = Joi.object({
     }),
 
   carrera: Joi.string()
-    .valid(...carrerasValidas)
+    .min(2)
+    .max(10)
+    .pattern(/^[A-Z]+$/)
     .required()
     .messages({
-      "any.only": "Carrera no válida. Debe seleccionar una de las opciones permitidas.",
+      "string.base": "La carrera debe ser un texto.",
+      "string.empty": "La carrera no puede estar vacía.",
+      "string.min": "La carrera debe tener al menos 2 caracteres.",
+      "string.max": "La carrera no puede tener más de 10 caracteres.",
+      "string.pattern.base": "La carrera debe contener solo letras mayúsculas.",
     }),
 
   horaInicio: Joi.string()
