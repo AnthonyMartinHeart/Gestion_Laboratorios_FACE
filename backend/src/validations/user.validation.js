@@ -131,10 +131,56 @@ export const userBodyValidation = Joi.object({
     .max(100)
     .allow(null, ''),
   anioIngreso: Joi.string()
-    .max(10)
+    .pattern(/^[0-9]{4}$/)
+    .custom((value, helper) => {
+      if (!value) return value; // Permitir null/vacío
+      
+      const year = parseInt(value);
+      const currentYear = new Date().getFullYear();
+      
+      if (year < 1950) {
+        return helper.message("El año de ingreso no puede ser anterior a 1950");
+      }
+      if (year > currentYear + 1) {
+        return helper.message("El año de ingreso no puede ser mayor al año siguiente");
+      }
+      
+      return value;
+    })
+    .messages({
+      "string.pattern.base": "El año de ingreso debe ser un año válido de 4 dígitos",
+    })
     .allow(null, ''),
   anioEgreso: Joi.string()
-    .max(10)
+    .custom((value, helper) => {
+      if (!value) return value; // Permitir null/vacío
+      
+      // Valores especiales permitidos
+      const specialValues = ['N/A', 'n/a', 'No aplica', 'no aplica', 'Sin definir', 'sin definir'];
+      if (specialValues.includes(value)) {
+        return value;
+      }
+      
+      // Validar formato de año
+      if (!/^[0-9]{4}$/.test(value)) {
+        return helper.message("El año de egreso debe ser un año válido de 4 dígitos o un valor especial (N/A, No aplica, Sin definir)");
+      }
+      
+      const year = parseInt(value);
+      const currentYear = new Date().getFullYear();
+      
+      if (year < 1950) {
+        return helper.message("El año de egreso no puede ser anterior a 1950");
+      }
+      if (year > currentYear + 10) {
+        return helper.message("El año de egreso no puede ser muy lejano al futuro");
+      }
+      
+      return value;
+    })
+    .messages({
+      "string.base": "El año de egreso debe ser de tipo texto",
+    })
     .allow(null, ''),
   activo: Joi.boolean().default(true),
 })
