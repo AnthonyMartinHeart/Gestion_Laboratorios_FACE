@@ -276,10 +276,37 @@ const Register = () => {
                         {
                             label: "Año de ingreso",
                             name: "anioIngreso",
+                            placeholder: "2002",
                             fieldType: 'input',
                             type: 'text',
                             required: true,
-                            onChange: (e) => setAnioIngreso(e.target.value),
+                            maxLength: 4,
+                            pattern: /^[0-9]{4}$/,
+                            patternMessage: "Debe ser un año válido de 4 dígitos",
+                            onChange: (e) => {
+                                // Solo permitir números
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value.length <= 4) {
+                                    setAnioIngreso(value);
+                                }
+                            },
+                            validate: {
+                                validYear: (value) => {
+                                    if (!value) return "El año de ingreso es obligatorio";
+                                    
+                                    const currentYear = new Date().getFullYear();
+                                    const inputYear = parseInt(value);
+                                    
+                                    if (inputYear < 1950) {
+                                        return "El año de ingreso no puede ser anterior a 1950";
+                                    }
+                                    if (inputYear > currentYear + 1) {
+                                        return "El año de ingreso no puede ser mayor al año siguiente";
+                                    }
+                                    
+                                    return true;
+                                }
+                            }
                         }
                     ] : []),
                 ]}
