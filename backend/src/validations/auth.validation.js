@@ -111,7 +111,25 @@ export const registerValidation = Joi.object({
     .max(100)
     .allow(null, ''),
   anioIngreso: Joi.string()
-    .max(10)
+    .pattern(/^[0-9]{4}$/)
+    .custom((value, helper) => {
+      if (!value) return value; 
+      
+      const year = parseInt(value);
+      const currentYear = new Date().getFullYear();
+      
+      if (year < 1950) {
+        return helper.message("El año de ingreso no puede ser anterior a 1950");
+      }
+      if (year > currentYear + 1) {
+        return helper.message("El año de ingreso no puede ser mayor al año siguiente");
+      }
+      
+      return value;
+    })
+    .messages({
+      "string.pattern.base": "El año de ingreso debe ser un año válido de 4 dígitos",
+    })
     .allow(null, ''),
 })
   .unknown(false)
