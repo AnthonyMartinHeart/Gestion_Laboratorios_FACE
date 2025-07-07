@@ -165,13 +165,18 @@ export default function Popup({ show, setShow, data, action }) {
                                     label: "Año de ingreso",
                                     name: "anioIngreso",
                                     defaultValue: userData.anioIngreso || "",
-                                    placeholder: 'Año de ingreso',
+                                    placeholder: '2002',
                                     fieldType: 'input',
                                     type: "text",
                                     required: true,
                                     maxLength: 4,
                                     pattern: /^[0-9]{4}$/,
                                     patternMessage: "Debe ser un año válido de 4 dígitos",
+                                    onChange: (e) => {
+                                        // Solo permitir números
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        return value.length <= 4 ? value : e.target.value.slice(0, 4);
+                                    },
                                     validate: {
                                         validYear: (value) => {
                                             if (!value) return "El año de ingreso es obligatorio";
@@ -208,13 +213,27 @@ export default function Popup({ show, setShow, data, action }) {
                                     ),
                                     name: "anioEgreso",
                                     defaultValue: userData.anioEgreso || "",
-                                    placeholder: 'Año de egreso o N/A',
+                                    placeholder: '2024 o N/A',
                                     fieldType: 'input',
                                     type: "text",
                                     required: false,
                                     maxLength: 15,
                                     pattern: /^([0-9]{4}|N\/A|n\/a|No aplica|no aplica|Sin definir|sin definir)$/,
                                     patternMessage: "Debe ser un año válido de 4 dígitos o escribir 'N/A', 'No aplica', 'Sin definir'",
+                                    onChange: (e) => {
+                                        const value = e.target.value;
+                                        // Permitir valores especiales o solo números
+                                        const naValues = ['N/A', 'n/a', 'No aplica', 'no aplica', 'Sin definir', 'sin definir'];
+                                        const isNAValue = naValues.some(naVal => value.toLowerCase().includes(naVal.toLowerCase()));
+                                        
+                                        if (isNAValue) {
+                                            return value; // Permitir texto especial
+                                        } else {
+                                            // Solo permitir números y limitar a 4 dígitos
+                                            const numericValue = value.replace(/[^0-9]/g, '');
+                                            return numericValue.length <= 4 ? numericValue : numericValue.slice(0, 4);
+                                        }
+                                    },
                                     validate: {
                                         validYearOrNA: (value) => {
                                             if (!value) return true; // Campo opcional
@@ -229,6 +248,9 @@ export default function Popup({ show, setShow, data, action }) {
                                                 const inputYear = parseInt(value);
                                                 const ingresoYear = parseInt(userData.anioIngreso);
                                                 
+                                                if (inputYear < 1950) {
+                                                    return "El año de egreso no puede ser anterior a 1950";
+                                                }
                                                 if (inputYear > currentYear + 10) {
                                                     return "El año de egreso no puede ser muy lejano al futuro";
                                                 }
