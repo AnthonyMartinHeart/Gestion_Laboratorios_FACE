@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import BitacoraTable from '@components/BitacoraTable';
+import BitacoraTable, { exportToExcel } from '@components/BitacoraTable';
 import { useGetAllReservations } from '@hooks/reservation/useGetAllReservations';
 import '@styles/bitacoras.css';
 
@@ -18,6 +18,22 @@ const Bitacoras = () => {
     <div className="laboratorio-section" key={labNumber}>
       <div className="laboratorio-header">
         <h7>{titulo}</h7>
+        {/* Botones centrados para cada laboratorio */}
+        <div className="laboratorio-controls">
+          <button 
+            className="export-button"
+            onClick={() => {
+              // Llamar a la función de exportar específica de cada tabla
+              if (labData.reservations && labData.reservations.length > 0) {
+                exportToExcel(numEquipos, startIndex, selectedDate, labData.reservations);
+              } else {
+                exportToExcel(numEquipos, startIndex, selectedDate, []);
+              }
+            }}
+          >
+            <i className="fas fa-file-export"></i> Exportar Excel Lab {labNumber}
+          </button>
+        </div>
       </div>
       <BitacoraTable
         numEquipos={numEquipos}
