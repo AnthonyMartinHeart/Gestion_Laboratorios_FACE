@@ -41,6 +41,12 @@ const ReservationSchema = new EntitySchema({
       type: "int",
       nullable: false,
     },
+    status: {
+      type: "varchar",
+      length: 20,
+      default: "active",
+      nullable: false,
+    },
   },
   indices: [
     {
