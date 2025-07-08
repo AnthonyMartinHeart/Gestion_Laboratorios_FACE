@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { updateReservation, deleteReservation } from '@services/reservation.service';
-import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '@helpers/sweetAlert';
 import '@styles/bitacoras.css';
 
 const horas = [
@@ -127,79 +125,8 @@ export const exportToExcel = (numEquipos, startIndex, date, reservations = []) =
   document.body.removeChild(link);
 };
 
-const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, user, onReservationUpdate }) => {
+const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date }) => {
   const [scale, setScale] = useState(1);
-  const [editingReservation, setEditingReservation] = useState(null);
-  const [editingRut, setEditingRut] = useState('');
-
-  // Verificar si el usuario es administrador
-  const isAdmin = user && user.rol === 'administrador';
-
-  // Función para manejar la edición del RUT
-  const handleEditRut = async (reservationId, newRut) => {
-    try {
-      const result = await updateReservation(reservationId, { rut: newRut });
-      if (result.success !== false) {
-        showSuccessAlert('RUT actualizado', 'El RUT de la reserva ha sido actualizado correctamente.');
-        if (onReservationUpdate) {
-          onReservationUpdate();
-        }
-        setEditingReservation(null);
-        setEditingRut('');
-      } else {
-        showErrorAlert('Error al actualizar', result.message || 'No se pudo actualizar el RUT.');
-      }
-    } catch (error) {
-      console.error('Error al actualizar RUT:', error);
-      showErrorAlert('Error', 'Ocurrió un error al actualizar el RUT.');
-    }
-  };
-
-  // Función para manejar la eliminación de reservas
-  const handleDeleteReservation = async (reservationId) => {
-    const confirmed = await showConfirmAlert(
-      '¿Eliminar reserva?',
-      'Esta acción no se puede deshacer.',
-      'Eliminar',
-      'Cancelar'
-    );
-
-    if (confirmed) {
-      try {
-        const result = await deleteReservation(reservationId);
-        if (result.success !== false) {
-          showSuccessAlert('Reserva eliminada', 'La reserva ha sido eliminada correctamente.');
-          if (onReservationUpdate) {
-            onReservationUpdate();
-          }
-        } else {
-          showErrorAlert('Error al eliminar', result.message || 'No se pudo eliminar la reserva.');
-        }
-      } catch (error) {
-        console.error('Error al eliminar reserva:', error);
-        showErrorAlert('Error', 'Ocurrió un error al eliminar la reserva.');
-      }
-    }
-  };
-
-  // Función para iniciar la edición
-  const startEditing = (reservationId, currentRut) => {
-    setEditingReservation(reservationId);
-    setEditingRut(currentRut);
-  };
-
-  // Función para cancelar la edición
-  const cancelEditing = () => {
-    setEditingReservation(null);
-    setEditingRut('');
-  };
-
-  // Función para confirmar la edición
-  const confirmEdit = (reservationId) => {
-    if (editingRut.trim()) {
-      handleEditRut(reservationId, editingRut.trim());
-    }
-  };
 
   // Función para formatear el porcentaje de zoom
   const formatZoom = (scale) => `${Math.round(scale * 100)}%`;
@@ -255,7 +182,6 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, us
 
     // Verificar si es una reserva de bloque de clases (carrera = 'ADMIN')
     const isClassBlock = reserva.carrera === 'ADMIN';
-    const isEditing = editingReservation === reserva.id;
 
     return (
       <div className={`reservation-info ${isClassBlock ? 'class-block-reservation' : ''}`}>
@@ -266,63 +192,8 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, us
           </>
         ) : (
           <>
-            {isEditing ? (
-              <div className="edit-rut-container">
-                <input
-                  type="text"
-                  value={editingRut}
-                  onChange={(e) => setEditingRut(e.target.value)}
-                  className="edit-rut-input"
-                  placeholder="RUT"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      confirmEdit(reserva.id);
-                    } else if (e.key === 'Escape') {
-                      cancelEditing();
-                    }
-                  }}
-                />
-                <div className="edit-buttons">
-                  <button
-                    className="confirm-edit-btn"
-                    onClick={() => confirmEdit(reserva.id)}
-                    title="Confirmar"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    className="cancel-edit-btn"
-                    onClick={cancelEditing}
-                    title="Cancelar"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="rut">{reserva.rut}</div>
-                {reserva.carrera && <div className="carrera">{reserva.carrera}</div>}
-              </>
-            )}
-            {isAdmin && !isEditing && (
-              <div className="admin-controls">
-                <button
-                  className="edit-btn"
-                  onClick={() => startEditing(reserva.id, reserva.rut)}
-                  title="Editar RUT"
-                >
-                  ✏️
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDeleteReservation(reserva.id)}
-                  title="Eliminar reserva"
-                >
-                  🗑️
-                </button>
-              </div>
-            )}
+            <div className="rut">{reserva.rut}</div>
+            {reserva.carrera && <div className="carrera">{reserva.carrera}</div>}
           </>
         )}
       </div>
@@ -344,9 +215,6 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, us
             <i className="fas fa-undo"></i>
           </button>
         </div>
-        <button className="export-button" onClick={handleExport}>
-          <i className="fas fa-file-export"></i> Exportar a Excel
-        </button>
       </div>
 
       <div className="table-container">
@@ -368,9 +236,8 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, us
                   const info = getReservationInfo(pcId, hora);
                   const isClassBlock = info && reservationMap[`${pcId}-${hora.split(' - ')[0]}`]?.carrera === 'ADMIN';
                   const hasReservation = !!info;
-                  const adminEnabledClass = isAdmin && hasReservation && !isClassBlock ? 'admin-enabled' : '';
                   return (
-                    <td key={colIndex} className={`${hasReservation ? 'reservado' : ''} ${isClassBlock ? 'class-block-cell' : ''} ${adminEnabledClass}`}>
+                    <td key={colIndex} className={`${hasReservation ? 'reservado' : ''} ${isClassBlock ? 'class-block-cell' : ''}`}>
                       {info}
                     </td>
                   );
