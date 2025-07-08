@@ -40,13 +40,19 @@ export const useGetAllReservations = (labId, selectedDate) => {
                 laboratorio: targetLabId
             });
 
-            // 4. Filtrar reservas
+            // 4. Filtrar reservas (excluir reservas de mantenimiento)
             const filtered = allReservations.filter(reserva => {
                 // Convertir y validar datos de la reserva
                 const reservaLabId = parseInt(reserva.labId);
                 const reservaDate = new Date(reserva.fechaReserva).toISOString().split('T')[0];
 
-                console.log('🔍 Evaluando reserva:', {
+                // Excluir reservas de mantenimiento de la bitácora
+                if (reserva.carrera === 'MAINTENANCE') {
+                    console.log('� Excluyendo reserva de mantenimiento:', reserva);
+                    return false;
+                }
+
+                console.log('�🔍 Evaluando reserva:', {
                     id: reserva.id,
                     fecha: reservaDate,
                     lab: reservaLabId,
@@ -54,6 +60,7 @@ export const useGetAllReservations = (labId, selectedDate) => {
                     rut: reserva.rut,
                     horaInicio: reserva.horaInicio,
                     horaFin: reserva.horaTermino,
+                    carrera: reserva.carrera,
                     coincideFecha: reservaDate === targetDate,
                     coincideLab: reservaLabId === targetLabId
                 });
