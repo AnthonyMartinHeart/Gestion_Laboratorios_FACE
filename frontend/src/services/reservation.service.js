@@ -74,3 +74,33 @@ export async function deleteReservation(id) {
     return handleError(error);
   }
 }
+
+// Nueva función para finalizar una reserva específica (soft delete)
+export async function finishReservation(id) {
+  try {
+    const { data: response } = await axios.patch(`/reservas/${id}/finish`);
+    return response;
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+// Nueva función para liberar todos los equipos
+export async function finishActiveReservations() {
+  try {
+    const { data: response } = await axios.patch('/reservas/finish-all');
+    return response;
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+// Nueva función para vaciar completamente la bitácora
+export async function clearAllReservations() {
+  try {
+    const { data: response } = await axios.delete('/reservas/clear-all');
+    return response;
+  } catch (error) {
+    return handleError(error);
+  }
+}
