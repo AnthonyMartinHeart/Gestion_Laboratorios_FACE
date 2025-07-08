@@ -5,7 +5,10 @@ import {
   getReservationsByPCService,
   updateReservationService,
   deleteReservationService,
-  getAllReservationsService, 
+  getAllReservationsService,
+  finishReservationService,
+  finishActiveReservationsService,
+  clearAllReservationsService, 
 } from "../services/reservation.service.js";
 import {
   handleErrorClient,
@@ -110,6 +113,48 @@ export async function deleteReservation(req, res) {
     if (err) return handleErrorClient(res, 404, err);
 
     handleSuccess(res, 200, "Reserva eliminada", deleted);
+  } catch (e) {
+    handleErrorServer(res, 500, e.message);
+  }
+}
+
+// Nuevo endpoint para finalizar (liberar) una reserva específica
+export async function finishReservation(req, res) {
+  try {
+    const id = Number(req.params.id);
+    const [finished, err] = await finishReservationService(id);
+    if (err) return handleErrorClient(res, 404, err);
+
+    handleSuccess(res, 200, "Reserva finalizada", finished);
+  } catch (e) {
+    handleErrorServer(res, 500, e.message);
+  }
+}
+
+// Nuevo endpoint para liberar todos los equipos (finalizar reservas activas)
+export async function finishActiveReservations(req, res) {
+  try {
+    const [finished, err] = await finishActiveReservationsService();
+    if (err) return handleErrorClient(res, 404, err);
+
+    handleSuccess(res, 200, "Equipos liberados", { 
+      count: finished.length,
+      reservations: finished 
+    });
+  } catch (e) {
+    handleErrorServer(res, 500, e.message);
+  }
+}
+
+// Nuevo endpoint para vaciar completamente la bitácora
+export async function clearAllReservations(req, res) {
+  try {
+    const [count, err] = await clearAllReservationsService();
+    if (err) return handleErrorClient(res, 404, err);
+
+    handleSuccess(res, 200, "Bitácora vaciada", { 
+      deletedCount: count 
+    });
   } catch (e) {
     handleErrorServer(res, 500, e.message);
   }
