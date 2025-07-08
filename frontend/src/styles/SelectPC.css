@@ -436,6 +436,24 @@ h6 {
     z-index: 1;
 }
 
+.maintenance-label {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(155, 89, 182, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1;
+}
+
 .class-block-button {
     background-color: #28a745;
     color: white;
