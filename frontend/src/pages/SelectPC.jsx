@@ -5,19 +5,26 @@ import '@styles/SelectPC.css';
 import { useAuth } from '@context/AuthContext';
 
 import useCreateReservation from '@hooks/reservation/useCreateReservation.jsx';
+import useReservationSync from '@hooks/reservation/useReservationSync.jsx';
 import { formatRut } from '@helpers/rutFormatter.js';
+import { deleteReservation, createReservation, finishReservation, finishActiveReservations } from '@services/reservation.service.js';
 
 const SelectPC = ({ onReservaCreada }) => {
   const { labId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const isAuthorized = user && (user.rol === 'administrador' || user.rol === 'consultor');
+  // Hook para sincronización de reservas en tiempo real
+  const { 
+    reservedPCs, 
+    loading: syncLoading, 
+    isReserved, 
+    isInMaintenance,
+    isInClassBlock, 
+    refreshReservations 
+  } = useReservationSync(labId);
 
-  const [maintenancePCs, setMaintenancePCs] = useState(() => {
-    const saved = localStorage.getItem('maintenancePCs');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
+  const isAuthorized = user && (user.rol === 'administrador' || user.rol === 'consultor');
 
   let pcStart = 1, pcEnd = 40;
   if (labId === 'lab2') { pcStart = 41; pcEnd = 60; }
@@ -51,7 +58,6 @@ const SelectPC = ({ onReservaCreada }) => {
   const [showForm, setShowForm] = useState(false);
   const [selectedPC, setSelectedPC] = useState(null);
   const [showOtroCarrera, setShowOtroCarrera] = useState(false);
-  const [showClassBlockForm, setShowClassBlockForm] = useState(false);
   const [formData, setFormData] = useState({
     rut: '',
     carrera: '',
@@ -60,89 +66,7 @@ const SelectPC = ({ onReservaCreada }) => {
     horaTermino: ''
   });
 
-  // Estado para manejar bloques de clases reservados por administradores
-  const [reservedClassBlocks, setReservedClassBlocks] = useState(() => {
-    try {
-      const saved = localStorage.getItem('reservedClassBlocks');
-      if (saved) {
-        const parsedData = JSON.parse(saved);
-        const now = new Date().getTime();
-        
-        // Filtrar solo las reservas que no han expirado
-        const activeBlocks = new Map();
-        Object.entries(parsedData).forEach(([blockKey, block]) => {
-          const endTime = new Date(block.endTime).getTime();
-          if (endTime > now) {
-            activeBlocks.set(blockKey, {
-              ...block,
-              timer: null
-            });
-          }
-        });
-        return activeBlocks;
-      }
-    } catch (error) {
-      console.error('Error loading saved class blocks:', error);
-    }
-    return new Map();
-  });
-
-  const [reservedPCs, setReservedPCs] = useState(() => {
-    // Intentar cargar las reservas guardadas al iniciar
-    try {
-      const saved = localStorage.getItem('reservedPCs');
-      if (saved) {
-        const parsedData = JSON.parse(saved);
-        const now = new Date().getTime();
-        
-        // Filtrar solo las reservas que no han expirado
-        const activeReservations = new Map();
-        Object.entries(parsedData).forEach(([pcNumber, reservation]) => {
-          const endTime = new Date(reservation.endTime).getTime();
-          if (endTime > now) {
-            activeReservations.set(parseInt(pcNumber), {
-              ...reservation,
-              timer: null // Los timers se recrearán
-            });
-          }
-        });
-        return activeReservations;
-      }
-    } catch (error) {
-      console.error('Error loading saved reservations:', error);
-    }
-    return new Map();
-  });
-
   const { handleCreate, loading } = useCreateReservation();
-
-  // Guardar reservas en localStorage cuando cambien
-  useEffect(() => {
-    const reservationsObject = {};
-    reservedPCs.forEach((value, key) => {
-      reservationsObject[key] = {
-        horaInicio: value.horaInicio,
-        horaTermino: value.horaTermino,
-        endTime: value.endTime,
-        isClassBlock: value.isClassBlock || false
-      };
-    });
-    localStorage.setItem('reservedPCs', JSON.stringify(reservationsObject));
-  }, [reservedPCs]);
-
-  // Guardar bloques de clases en localStorage
-  useEffect(() => {
-    const blocksObject = {};
-    reservedClassBlocks.forEach((value, key) => {
-      blocksObject[key] = {
-        horaInicio: value.horaInicio,
-        horaTermino: value.horaTermino,
-        endTime: value.endTime,
-        title: value.title
-      };
-    });
-    localStorage.setItem('reservedClassBlocks', JSON.stringify(blocksObject));
-  }, [reservedClassBlocks]);
 
   const horaAMinutos = (hora) => {
     const [h, m] = hora.split(':').map(Number);
@@ -160,112 +84,11 @@ const SelectPC = ({ onReservaCreada }) => {
     return tiempo.getTime();
   };
 
-  // Configurar timers para todas las reservas activas al cargar el componente
-  useEffect(() => {
-    reservedPCs.forEach((reserva, pcNumber) => {
-      if (!reserva.timer) {
-        const now = new Date().getTime();
-        const endTime = new Date(reserva.endTime).getTime();
-        if (endTime > now) {
-          const remainingTime = endTime - now;
-          const timer = setTimeout(() => {
-            setReservedPCs(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(pcNumber);
-              return newMap;
-            });
-          }, remainingTime);
-          
-          // Actualizar la reserva con el nuevo timer
-          setReservedPCs(prev => {
-            const newMap = new Map(prev);
-            newMap.set(pcNumber, { ...reserva, timer });
-            return newMap;
-          });
-        }
-      }
-    });
-
-    // Limpiar todos los timers al desmontar
-    return () => {
-      reservedPCs.forEach(reserva => {
-        if (reserva.timer) {
-          clearTimeout(reserva.timer);
-        }
-      });
-    };
-  }, []); // Solo se ejecuta al montar el componente
-
-  // Configurar timers para bloques de clases activos al cargar el componente
-  useEffect(() => {
-    reservedClassBlocks.forEach((block, blockKey) => {
-      if (!block.timer) {
-        const now = new Date().getTime();
-        const endTime = new Date(block.endTime).getTime();
-        if (endTime > now) {
-          const remainingTime = endTime - now;
-          const timer = setTimeout(() => {
-            setReservedClassBlocks(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(blockKey);
-              return newMap;
-            });
-          }, remainingTime);
-          
-          // Actualizar el bloque con el nuevo timer
-          setReservedClassBlocks(prev => {
-            const newMap = new Map(prev);
-            newMap.set(blockKey, { ...block, timer });
-            return newMap;
-          });
-        }
-      }
-    });
-
-    // Limpiar todos los timers al desmontar
-    return () => {
-      reservedClassBlocks.forEach(block => {
-        if (block.timer) {
-          clearTimeout(block.timer);
-        }
-      });
-    };
-  }, []); // Solo se ejecuta al montar el componente
-
   const calcularDuracionReserva = (horaInicio, horaTermino) => {
     const inicioMs = horaAMilisegundos(horaInicio);
     const terminoMs = horaAMilisegundos(horaTermino);
     return terminoMs - inicioMs;
   };
-
-  const isReserved = useCallback((pcNumber) => {
-    // Verificar si está reservado individualmente por otro usuario (RUT específico)
-    // Los bloques de clases (ADMIN) NO bloquean reservas individuales
-    const individualReservation = reservedPCs.get(pcNumber);
-    if (individualReservation && !individualReservation.isClassBlock) {
-      return true;
-    }
-    
-    return false;
-  }, [reservedPCs]);
-
-  const isInClassBlock = useCallback(() => {
-    // Verificar si actualmente hay un bloque de clases activo
-    const now = new Date().getTime();
-    for (const [blockKey, block] of reservedClassBlocks) {
-      const [labKey, horaInicio, horaTermino] = blockKey.split('_');
-      if (labKey === labId) {
-        const blockStart = horaAMilisegundos(horaInicio);
-        const blockEnd = horaAMilisegundos(horaTermino);
-        
-        // Si estamos dentro del horario del bloque
-        if (now >= blockStart && now <= blockEnd) {
-          return { active: true, block };
-        }
-      }
-    }
-    return { active: false, block: null };
-  }, [reservedClassBlocks, labId]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -277,26 +100,17 @@ const SelectPC = ({ onReservaCreada }) => {
     return () => clearTimeout(timeout);
   }, [selectedPC, navigate]);
 
-  // Limpiar los timers cuando el componente se desmonta
-  useEffect(() => {
-    return () => {
-      reservedPCs.forEach(reserva => {
-        if (reserva.timer) {
-          clearTimeout(reserva.timer);
-        }
-      });
-      reservedClassBlocks.forEach(block => {
-        if (block.timer) {
-          clearTimeout(block.timer);
-        }
-      });
-    };
-  }, [reservedPCs, reservedClassBlocks]);
-
   const handleMaintenance = async () => {
-    // Mostrar lista de PCs en mantenimiento primero
-    const pcsEnMantenimiento = [...maintenancePCs].map(pc => `Equipo ${pc}`).join(', ');
-    const currentPCs = pcsEnMantenimiento.length > 0 ? `\n\nEquipos actualmente en mantenimiento: ${pcsEnMantenimiento}` : '';
+    // Obtener PCs en mantenimiento
+    const pcsEnMantenimiento = [];
+    for (let pc = pcStart; pc <= pcEnd; pc++) {
+      if (isInMaintenance(pc)) {
+        pcsEnMantenimiento.push(pc);
+      }
+    }
+    
+    const maintenanceList = pcsEnMantenimiento.map(pc => `Equipo ${pc}`).join(', ');
+    const currentPCs = maintenanceList.length > 0 ? `\n\nEquipos actualmente en mantenimiento: ${maintenanceList}` : '';
 
     const { value: action } = await Swal.fire({
       title: 'Gestión de Mantenimiento',
@@ -327,14 +141,14 @@ const SelectPC = ({ onReservaCreada }) => {
           return `El número debe estar entre ${pcStart} y ${pcEnd}`;
         }
         if (action) { // Si vamos a marcar en mantenimiento
-          if (maintenancePCs.has(num)) {
+          if (isInMaintenance(num)) {
             return 'Este PC ya está en mantenimiento';
           }
-          if (reservedPCs.has(num)) {
+          if (isReserved(num)) {
             return 'No se puede marcar en mantenimiento un PC reservado';
           }
         } else { // Si vamos a desmarcar
-          if (!maintenancePCs.has(num)) {
+          if (!isInMaintenance(num)) {
             return 'Este PC no está en mantenimiento';
           }
         }
@@ -343,18 +157,220 @@ const SelectPC = ({ onReservaCreada }) => {
 
     if (pcNumber) {
       const pc = parseInt(pcNumber);
-      setMaintenancePCs(prev => {
-        const newSet = new Set(prev);
+      
+      try {
         if (action) {
-          newSet.add(pc);
-          Swal.fire('¡Listo!', `PC ${pc} ha sido marcado en mantenimiento`, 'success');
+          // Marcar PC en mantenimiento creando una reserva especial
+          const maintenanceData = {
+            rut: '00.000.000-0', // RUT especial para mantenimiento
+            carrera: 'MAINTENANCE',
+            horaInicio: '00:00',
+            horaTermino: '23:59',
+            labId: labId === 'lab1' ? 1 : labId === 'lab2' ? 2 : 3,
+            pcId: pc
+          };
+
+          console.log('=== CREANDO RESERVA DE MANTENIMIENTO ===');
+          console.log('Datos enviados:', maintenanceData);
+          
+          try {
+            const result = await createReservation(maintenanceData);
+            console.log('Respuesta del servidor:', result);
+            
+            if (result && result.success) {
+              console.log('✅ Reserva de mantenimiento creada exitosamente');
+              refreshReservations();
+              Swal.fire('¡Listo!', `PC ${pc} ha sido marcado en mantenimiento y será visible para todos los usuarios`, 'success');
+            } else if (result && !result.error) {
+              console.log('✅ Reserva creada (sin campo success explícito)');
+              refreshReservations();
+              Swal.fire('¡Listo!', `PC ${pc} ha sido marcado en mantenimiento y será visible para todos los usuarios`, 'success');
+            } else {
+              console.log('❌ Error en la creación:', result.error);
+              throw new Error(result.error || 'Error al marcar en mantenimiento');
+            }
+          } catch (networkError) {
+            console.error('❌ Error de red o servidor:', networkError);
+            throw networkError;
+          }
         } else {
-          newSet.delete(pc);
-          Swal.fire('¡Listo!', `PC ${pc} ha sido desmarcado de mantenimiento`, 'success');
+          // Desmarcar PC de mantenimiento eliminando la reserva especial
+          const maintenanceReservation = reservedPCs.get(pc);
+          
+          if (maintenanceReservation && maintenanceReservation.carrera === 'MAINTENANCE') {
+            const result = await deleteReservation(maintenanceReservation.id);
+            
+            if (!result.error) {
+              // Actualizar la sincronización
+              refreshReservations();
+              Swal.fire('¡Listo!', `PC ${pc} ha sido desmarcado de mantenimiento y volverá a estar disponible para todos los usuarios`, 'success');
+            } else {
+              throw new Error(result.error || 'Error al desmarcar de mantenimiento');
+            }
+          } else {
+            throw new Error('No se encontró la reserva de mantenimiento');
+          }
         }
-        localStorage.setItem('maintenancePCs', JSON.stringify([...newSet]));
-        return newSet;
+      } catch (error) {
+        console.error('Error en gestión de mantenimiento:', error);
+        Swal.fire('Error', `No se pudo completar la operación: ${error.message}`, 'error');
+      }
+    }
+  };
+
+  const handleLibrarEquipos = async () => {
+    // Solo administradores pueden liberar equipos
+    if (!user || user.rol !== 'administrador') {
+      Swal.fire('Acceso denegado', 'Solo los administradores pueden liberar equipos.', 'error');
+      return;
+    }
+
+    // Obtener el rango de PCs del laboratorio actual
+    const { start, end } = (() => {
+      switch (labId) {
+        case 'lab1': return { start: 1, end: 40 };
+        case 'lab2': return { start: 41, end: 60 };
+        case 'lab3': return { start: 61, end: 80 };
+        default: return { start: 1, end: 40 };
+      }
+    })();
+
+    // Filtrar reservas activas del laboratorio actual (EXCLUYENDO mantenimiento)
+    const activeReservations = Array.from(reservedPCs.entries())
+      .filter(([pcNumber, reservation]) => {
+        // Solo incluir PCs del laboratorio actual
+        const inLab = pcNumber >= start && pcNumber <= end;
+        // EXCLUIR reservas de mantenimiento
+        const notMaintenance = !reservation.isMaintenance;
+        return inLab && notMaintenance;
+      })
+      .map(([pcNumber, reservation]) => ({
+        pcNumber,
+        ...reservation
+      }));
+
+    if (activeReservations.length === 0) {
+      Swal.fire('Información', `No hay equipos reservados en ${labId.toUpperCase()} (excluyendo equipos en mantenimiento).`, 'info');
+      return;
+    }
+
+    // Mostrar opciones de liberación
+    const { value: action } = await Swal.fire({
+      title: 'Liberar Equipos',
+      html: `
+        <div style="text-align: left;">
+          <p><strong>Equipos reservados en ${labId.toUpperCase()}:</strong></p>
+          <div style="max-height: 200px; overflow-y: auto; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            ${activeReservations.map(res => 
+              `<div style="margin-bottom: 5px; padding: 5px; background: ${res.isClassBlock ? '#ffe6cc' : '#e6f3ff'}; border-radius: 3px;">
+                <strong>PC ${res.pcNumber}</strong> - ${res.horaInicio} a ${res.horaTermino}<br>
+                <small>${res.isClassBlock ? '🏫 Bloque de Clases' : '👤 Reserva Individual'}</small>
+              </div>`
+            ).join('')}
+          </div>
+          <p style="color: #666; font-size: 12px; margin-top: 10px;">
+            <strong>Nota:</strong> "Liberar" hace que el PC vuelva a estar disponible pero mantiene la reserva en la bitácora.<br>
+            Los equipos en mantenimiento (morados) NO se liberarán con esta función.
+          </p>
+        </div>
+      `,
+      icon: 'question',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: '🎯 Liberar equipo específico',
+      denyButtonText: '🔓 Liberar TODOS los equipos',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ffc107',
+      denyButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d'
+    });
+
+    if (action === true) {
+      // Liberar equipo específico
+      const { value: pcNumber } = await Swal.fire({
+        title: 'Seleccionar Equipo',
+        input: 'select',
+        inputOptions: activeReservations.reduce((options, res) => {
+          const label = `PC ${res.pcNumber} - ${res.horaInicio} a ${res.horaTermino} ${res.isClassBlock ? '(Bloque)' : '(Individual)'}`;
+          options[res.pcNumber] = label;
+          return options;
+        }, {}),
+        inputPlaceholder: 'Selecciona el equipo a liberar',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes seleccionar un equipo';
+          }
+        }
       });
+
+      if (pcNumber) {
+        const reservation = activeReservations.find(res => res.pcNumber == pcNumber);
+        if (reservation && reservation.id) {
+          try {
+            // Usar finishReservation en lugar de deleteReservation para preservar la bitácora
+            const result = await finishReservation(reservation.id);
+            if (!result.error) {
+              // Actualizar la vista inmediatamente
+              refreshReservations();
+              Swal.fire(
+                '¡Liberado!', 
+                `El PC ${pcNumber} ha sido liberado exitosamente y vuelve a estar disponible (azul). La reserva se mantiene en la bitácora.`, 
+                'success'
+              );
+            } else {
+              Swal.fire('Error', `No se pudo liberar el PC ${pcNumber}: ${result.error}`, 'error');
+            }
+          } catch (error) {
+            Swal.fire('Error', `Error al liberar el PC ${pcNumber}: ${error.message}`, 'error');
+          }
+        }
+      }
+    } else if (action === false) {
+      // Liberar todos los equipos del laboratorio
+      const confirmResult = await Swal.fire({
+        title: '⚠️ ¿Estás seguro?',
+        html: `
+          <div style="text-align: center;">
+            <p><strong>Esto liberará TODOS los ${activeReservations.length} equipos reservados en ${labId.toUpperCase()}</strong></p>
+            <p style="color: #28a745;">Los equipos volverán a estar disponibles (azules)</p>
+            <p style="color: #17a2b8; font-weight: bold;">Las reservas se mantendrán en la bitácora/historial</p>
+            <p style="color: #666; font-size: 12px; margin-top: 15px;">
+              <strong>Nota:</strong> Los equipos en mantenimiento (morados) NO se verán afectados.
+            </p>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, liberar TODOS',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (confirmResult.isConfirmed) {
+        try {
+          // Usar el nuevo endpoint para liberar todos los equipos
+          const result = await finishActiveReservations();
+          
+          if (!result.error) {
+            // Actualizar la vista
+            refreshReservations();
+            
+            const count = result.data?.count || activeReservations.length;
+            Swal.fire(
+              '¡Todos Liberados!', 
+              `Se liberaron exitosamente ${count} equipos en ${labId.toUpperCase()}. Todos los equipos vuelven a estar disponibles (azules). Las reservas se mantienen en la bitácora.`, 
+              'success'
+            );
+          } else {
+            Swal.fire('Error', `Error al liberar equipos: ${result.error}`, 'error');
+          }
+        } catch (error) {
+          Swal.fire('Error', `Error al liberar equipos: ${error.message}`, 'error');
+        }
+      }
     }
   };
 
@@ -463,27 +479,8 @@ const SelectPC = ({ onReservaCreada }) => {
         const allSuccessful = results.every(result => result.success);
         
         if (allSuccessful) {
-          // Agregar el bloque a la lista de bloques reservados
-          const blockKey = `${labId}_${formValues.horaInicio}_${formValues.horaTermino}`;
-          const endTime = horaAMilisegundos(formValues.horaTermino);
-          
-          setReservedClassBlocks(prev => {
-            const newMap = new Map(prev);
-            newMap.set(blockKey, {
-              horaInicio: formValues.horaInicio,
-              horaTermino: formValues.horaTermino,
-              endTime: endTime,
-              title: formValues.title,
-              timer: setTimeout(() => {
-                setReservedClassBlocks(prevBlocks => {
-                  const newBlocks = new Map(prevBlocks);
-                  newBlocks.delete(blockKey);
-                  return newBlocks;
-                });
-              }, endTime - new Date().getTime())
-            });
-            return newMap;
-          });
+          // Actualizar la sincronización desde el backend
+          refreshReservations();
 
           Swal.fire(
             '¡Bloque Reservado!', 
@@ -518,13 +515,14 @@ const SelectPC = ({ onReservaCreada }) => {
       return;
     }
 
-    if (maintenancePCs.has(pcNumber)) {
+    if (isInMaintenance(pcNumber)) {
       Swal.fire('Equipo en mantenimiento', 'Este equipo no está disponible temporalmente', 'info');
       return;
     }
 
-    if (isReserved(pcNumber)) {
-      const reserva = reservedPCs.get(pcNumber);
+    // Verificar si hay una reserva individual (no bloque de clases ni mantenimiento)
+    const reserva = reservedPCs.get(pcNumber);
+    if (reserva && !reserva.isClassBlock && !reserva.isMaintenance) {
       Swal.fire('Equipo reservado', `Este PC está reservado por otro usuario desde ${reserva.horaInicio} hasta ${reserva.horaTermino}. Por favor selecciona otro.`, 'info');
       return;
     }
@@ -670,27 +668,6 @@ const SelectPC = ({ onReservaCreada }) => {
     return cuerpoFormateado + '-' + dv;
   };
 
-  const configurarTimerReserva = (pcNumber, horaInicio, horaTermino) => {
-    const startTime = horaAMilisegundos(horaInicio);
-    const endTime = horaAMilisegundos(horaTermino);
-    const now = new Date().getTime();
-    
-    if (endTime < now) {
-      return { timer: null, endTime };
-    }
-
-    const duracion = endTime - now;
-    const timer = setTimeout(() => {
-      setReservedPCs(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(pcNumber);
-        return newMap;
-      });
-    }, duracion);
-
-    return { timer, endTime };
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -755,8 +732,9 @@ const SelectPC = ({ onReservaCreada }) => {
       return;
     }
 
-    // Solo verificar si está reservado por otro usuario (no por bloque de clases)
-    if (isReserved(selectedPC)) {
+    // Solo verificar si está reservado individualmente (no por bloque de clases ni mantenimiento)
+    const reservaExistente = reservedPCs.get(selectedPC);
+    if (reservaExistente && !reservaExistente.isClassBlock && !reservaExistente.isMaintenance) {
       Swal.fire('Error', 'El PC ya está reservado por otro usuario. Por favor selecciona otro.', 'error');
       return;
     }
@@ -784,19 +762,8 @@ const SelectPC = ({ onReservaCreada }) => {
         
         Swal.fire('¡Reserva creada!', mensaje, 'success');
         
-        // Actualizar estado de reservas (marcar como reserva individual, no bloque de clases)
-        const timerConfig = configurarTimerReserva(selectedPC, formData.horaInicio, formData.horaTermino);
-        setReservedPCs(prev => {
-          const newMap = new Map(prev);
-          newMap.set(selectedPC, {
-            horaInicio: formData.horaInicio,
-            horaTermino: formData.horaTermino,
-            endTime: timerConfig.endTime,
-            isClassBlock: false, // Marcar explícitamente como reserva individual
-            timer: timerConfig.timer
-          });
-          return newMap;
-        });
+        // Actualizar las reservas desde el backend
+        await refreshReservations();
 
         setShowForm(false);
         setFormData({ rut: '', carrera: '', otroCarrera: '', horaInicio: '', horaTermino: '' });
@@ -816,45 +783,6 @@ const SelectPC = ({ onReservaCreada }) => {
       console.error('Error en handleSubmit:', error);
       Swal.fire('Error', 'Error en el servidor. Por favor, intenta nuevamente más tarde.', 'error');
     }
-  };
-
-  const resetAllReservations = () => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'Esto reiniciará todas las reservas individuales y bloques de clases, todos los computadores volverán a estar disponibles',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, reiniciar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Limpiar todas las reservas individuales
-        reservedPCs.forEach((reserva) => {
-          if (reserva.timer) {
-            clearTimeout(reserva.timer);
-          }
-        });
-        setReservedPCs(new Map());
-        localStorage.removeItem('reservedPCs');
-
-        // Limpiar todos los bloques de clases
-        reservedClassBlocks.forEach((block) => {
-          if (block.timer) {
-            clearTimeout(block.timer);
-          }
-        });
-        setReservedClassBlocks(new Map());
-        localStorage.removeItem('reservedClassBlocks');
-        
-        Swal.fire(
-          '¡Reiniciado!',
-          'Todas las reservas individuales y bloques de clases han sido eliminados.',
-          'success'
-        );
-      }
-    });
   };
 
   return (
@@ -891,12 +819,6 @@ const SelectPC = ({ onReservaCreada }) => {
         {isAuthorized && (
           <>
             <button 
-              onClick={resetAllReservations}
-              className="action-button reset-button"
-            >
-              Reiniciar todas las reservas
-            </button>
-            <button 
               onClick={handleMaintenance}
               className="action-button maintenance-button"
             >
@@ -905,13 +827,22 @@ const SelectPC = ({ onReservaCreada }) => {
           </>
         )}
         {user && user.rol === 'administrador' && (
-          <button 
-            onClick={handleClassBlockReservation}
-            className="action-button class-block-button"
-            style={{ backgroundColor: '#28a745', color: 'white' }}
-          >
-            🏫 Reservar Bloque de Clases
-          </button>
+          <>
+            <button 
+              onClick={handleClassBlockReservation}
+              className="action-button class-block-button"
+              style={{ backgroundColor: '#28a745', color: 'white' }}
+            >
+              🏫 Reservar Bloque de Clases
+            </button>
+            <button 
+              onClick={handleLibrarEquipos}
+              className="action-button liberar-button"
+              style={{ backgroundColor: '#dc3545', color: 'white' }}
+            >
+              🔓 Liberar Equipos
+            </button>
+          </>
         )}
         <button 
           onClick={() => navigate('/home')}
@@ -924,24 +855,26 @@ const SelectPC = ({ onReservaCreada }) => {
       <div className="pc-grid">
         {pcs.map((pcNumber) => {
           const reserva = reservedPCs.get(pcNumber);
-          const isIndividuallyReserved = reserva && !reserva.isClassBlock;
-          const classBlockStatus = isInClassBlock();
-          const isInActiveClassBlock = classBlockStatus.active;
+          const pcInMaintenance = reserva && reserva.isMaintenance;
+          const pcReservado = reserva && !reserva.isMaintenance; // CUALQUIER reserva que no sea mantenimiento = ROJO
+          
+          // Log simplificado
+          console.log(`PC ${pcNumber}:`, {
+            tieneReserva: !!reserva,
+            esMantenimiento: pcInMaintenance,
+            seDebePonerRojo: pcReservado,
+            reservaCompleta: reserva
+          });
           
           return (
             <div
               key={pcNumber}
-              className={`pc-icon ${isIndividuallyReserved ? 'reserved' : ''} ${isInActiveClassBlock ? 'class-block' : ''} ${maintenancePCs.has(pcNumber) ? 'maintenance' : ''} ${selectedPC === pcNumber ? 'selected' : ''}`}
+              className={`pc-icon ${pcReservado ? 'reserved' : ''} ${pcInMaintenance ? 'maintenance' : ''} ${selectedPC === pcNumber ? 'selected' : ''}`}
               onClick={() => handlePCClick(pcNumber)}
-              style={{ cursor: maintenancePCs.has(pcNumber) ? 'not-allowed' : 'pointer' }}
+              style={{ cursor: pcInMaintenance ? 'not-allowed' : 'pointer' }}
             >
               <i className="fas fa-desktop"></i>
               <span>{pcNumber}</span>
-              {isInActiveClassBlock && (
-                <div className="class-block-label">
-                  📚 {classBlockStatus.block.title}
-                </div>
-              )}
             </div>
           );
         })}
