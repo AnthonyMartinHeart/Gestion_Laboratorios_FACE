@@ -7,6 +7,9 @@ import {
   getAllReservations,
   updateReservation,
   deleteReservation,
+  finishReservation,
+  finishActiveReservations,
+  clearAllReservations,
 } from "../controllers/reservation.controller.js";
 
 const router = Router();
@@ -27,7 +30,16 @@ router.get("/all", authenticateJwt, getAllReservations);
 // Actualizar una reserva por ID
 router.put("/:id", updateReservation);
 
-// Eliminar una reserva por ID
+// Eliminar una reserva por ID (hard delete)
 router.delete("/:id", deleteReservation);
+
+// Finalizar una reserva específica (soft delete)
+router.patch("/:id/finish", finishReservation);
+
+// Liberar todos los equipos (finalizar todas las reservas activas del día)
+router.patch("/finish-all", finishActiveReservations);
+
+// Vaciar completamente la bitácora (eliminar TODAS las reservas)
+router.delete("/clear-all", clearAllReservations);
 
 export default router;
