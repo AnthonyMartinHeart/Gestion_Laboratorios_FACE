@@ -90,6 +90,11 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             ))}
                         </select>
                     )}
+                    {field.fieldType === 'info' && (
+                        <div style={field.infoStyle || { padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', textAlign: 'center' }}>
+                            {field.infoText || field.value}
+                        </div>
+                    )}
                     {field.type === 'password' && field.name === 'password' && (
                         <span className="toggle-password-icon" onClick={togglePasswordVisibility}>
                             <img src={showPassword ? ViewIcon : HideIcon} />
