@@ -133,6 +133,7 @@ export default function Popup({ show, setShow, data, action }) {
                                 options: [
                                     { value: 'administrador', label: 'Administrador' },
                                     { value: 'usuario', label: 'Usuario' },
+                                    { value: 'estudiante', label: 'Estudiante' },
                                     { value: 'consultor', label: 'Consultor' },
                                 ],
                                 required: true,
