@@ -12,6 +12,7 @@ import Turnos from '@pages/Turnos';
 import Horarios from '@pages/Horarios';   
 import Bitacoras from '@pages/Bitacoras'; 
 import MiPerfil from '@pages/MiPerfil';
+import Estadisticas from '@pages/Estadisticas';
 import '@styles/styles.css';
 
 const router = createBrowserRouter([
@@ -55,17 +56,25 @@ const router = createBrowserRouter([
       {
         path: '/mi-perfil',
         element: (
-          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'usuario']}>
+          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'usuario', 'estudiante']}>
             <MiPerfil />
           </ProtectedRoute>
         ),
       },
 
-            {
+      {
         path: '/horarios',
         element: (
           <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
             <Horarios />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/estadisticas',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <Estadisticas />
           </ProtectedRoute>
         ),
       },
