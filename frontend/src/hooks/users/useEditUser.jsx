@@ -16,17 +16,22 @@ const useEditUser = (setUsers, fetchUsers) => {
     const handleUpdate = async (updatedUserData) => {
         if (updatedUserData) {
             try {
-            // Usar rutOriginal si existe, si no rut normal
-            const rutToUpdate = dataUser[0].rutOriginal || dataUser[0].rut;
-            const updatedUser = await updateUser(updatedUserData, rutToUpdate);
-            showSuccessAlert('¡Actualizado!','El usuario ha sido actualizado correctamente.');
-            setIsPopupOpen(false);
-            // Refresca toda la lista de usuarios para que los datos se vean enseguida
-            await fetchUsers();
-            setDataUser([]);
+                // Usar rutOriginal si existe, si no rut normal
+                const rutToUpdate = dataUser[0].rutOriginal || dataUser[0].rut;
+                const updatedUser = await updateUser(updatedUserData, rutToUpdate);
+                
+                showSuccessAlert('¡Actualizado!','El usuario ha sido actualizado correctamente.');
+                setIsPopupOpen(false);
+                // Refresca toda la lista de usuarios para que los datos se vean enseguida
+                await fetchUsers();
+                setDataUser([]);
             } catch (error) {
                 console.error('Error al actualizar el usuario:', error);
-                showErrorAlert('Cancelado','Ocurrió un error al actualizar el usuario.');
+                // Mostrar mensaje de error más específico
+                showErrorAlert(
+                    'Error al actualizar', 
+                    error.message || 'Ocurrió un error al actualizar el usuario. Verifique su conexión y que el servidor esté funcionando.'
+                );
             }
         }
     };
