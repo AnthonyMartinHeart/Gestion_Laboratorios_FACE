@@ -11,6 +11,11 @@ import { // aqui importe las funciones para manejar errores (cliente y servidor)
  * esto permite el acceso solo a usuarios con rol "administrador"
  */
 export async function isAdmin(req, res, next) {
+  // Permitir solicitudes OPTIONS para el preflight de CORS
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   try {
     // Obtengo el repositorio de usuarios para hacer consultas a la BD
     const userRepository = AppDataSource.getRepository(User);
@@ -89,6 +94,117 @@ export async function isConsultor(req, res, next) {
     next();
   } catch (error) {
     // Manejamos errores de servidor
+    handleErrorServer(
+      res,
+      500,
+      error.message,
+    );
+  }
+}
+
+/**
+ * esto permite el acceso solo a usuarios con rol "usuario"
+ */
+export async function isUsuario(req, res, next) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const userFound = await userRepository.findOneBy({ email: req.user.email });
+
+    if (!userFound) {
+      return handleErrorClient(
+        res,
+        404,
+        "Usuario no encontrado en la base de datos",
+      );
+    }
+
+    const rolUser = userFound.rol;
+
+    if (rolUser !== "usuario") {
+      return handleErrorClient(
+        res,
+        403,
+        "Error al acceder al recurso",
+        "Se requiere un rol de usuario para realizar esta acción."
+      );
+    }
+
+    next();
+  } catch (error) {
+    handleErrorServer(
+      res,
+      500,
+      error.message,
+    );
+  }
+}
+
+/**
+ * esto permite el acceso solo a usuarios con rol "estudiante" (mismo comportamiento que usuario)
+ */
+export async function isEstudiante(req, res, next) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const userFound = await userRepository.findOneBy({ email: req.user.email });
+
+    if (!userFound) {
+      return handleErrorClient(
+        res,
+        404,
+        "Usuario no encontrado en la base de datos",
+      );
+    }
+
+    const rolUser = userFound.rol;
+
+    if (rolUser !== "estudiante") {
+      return handleErrorClient(
+        res,
+        403,
+        "Error al acceder al recurso",
+        "Se requiere un rol de estudiante para realizar esta acción."
+      );
+    }
+
+    next();
+  } catch (error) {
+    handleErrorServer(
+      res,
+      500,
+      error.message,
+    );
+  }
+}
+
+/**
+ * esto permite el acceso a usuarios con rol "usuario" o "estudiante"
+ */
+export async function isUsuarioOrEstudiante(req, res, next) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const userFound = await userRepository.findOneBy({ email: req.user.email });
+
+    if (!userFound) {
+      return handleErrorClient(
+        res,
+        404,
+        "Usuario no encontrado en la base de datos",
+      );
+    }
+
+    const rolUser = userFound.rol;
+
+    if (rolUser !== "usuario" && rolUser !== "estudiante") {
+      return handleErrorClient(
+        res,
+        403,
+        "Error al acceder al recurso",
+        "Se requiere un rol de usuario o estudiante para realizar esta acción."
+      );
+    }
+
+    next();
+  } catch (error) {
     handleErrorServer(
       res,
       500,
