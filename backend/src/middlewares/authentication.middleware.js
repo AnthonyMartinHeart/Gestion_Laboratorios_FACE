@@ -6,6 +6,11 @@ import {
   } from "../handlers/responseHandlers.js";
 
 export function authenticateJwt(req, res, next) {
+  // Permitir solicitudes OPTIONS para el preflight de CORS
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   passport.authenticate("jwt", { session: false }, (err, user, info) => {
     if (err) {
       return handleErrorServer(
