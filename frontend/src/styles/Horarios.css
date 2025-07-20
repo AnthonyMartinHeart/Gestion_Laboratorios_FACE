@@ -1,74 +1,782 @@
 /* Contenedor principal con fondo */
 .horario-container::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: url('/image5.jpg') center center / cover no-repeat;
-    z-index: -1;
+  content: "";
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('/image5.jpg') center center / cover no-repeat;
+  z-index: -1;
+  opacity: 1; /* Opacidad completa para el fondo */
 }
 
 .horario-container {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* Alinear al principio para evitar márgenes excesivos */
     align-items: center;
     text-align: center;
-    padding: 20px;
+    padding: 10px; /* Reducir el padding */
+    background-color: transparent; /* Fondo transparente para evitar el color azulado */
+    font-family: Arial, sans-serif; /* Mantener fuente consistente */
 }
 
 /* Título */
 .hh {
-  margin-top: 120px;
-  font-size: 24px;
+  margin-top: 50px;
+  margin-bottom: 30px;
+  font-size: 28px;
   font-weight: bold;
   text-align: center;
-  color: #ffffff;
+  color: #2A1B81; /* Color azul oscuro/índigo exacto como en la imagen */
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1.2px;
+  background-color: white;
+  padding: 15px 30px;
+  border-radius: 15px;
+  display: inline-block;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  border: none; /* Quitar borde */
+  font-family: Arial, sans-serif;
+  max-width: 90%; /* Limitar ancho en pantallas pequeñas */
+  width: auto; /* Ajustar al contenido */
 }
 
-/* Tabla con fondo blanco */
+/* Tabla con estilo de cuadrícula azul */
 .horario-table {
   width: 100%;
-  border-collapse: collapse;
+  table-layout: fixed; /* Celdas con ancho fijo */
+  border-collapse: separate; /* Cambiado a separate para control de bordes */
+  border-spacing: 0; /* Evitar espacios entre celdas */
   text-align: center;
   font-size: 0.9rem;
-  background-color: white; /* Fondo blanco para toda la tabla */
+  background-color: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  min-width: 800px; /* Mínimo para scroll horizontal */
+  border: 2px solid #0a3b66; /* Borde más grueso para la tabla completa */
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente en toda la tabla */
+}
+
+.table-responsive {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 75vh; /* Limita la altura para scroll vertical */
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  background: white;
+  border: 2px solid #0a3b66;
+  padding: 0; /* Eliminar padding para evitar espacio entre bordes */
+}
+
+.lab-section {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lab-title {
+  color: #2A1B81; /* Color azul exacto de la imagen */
+  text-align: center;
+  margin-bottom: 1.5rem;
+  background-color: white;
+  padding: 15px 30px;
+  border-radius: 15px;
+  display: inline-block;
+  font-weight: bold;
+  letter-spacing: 1.2px;
+  font-size: 1.85rem;
+  text-transform: uppercase;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  border: none; /* Quitar borde */
+  font-family: Arial, sans-serif;
+  max-width: 90%;
+  width: auto; /* Ajustar al contenido */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .horario-table th,
 .horario-table td {
-  border: 1px solid #ccc;
-  padding: 8px 10px;
-  min-width: 100px;
-  background-color: white; /* Fondo blanco para celdas */
-  color: #000; /* Texto negro para buen contraste */
+  border: 1px solid #0a3b66;
+  padding: 8px 6px;
+  background-color: white;
+  color: #000;
+  position: relative;
+  outline: 1px solid #0a3b66; /* Contorno adicional para reforzar bordes */
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente en celdas */
+}
+
+.data-cell {
+  min-width: 100px; /* Reducido de 120px */
+  max-width: 150px; /* Añadido ancho máximo */
+  height: 48px; /* Altura fija para evitar desalineación */
+  max-height: 48px; /* Altura máxima fija */
+  transition: all 0.2s ease;
+  padding: 0; /* Quitamos el padding para que el textarea ocupe toda la celda */
+  overflow: hidden; /* Ocultar el contenido que se desborde */
+  vertical-align: middle; /* Alinear contenido verticalmente */
+  background-color: white;
+}
+
+.data-cell:hover {
+  background-color: #f0f7ff;
+  z-index: 10; /* Asegurar que aparezca por encima de otras celdas al hover */
+}
+
+/* Ajustar celdas con contenido */
+.data-cell:has(textarea[value]:not([value=""])) {
+  height: 48px; /* Mantener altura fija */
 }
 
 .horario-table th {
-  background-color: #e2e8f0; /* Un gris claro para headers */
+  background-color: #0a3b66;
   font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  color: white;
+  padding: 12px 6px;
+  border: 1px solid white; /* Borde blanco para contraste en celdas azules */
+  box-shadow: inset 0 0 0 1px #0a3b66; /* Doble borde para mayor visibilidad */
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente en encabezados */
+}
+
+.hora-column {
+  min-width: 120px;
+  background-color: #0a3b66 !important;
+  color: white !important;
+  font-weight: bold;
+  border: 1px solid white !important; /* Borde blanco para contraste */
+  outline: 1px solid #0a3b66; /* Contorno exterior */
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.dia-column {
+  min-width: 110px;
+  border: 1px solid white !important;
+  outline: 1px solid #0a3b66;
+}
+
+.hora-cell {
+  background-color: #a6b2bd !important;
+  color: rgb(0, 0, 0) !important;
+  font-weight: bold;
+  font-size: 0.8rem;
+  border: 1px solid rgb(0, 0, 0) !important; /* Borde blanco para contraste */
+  outline: 1px solid #0a3b66; /* Contorno exterior */
+}
+
+.hora-text {
+  display: block;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.data-cell {
+  padding: 4px;
+  border: 1px solid #0a3b66;
+  outline: 1px solid #0a3b66; /* Contorno adicional */
 }
 
 .editable-cell {
   width: 100%;
+  min-width: 110px;
   border: none;
   background-color: transparent;
   text-align: center;
-  padding: 4px;
-  font-size: 0.85rem;
-  color: #000; /* Texto negro dentro de inputs */
+  padding: 6px 3px;
+  font-size: 0.8rem;
+  color: #000;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  overflow: hidden; /* Contenido no visible fuera de la celda */
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word; /* Para romper palabras largas */
+  height: 36px; /* Altura fija en lugar de auto */
+  min-height: 36px;
+  max-height: 36px; /* Restringimos altura máxima */
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente en celdas editables */
+  line-height: 1.2;
+  resize: none; /* Quitamos el ajuste manual */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: hidden; /* No permitir scroll vertical */
+}
+
+.editable-cell:hover {
+  background-color: #f0f7ff;
+}
+
+.data-cell:has(.editable-cell:focus) {
+  z-index: 100;
+  background-color: #e0f2fe;
+  height: auto; /* Permitimos altura automática solo al enfocar */
+  max-height: 120px; /* Pero con un límite razonable */
 }
 
 .editable-cell:focus {
   outline: none;
   background-color: #e0f2fe;
   color: #000;
+  box-shadow: 0 0 0 2px #0a3b66, 0 5px 10px rgba(0,0,0,0.1);
+  min-width: 120px; /* Reducido de 150px */
+  max-width: 180px; /* Reducido de 300px */
+  max-height: 80px; /* Altura máxima al enfocar */
+  height: auto; /* Permitir ajustar altura al enfocar */
+  overflow-wrap: break-word;
+  z-index: 50; /* Mayor para estar por encima */
+  position: relative;
+  font-size: 0.75rem; /* Texto más pequeño al enfocar */
+  overflow-y: auto; /* Permitir scroll vertical solo al enfocar */
+}
+
+/* Estilos adicionales para manejar textos largos */
+.editable-cell:not(:focus) {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  text-align: center;
+  max-height: 36px; /* Altura máxima fija */
+}
+
+/* Estilo para palabras largas específicas */
+.editable-cell[value*="Paradigmas"],
+.editable-cell[value*="programacion"],
+.editable-cell[value*="Metodologia"],
+.editable-cell[value*="Fundamentos"],
+.editable-cell[value*="Estructura"],
+.editable-cell[value*="Investigacion"],
+.editable-cell[value*="Ingenieria"],
+.editable-cell[value*="Proyecto"],
+.editable-cell[value*="Laboratorio"],
+.editable-cell[value*="Matematica"] {
+  font-size: 0.7rem; /* Texto más pequeño */
+  hyphens: auto;
+}
+
+/* Estilo para texto muy largo */
+.editable-cell[value].long-text {
+  font-size: 0.7rem; /* Texto más pequeño para textos largos */
+}
+
+/* Tooltip para ver texto completo al hacer hover */
+.data-cell {
+  position: relative;
+}
+
+/* Mejora del tooltip */
+.data-cell:hover .editable-cell:not(:focus):not(:placeholder-shown)::after {
+  content: attr(value);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -40px;
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 1000;
+  white-space: normal;
+  max-width: 220px;
+  word-break: break-all;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  pointer-events: none; /* Evitar que bloquee interacciones */
+}
+
+/* Estilos para las columnas de PC */
+.pc-column {
+  background-color: #0a3b66;
+  color: white;
+  font-weight: bold;
+  border: 1px solid white !important; /* Borde blanco para contraste */
+  outline: 1px solid #0a3b66; /* Contorno exterior */
+  padding: 10px 5px;
+  font-size: 0.9rem;
+}
+
+/* Estilo para filas alternas para mejorar legibilidad */
+.horario-table tr:nth-child(even) td {
+  background-color: #f2f7ff;
+}
+
+/* Cambios en hover para mejor visibilidad */
+.horario-table td:hover {
+  background-color: #e5f1ff;
+}
+
+/* Mejoras para los encabezados */
+.horario-table th {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+  padding: 12px 4px;
+}
+
+/* Vista móvil - Cards */
+.mobile-view {
+  display: none;
+}
+
+.horario-card {
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: #0a3b66;
+  color: white;
+  padding: 0.75rem;
+  text-align: center;
+  border-bottom: 2px solid #0a3b66;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.hora-mobile {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+.dia-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.dia-row:last-child {
+  margin-bottom: 0;
+}
+
+.dia-label {
+  min-width: 80px;
+  font-weight: 600;
+  color: #0a3b66;
+  font-size: 0.8rem;
+  text-align: left;
+  background-color: #e5f1ff;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.mobile-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  resize: none;
+  min-height: 38px;
+  height: 38px;
+  max-height: 38px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.3;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.mobile-input:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.25);
+  outline: none;
+  height: auto;
+  max-height: 80px;
+  white-space: normal;
+  overflow-y: auto;
+}
+
+/* Estilos para modo solo lectura */
+.editable-cell.readonly {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.editable-cell.readonly:hover {
+  background-color: #f0f0f0;
+}
+
+/* Botón de limpiar */
+.clear-button {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.clear-button:hover {
+  background-color: #c62828;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Botón de guardar */
+.save-button {
+  background-color: #0a3b66;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  position: relative;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.save-button:hover:not(:disabled) {
+  background-color: #0a4f8c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.save-button:disabled {
+  background-color: #4caf50;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.save-button.has-changes {
+  background-color: #ff9800;
+  animation: pulse 2s infinite;
+}
+
+.save-button.has-changes:hover {
+  background-color: #f57c00;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 152, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
+  }
+}
+
+/* Grupo de botones */
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Información de última modificación */
+.last-modified-info {
+  background-color: white;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+  font-size: 14px;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Alertas y secciones informativas */
+.alert {
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.alert-info {
+  background-color: white;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  font-size: 14px;
+  color: #2A1B81;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.info-section {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  font-family: Arial, sans-serif; /* Asegurar fuente consistente */
+}
+
+.save-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+/* Responsive */
+/* Tablets */
+@media (max-width: 1024px) {
+  .horario-table {
+    font-size: 0.8rem;
+    min-width: 700px;
+  }
+  
+  .horario-table th,
+  .horario-table td {
+    padding: 6px 8px;
+  }
+  
+  .dia-column {
+    min-width: 90px;
+  }
+  
+  .editable-cell {
+    font-size: 0.75rem;
+    padding: 6px 2px;
+  }
+}
+
+/* Móviles grandes */
+@media (max-width: 768px) {
+  .hh {
+    font-size: 20px;
+    margin-top: 20px; /* Reducido para evitar espacio en blanco */
+  }
+  
+  .button-group {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .save-button,
+  .clear-button {
+    width: 100%;
+    max-width: 200px;
+    margin-top: 10px;
+  }
+  
+  /* Cambiar a vista de cards en móviles */
+  .desktop-view {
+    display: none;
+  }
+  
+  .mobile-view {
+    display: block;
+  }
+  
+  .horario-container {
+    padding: 5px;
+  }
+  
+  .lab-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .lab-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    padding: 10px 20px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .hh {
+    font-size: 18px;
+    margin-top: 60px;
+    padding: 0 10px;
+  }
+  
+  .horario-container {
+    padding: 5px;
+  }
+  
+  .dia-label {
+    min-width: 70px;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-input {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+  
+  .card-content {
+    padding: 0.75rem;
+  }
+  
+  .dia-row {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Alertas más compactas */
+  .alert,
+  .last-modified-info,
+  .info-section {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 320px) {
+  .dia-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+  
+  .dia-label {
+    min-width: auto;
+    text-align: center;
+    background-color: #f5f5f5;
+    padding: 4px 8px;
+    border-radius: 3px;
+  }
+  
+  .mobile-input {
+    width: 100%;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .editable-cell,
+  .mobile-input {
+    min-height: 44px; /* Tamaño mínimo recomendado para touch */
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+  
+  .save-button,
+  .clear-button {
+    min-height: 44px;
+    padding: 12px 24px;
+  }
+  
+  .horario-card {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .hh {
+    font-size: 18px;
+    margin-top: 40px;
+  }
+  
+  .horario-card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-content {
+    padding: 0.75rem;
+  }
+  
+  .dia-row {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Estilos para impresión */
+@media print {
+  .save-button,
+  .clear-button,
+  .button-group {
+    display: none !important;
+  }
+  
+  .alert,
+  .last-modified-info {
+    border: 1px solid #333 !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .mobile-view {
+    display: none !important;
+  }
+  
+  .desktop-view {
+    display: block !important;
+  }
+  
+  .horario-table {
+    box-shadow: none;
+    border: 2px solid #333;
+  }
+  
+  .hh {
+    color: black !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Mejorar visibilidad de bordes en tabla */
+.horario-table tr {
+  border: 1px solid #0a3b66;
+}
+
+/* Aplicar bordes internos blancos para las celdas azules */
+.horario-table th,
+.hora-cell {
+  border-right: 1px solid white !important;
+  border-bottom: 1px solid white !important;
+}
+
+/* Estilo específico para el último borde de celdas de horas */
+.hora-cell:last-child {
+  border-bottom: 1px solid white !important;
+}
+
+/* Borde exterior de la tabla más prominente */
+.horario-table {
+  border: 2px solid #0a3b66 !important;
+}
+
+/* Asegurar que las celdas de datos tengan bordes visibles */
+.horario-table td:not(.hora-cell) {
+  border: 1px solid #0a3b66;
+}
+
+/* Color de fondo para celdas alternadas más suave */
+.horario-table tr:nth-child(odd) td:not(.hora-cell) {
+  background-color: #ffffff;
+}
+
+.horario-table tr:nth-child(even) td:not(.hora-cell) {
+  background-color: #f0f5ff;
 }
