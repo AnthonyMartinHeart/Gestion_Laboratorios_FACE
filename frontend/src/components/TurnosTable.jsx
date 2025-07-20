@@ -112,7 +112,16 @@ const TurnosTable = ({ selectedDate }) => {
       newTurno.horaSalidaAsignada = turnos[i]?.salida || turno.horaSalidaAsignada || "";
     }
     saveOrUpdateTurno(selectedDate, newTurno);
-    setSwalProps({ show: true, title: 'Turno guardado', icon: 'success' });
+    
+    // Mostrar mensaje específico según el tipo de marcado
+    let message = 'Turno guardado';
+    if (extra.horaEntradaMarcada) {
+      message = `Entrada marcada a las ${extra.horaEntradaMarcada}`;
+    } else if (extra.horaSalidaMarcada) {
+      message = `Salida marcada a las ${extra.horaSalidaMarcada}`;
+    }
+    
+    setSwalProps({ show: true, title: 'Turno Marcado', text: message, icon: 'success' });
     setActiveHorarioIndex(null);
     setIsEditing(null);
     fetchTurnos();
