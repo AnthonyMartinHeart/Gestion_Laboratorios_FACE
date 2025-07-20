@@ -673,7 +673,7 @@ const SelectPC = ({ onReservaCreada }) => {
 
     // Para usuarios estudiantes y consultores (@alumnos.ubiobio.cl), usar datos del perfil
     // Para otros usuarios, validar campos del formulario
-    const esEstudianteOConsultor = user && (user.rol === 'usuario' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl');
+    const esEstudianteOConsultor = user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl');
     
     let rutAUsar, carreraAUsar;
     
@@ -886,7 +886,7 @@ const SelectPC = ({ onReservaCreada }) => {
             <h4>PC {selectedPC} seleccionado - Confirmación de Reserva</h4>
             <form onSubmit={handleSubmit}>
               {/* Solo mostrar campo RUT si NO es estudiante/consultor con correo @alumnos.ubiobio.cl */}
-              {!(user && (user.rol === 'usuario' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
+              {!(user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
                 <>
                   <label>RUT:</label>
                   <input
@@ -903,7 +903,7 @@ const SelectPC = ({ onReservaCreada }) => {
               )}
 
               {/* Solo mostrar campo carrera si NO es estudiante o consultor con correo @alumnos.ubiobio.cl */}
-              {!(user && (user.rol === 'usuario' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
+              {!(user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
                 <>
                   <label>Carrera:</label>
                   <select
@@ -945,7 +945,7 @@ const SelectPC = ({ onReservaCreada }) => {
               )}
 
               {/* Mostrar información del perfil para estudiantes y consultores con correo @alumnos.ubiobio.cl */}
-              {user && (user.rol === 'usuario' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl') && (
+              {user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl') && (
                 <div style={{ marginBottom: '15px', padding: '12px', backgroundColor: '#f0f8ff', borderRadius: '5px', border: '1px solid #cce7ff' }}>
                   <div style={{ color: '#2c5aa0', fontSize: '14px', fontWeight: 'bold', marginBottom: '5px' }}>
                     👤 RUT: {user.rut || 'No registrado'}
