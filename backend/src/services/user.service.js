@@ -90,7 +90,7 @@ export async function updateUserService(query, body) {
     // Prioridad: Si el campo activo viene explícito, respétalo
     if (typeof body.activo === 'boolean') {
       dataUserUpdate.activo = body.activo;
-    } else if (userFound.rol === "usuario" && body.anioEgreso && body.anioEgreso.trim() !== "") {
+    } else if ((userFound.rol === "usuario" || userFound.rol === "estudiante") && body.anioEgreso && body.anioEgreso.trim() !== "") {
       dataUserUpdate.activo = false;
     } else {
       dataUserUpdate.activo = true;
