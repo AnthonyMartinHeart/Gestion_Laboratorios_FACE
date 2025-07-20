@@ -160,8 +160,9 @@ const Register = () => {
     };
 
     const handleEmailChange = (e) => {
-        handleInputChange('email', e.target.value);
-        setShowAlumnoFields(/@alumnos\.ubiobio\.cl$/.test(e.target.value));
+        const email = e.target.value;
+        handleInputChange('email', email);
+        setShowAlumnoFields(/@alumnos\.ubiobio\.cl$/.test(email));
     };
 
     const registerSubmit = async (data) => {
@@ -226,6 +227,7 @@ const Register = () => {
                         errorMessageData: errorEmail,
                         onChange: handleEmailChange,
                     },
+
                     {
                         label: "Rut",
                         name: "rut",
