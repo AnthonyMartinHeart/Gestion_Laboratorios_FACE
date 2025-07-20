@@ -31,8 +31,8 @@ export async function loginService(user) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
-    // Si la cuenta está inactiva y es usuario, rechazar login
-    if (userFound.rol === "usuario" && userFound.activo === false) {
+    // Si la cuenta está inactiva y es usuario o estudiante, rechazar login
+    if ((userFound.rol === "usuario" || userFound.rol === "estudiante") && userFound.activo === false) {
       return [null, createErrorMessage("activo", "Cuenta desactivada")];
     }
 
@@ -84,13 +84,25 @@ export async function registerService(user) {
     // Modificado: Acepta tanto @alumnos.ubiobio.cl como @ubiobio.cl
     const isAlumno = email.endsWith('@alumnos.ubiobio.cl') || email.endsWith('@ubiobio.cl');
 
+    // Asignar rol automáticamente según el dominio del correo
+    let rolAsignado;
+    if (email.endsWith('@alumnos.ubiobio.cl')) {
+      rolAsignado = "estudiante";
+    } else if (email.endsWith('@ubiobio.cl')) {
+      rolAsignado = "administrador";
+    } else if (email.endsWith('@gmail.cl')) {
+      rolAsignado = "usuario";
+    } else {
+      rolAsignado = "usuario"; // Por defecto si no coincide con ningún dominio
+    }
+
     // Convertimos la contraseña a minúsculas antes de guardarla
     const newUser = userRepository.create({
       nombreCompleto,
       email: email.toLowerCase(),
       rut,
       password: await encryptPassword(password.toLowerCase()),
-      rol: "usuario",
+      rol: rolAsignado, // Usar el rol asignado automáticamente
       carrera: isAlumno ? user.carrera : null,
       anioIngreso: isAlumno ? user.anioIngreso : null,
       anioEgreso: isAlumno ? user.anioEgreso : null,
