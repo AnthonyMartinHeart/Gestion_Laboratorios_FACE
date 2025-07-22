@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: gestion-labs-db
+    environment:
+      POSTGRES_DB: gestion_labs
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gestion-labs-network
+    restart: unless-stopped
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: gestion-labs-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3009
+      - HOST=postgres
+      - DB_USERNAME=postgres
+      - PASSWORD=password
+      - DATABASE=gestion_labs
+      - ACCESS_TOKEN_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - cookieKey=your-cookie-secret-key-change-this-too
+    ports:
+      - "3009:3009"
+    depends_on:
+      - postgres
+    networks:
+      - gestion-labs-network
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    container_name: gestion-labs-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - gestion-labs-network
+    restart: unless-stopped
+
+networks:
+  gestion-labs-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: gestion-labs-db-dev
+    environment:
+      POSTGRES_DB: gestion_labs_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - gestion-labs-network
+
+  # Backend Service (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: gestion-labs-backend-dev
+    environment:
+      - NODE_ENV=development
+      - PORT=3009
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - DB_DATABASE=gestion_labs_dev
+    ports:
+      - "3009:3009"
+    depends_on:
+      - postgres
+    networks:
+      - gestion-labs-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Frontend Service (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile.dev
+    container_name: gestion-labs-frontend-dev
+    environment:
+      - VITE_API_URL=http://localhost:3009
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - gestion-labs-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+networks:
+  gestion-labs-network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
