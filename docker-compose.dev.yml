@@ -1,20 +1,20 @@
-version: '3.8'
+
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database - Solo necesario para desarrollo local
   postgres:
-    image: postgres:15-alpine
-    container_name: gestion-labs-db-dev
+    image: postgres:15-alpine            # Imagen de PostgreSQL a usar
+    container_name: gestion-labs-db      # Nombre del contenedor
     environment:
-      POSTGRES_DB: gestion_labs_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gestion_labs_dev      # Si usas BD externa, esto no se usa
+      POSTGRES_USER: postgres            # Si usas BD externa, esto no se usa
+      POSTGRES_PASSWORD: ubb             # Si usas BD externa, esto no se usa
     ports:
-      - "5432:5432"
+      - "5432:5432"                     # Puerto estándar de PostgreSQL
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
+      - postgres_dev_data:/var/lib/postgresql/data  # Para persistir los datos
     networks:
-      - gestion-labs-network
+      - gestion-labs-network            # Red interna para los contenedores
 
   # Backend Service (Development)
   backend:
@@ -23,15 +23,15 @@ services:
       dockerfile: dockerfile
     container_name: gestion-labs-backend-dev
     environment:
-      - NODE_ENV=development
-      - PORT=3009
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=password
-      - DB_DATABASE=gestion_labs_dev
+      - NODE_ENV=development            # Modo desarrollo
+      - PORT=3010                       # CAMBIAR: Si te dan otro puerto (ej: 80)
+      - DB_HOST=postgres                # CAMBIAR: Si te dan IP externa (ej: 100.00.000.00)
+      - DB_PORT=5432                    # Puerto BD - normalmente no cambia
+      - DB_USERNAME=postgres            # CAMBIAR: Usuario que te den (ej: jmartinez)
+      - DB_PASSWORD=ubb                 # CAMBIAR: Contraseña que te den
+      - DB_DATABASE=gestion_labs_dev    # CAMBIAR: Nombre BD que te den
     ports:
-      - "3009:3009"
+      - "3010:3010"                    # CAMBIAR: Debe coincidir con PORT (ej: "80:80")
     depends_on:
       - postgres
     networks:
@@ -44,24 +44,27 @@ services:
   # Frontend Service (Development)
   frontend:
     build:
-      context: ./frontend
-      dockerfile: dockerfile.dev
+      context: ./frontend             # Directorio del frontend
+      dockerfile: dockerfile.dev      # Dockerfile para desarrollo
     container_name: gestion-labs-frontend-dev
     environment:
-      - VITE_API_URL=http://localhost:3009
+      # CAMBIAR: URL del backend según donde esté desplegado
+      # Local: http://localhost:3010/api
+      # Externo: http://100.00.108.00:[puerto apache] 4 digitos/api
+      - VITE_BASE_URL=http://localhost:3010/api
     ports:
-      - "5173:5173"
+      - "5173:5173"                  # Puerto de Vite - NO CAMBIAR (siempre local)
     depends_on:
-      - backend
+      - backend                      # Espera a que el backend esté listo
     networks:
-      - gestion-labs-network
+      - gestion-labs-network         # Misma red que los otros servicios
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend:/app             # Código fuente del frontend
+      - /app/node_modules           # node_modules del contenedor
 
 networks:
-  gestion-labs-network:
-    driver: bridge
+  gestion-labs-network:              # Red compartida para todos los servicios
+    driver: bridge                   # Tipo de red Docker
 
 volumes:
-  postgres_dev_data:
+  postgres_dev_data:                 # Volumen para la BD (solo necesario en desarrollo local)
