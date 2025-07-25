@@ -1,30 +1,37 @@
-# Use official Node.js runtime as base image
+# Imagen base de Node.js (versión LTS Alpine para imagen más ligera)
 FROM node:18-alpine
 
-# Set working directory in container
+# Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if available)
+# Copiamos solo los archivos de dependencias primero
+# Esto aprovecha la cache de Docker si las dependencias no cambian
 COPY package*.json ./
 
-# Install all dependencies (including dev dependencies that are used in production)
+# Instalamos dependencias usando npm ci (más rápido y consistente que npm install)
+# Limpiamos la caché para reducir el tamaño de la imagen
 RUN npm ci && npm cache clean --force
 
-# Copy the rest of the application code
+# Copiamos todo el código fuente
 COPY . .
 
-# Create a non-root user
+# Creamos un usuario no-root por seguridad
+# 1001 es un ID común para usuarios no-root
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001
 
-# Change ownership of the app directory to nodejs user
+# Cambiamos el propietario de /app al usuario nodejs
 RUN chown -R nodejs:nodejs /app
 
-# Switch to non-root user
+# Cambiamos al usuario no-root
 USER nodejs
 
-# Expose port (default Express port)
-EXPOSE 3009
+# NOTA: Este EXPOSE es solo documentativo
+# El puerto real se toma de la variable PORT en el docker-compose
+# No necesitas cambiar este valor aunque uses otro puerto
+EXPOSE 3010
 
-# Start the application
+# Comando para iniciar la aplicación
+# El puerto real se configura con la variable PORT en el docker-compose
+# No necesitas modificar este comando
 CMD ["npm", "start"]
