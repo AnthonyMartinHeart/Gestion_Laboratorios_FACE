@@ -1,62 +1,61 @@
-version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database - Base de datos para producción
   postgres:
-    image: postgres:15-alpine
-    container_name: gestion-labs-db
+    image: postgres:15-alpine            # Versión específica de PostgreSQL
+    container_name: gestion-labs-db      # Nombre del contenedor
     environment:
-      POSTGRES_DB: gestion_labs
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gestion_labs_dev      # CAMBIAR: Nombre de la BD en producción
+      POSTGRES_USER: postgres            # CAMBIAR: Usuario de la BD en producción
+      POSTGRES_PASSWORD: password        # CAMBIAR: Contraseña segura en producción
     ports:
-      - "5432:5432"
+      - "5432:5432"                     # Puerto estándar de PostgreSQL
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # Persistencia de datos
     networks:
-      - gestion-labs-network
-    restart: unless-stopped
+      - gestion-labs-network            # Red interna de Docker
+    restart: unless-stopped             # Reinicia si se detiene
 
-  # Backend Service
+  # Backend Service - Servidor de la API
   backend:
     build:
-      context: ./backend
-      dockerfile: dockerfile
+      context: ./backend                # Directorio del backend
+      dockerfile: dockerfile            # Archivo para construir la imagen
     container_name: gestion-labs-backend
     environment:
-      - NODE_ENV=production
-      - PORT=3009
-      - HOST=postgres
-      - DB_USERNAME=postgres
-      - PASSWORD=password
-      - DATABASE=gestion_labs
-      - ACCESS_TOKEN_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - cookieKey=your-cookie-secret-key-change-this-too
+      - NODE_ENV=production            # Ambiente de producción
+      - PORT=3010                      # CAMBIAR: Puerto del backend (ej: 80)
+      - HOST=postgres                  # CAMBIAR: IP si es BD externa
+      - DB_USERNAME=postgres           # CAMBIAR: Usuario de la BD
+      - PASSWORD=ubb                   # CAMBIAR: Contraseña de la BD
+      - DATABASE=gestion_labs_dev      # CAMBIAR: Nombre de la BD
+      - ACCESS_TOKEN_SECRET=your-super-secret-jwt-key-change-this-in-production  # CAMBIAR: Clave JWT segura
+      - cookieKey=your-cookie-secret-key-change-this-too                         # CAMBIAR: Clave cookie segura
     ports:
-      - "3009:3009"
+      - "3010:3010"                   # CAMBIAR: Debe coincidir con PORT
     depends_on:
-      - postgres
+      - postgres                       # Espera a que la BD esté lista
     networks:
-      - gestion-labs-network
-    restart: unless-stopped
+      - gestion-labs-network          # Misma red que la BD
+    restart: unless-stopped           # Reinicia si se detiene
 
-  # Frontend Service
+  # Frontend Service - Servidor web del cliente
   frontend:
     build:
-      context: ./frontend
-      dockerfile: dockerfile
+      context: ./frontend             # Directorio del frontend
+      dockerfile: dockerfile          # Dockerfile para producción
     container_name: gestion-labs-frontend
     ports:
-      - "80:80"
+      - "80:80"                      # Puerto 80 para HTTP
     depends_on:
-      - backend
+      - backend                      # Espera a que el backend esté listo
     networks:
-      - gestion-labs-network
-    restart: unless-stopped
+      - gestion-labs-network         # Misma red que los otros servicios
+    restart: unless-stopped          # Reinicia si se detiene
 
 networks:
-  gestion-labs-network:
-    driver: bridge
+  gestion-labs-network:              # Red compartida para todos los servicios
+    driver: bridge                   # Tipo de red Docker estándar
 
 volumes:
-  postgres_data:
+  postgres_data:                     # Volumen para persistir datos de la BD
