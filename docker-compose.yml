@@ -1,17 +1,13 @@
 
 services:
-  # ============================================================================
-  # CONFIGURACIÓN DE LA BASE DE DATOS
-  # ============================================================================
-  # NOTA: Cuando te den la IP externa (000.00.000.00), COMENTA o ELIMINA todo
-  # el servicio 'postgres' ya que la base de datos estará en otro servidor
+
   postgres:
     image: postgres:15-alpine            
     container_name: gestion-labs-db      
     environment:
       # Configuración para desarrollo local
       POSTGRES_USER: postgres            # Usuario de la BD
-      POSTGRES_PASSWORD: XXX             # Contraseña de la BD
+      POSTGRES_PASSWORD: ubb             # Contraseña de la BD
       POSTGRES_DB: postgres             # Nombre de la BD
     ports:
       - "5432:5432"
@@ -37,16 +33,16 @@ services:
     environment:
 
       # CASO 2: Usando BD externa (comenta el CASO 1 y descomenta estas líneas)
-       #- NODE_ENV=production
-       #- PORT=80
-       #- HOST=146.83.194.168         # AQUÍ VA LA IP DEL SERVIDOR
-       #- DB_USERNAME=postgres            # mi user
-       #- PASSWORD=ubb              # pass de mi bd
-       #- DATABASE=postgres               # database creada
-       #- ACCESS_TOKEN_SECRET=dkljgdkjghdkjfhgkjdfhkjdhfgkjdfg
-       #- cookieKey=nsbdfkgjslgjlskjfkldjgklsdjgksdjgklhdfnblmdfpogrgkdbpor
+       - NODE_ENV=production
+       - PORT=80
+       - HOST=postgres        # AQUÍ VA LA IP DEL SERVIDOR
+       - DB_USERNAME=postgres            # mi user
+       - PASSWORD=ubb              # pass de mi bd
+       - DATABASE=postgres               # database creada
+       - ACCESS_TOKEN_SECRET=dkljgdkjghdkjfhgkjdfhkjdhfgkjdfg
+       - cookieKey=nsbdfkgjslgjlskjfkldjgklsdjgksdjgklhdfnblmdfpogrgkdbpor
     ports:
-      #- "1651:80"                   # CAMBIAR: Debe coincidir con PORT
+      - "80:80"                   # CAMBIAR: Debe coincidir con PORT
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,7 +57,7 @@ services:
       dockerfile: dockerfile          # Dockerfile para producción
     container_name: gestion-labs-frontend
     ports:
-      #- "1652:80"                      # Puerto 80 para HTTP
+      - "8080:80"                    # Puerto 8080 en el host, 80 en el contenedor
     depends_on:
       - backend                      # Espera a que el backend esté listo
     networks:
