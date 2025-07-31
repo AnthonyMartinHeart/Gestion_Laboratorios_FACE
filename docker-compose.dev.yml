@@ -1,14 +1,20 @@
 
 
 services:
-  # PostgreSQL Database - Solo necesario para desarrollo local
+  # ============================================================================
+  # CONFIGURACIÓN DE LA BASE DE DATOS (DESARROLLO)
+  # ============================================================================
+  # NOTA 1: Este archivo es para desarrollo local principalmente
+  # NOTA 2: Cuando te den la IP externa (000.00.000.00), usa el docker-compose.yml
+  #        y comenta o elimina este servicio 'postgres'
   postgres:
-    image: postgres:15-alpine            # Imagen de PostgreSQL a usar
-    container_name: gestion-labs-db      # Nombre del contenedor
+    image: postgres:15-alpine
+    container_name: gestion-labs-db
     environment:
-      POSTGRES_DB: gestion_labs_dev      # Si usas BD externa, esto no se usa
-      POSTGRES_USER: postgres            # Si usas BD externa, esto no se usa
-      POSTGRES_PASSWORD: ubb             # Si usas BD externa, esto no se usa
+      # Configuración local de la base de datos
+      POSTGRES_DB: postgres              # Nombre de la BD local
+      POSTGRES_USER: postgres            # Usuario local
+      POSTGRES_PASSWORD: ubb             # Contraseña local
     ports:
       - "5432:5432"                     # Puerto estándar de PostgreSQL
     volumes:
@@ -16,22 +22,28 @@ services:
     networks:
       - gestion-labs-network            # Red interna para los contenedores
 
-  # Backend Service (Development)
+  # ============================================================================
+  # CONFIGURACIÓN DEL BACKEND (DESARROLLO)
+  # ============================================================================
   backend:
     build:
       context: ./backend
       dockerfile: dockerfile
     container_name: gestion-labs-backend-dev
     environment:
-      - NODE_ENV=development            # Modo desarrollo
-      - PORT=3010                       # CAMBIAR: Si te dan otro puerto (ej: 80)
-      - DB_HOST=postgres                # CAMBIAR: Si te dan IP externa (ej: 100.00.000.00)
-      - DB_PORT=5432                    # Puerto BD - normalmente no cambia
-      - DB_USERNAME=postgres            # CAMBIAR: Usuario que te den (ej: jmartinez)
-      - DB_PASSWORD=ubb                 # CAMBIAR: Contraseña que te den
-      - DB_DATABASE=gestion_labs_dev    # CAMBIAR: Nombre BD que te den
+      # CASO 1: Desarrollo local (BD en Docker) - CONFIGURACIÓN ACTUAL
+      - NODE_ENV=development
+      - PORT=3040
+      - HOST=postgres                   # Usa 'postgres' porque la BD está en Docker
+      - DB_USERNAME=postgres
+      - PASSWORD=ubb
+      - DATABASE=postgres
+
+      # CASO 2: Usando BD externa - NO USES ESTE ARCHIVO
+      # Para BD externa (000.00.000.00) usa el docker-compose.yml en su lugar
+      # Ya que este archivo está optimizado para desarrollo local
     ports:
-      - "3010:3010"                    # CAMBIAR: Debe coincidir con PORT (ej: "80:80")
+      - "3040:3040"                    # CAMBIAR: Debe coincidir con PORT (ej: "80:80")
     depends_on:
       - postgres
     networks:
@@ -41,17 +53,23 @@ services:
       - /app/node_modules
     command: npm run dev
 
-  # Frontend Service (Development)
+  # ============================================================================
+  # CONFIGURACIÓN DEL FRONTEND (DESARROLLO)
+  # ============================================================================
   frontend:
     build:
-      context: ./frontend             # Directorio del frontend
-      dockerfile: dockerfile.dev      # Dockerfile para desarrollo
+      context: ./frontend
+      dockerfile: dockerfile.dev      # Usamos el Dockerfile de desarrollo
     container_name: gestion-labs-frontend-dev
     environment:
-      # CAMBIAR: URL del backend según donde esté desplegado
-      # Local: http://localhost:3010/api
-      # Externo: http://100.00.108.00:[puerto apache] 4 digitos/api
-      - VITE_BASE_URL=http://localhost:3010/api
+
+      # CASO 1: Desarrollo local (actual)
+      - VITE_BASE_URL=http://localhost:3040/api
+
+      # CASO 2: Cuando uses la IP externa, cambia la URL a:
+      # - VITE_BASE_URL=http://000.00.000.00:3040/api
+      #
+      # Nota: Para producción, usa el docker-compose.yml en su lugar
     ports:
       - "5173:5173"                  # Puerto de Vite - NO CAMBIAR (siempre local)
     depends_on:
