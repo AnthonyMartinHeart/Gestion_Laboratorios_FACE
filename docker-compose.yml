@@ -1,42 +1,66 @@
 
 services:
-  # PostgreSQL Database - Base de datos para producción
+  # ============================================================================
+  # CONFIGURACIÓN DE LA BASE DE DATOS
+  # ============================================================================
+  # NOTA: Cuando te den la IP externa (000.00.000.00), COMENTA o ELIMINA todo
+  # el servicio 'postgres' ya que la base de datos estará en otro servidor
   postgres:
-    image: postgres:15-alpine            # Versión específica de PostgreSQL
-    container_name: gestion-labs-db      # Nombre del contenedor
+    image: postgres:15-alpine            
+    container_name: gestion-labs-db      
     environment:
-      POSTGRES_DB: gestion_labs_dev      # CAMBIAR: Nombre de la BD en producción
-      POSTGRES_USER: postgres            # CAMBIAR: Usuario de la BD en producción
-      POSTGRES_PASSWORD: password        # CAMBIAR: Contraseña segura en producción
+      # Configuración para desarrollo local
+      POSTGRES_USER: postgres            # Usuario de la BD
+      POSTGRES_PASSWORD: ubb             # Contraseña de la BD
+      POSTGRES_DB: postgres             # Nombre de la BD
     ports:
-      - "5432:5432"                     # Puerto estándar de PostgreSQL
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Persistencia de datos
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - gestion-labs-network            # Red interna de Docker
+      - gestion-labs-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped             # Reinicia si se detiene
 
-  # Backend Service - Servidor de la API
+  # ============================================================================
+  # CONFIGURACIÓN DEL BACKEND
+  # ============================================================================
   backend:
     build:
-      context: ./backend                # Directorio del backend
-      dockerfile: dockerfile            # Archivo para construir la imagen
+      context: ./backend
+      dockerfile: dockerfile
     container_name: gestion-labs-backend
     environment:
-      - NODE_ENV=production            # Ambiente de producción
-      - PORT=3010                      # CAMBIAR: Puerto del backend (ej: 80)
-      - HOST=postgres                  # CAMBIAR: IP si es BD externa
-      - DB_USERNAME=postgres           # CAMBIAR: Usuario de la BD
-      - PASSWORD=ubb                   # CAMBIAR: Contraseña de la BD
-      - DATABASE=gestion_labs_dev      # CAMBIAR: Nombre de la BD
-      - ACCESS_TOKEN_SECRET=your-super-secret-jwt-key-change-this-in-production  # CAMBIAR: Clave JWT segura
-      - cookieKey=your-cookie-secret-key-change-this-too                         # CAMBIAR: Clave cookie segura
+      # CASO 1: Desarrollo local (usando la BD en Docker)
+      - NODE_ENV=development          
+      - PORT=3040
+      - HOST=postgres                 # Usar 'postgres' porque es la BD que está en Docker
+      - DB_USERNAME=XXX
+      - PASSWORD=XXX
+      - DATABASE=XXX
+      - ACCESS_TOKEN_SECRET=dkljgdkjghdkjfhgkjdfhkjdhfgkjdfg
+      - cookieKey=nsbdfkgjslgjlskjfkldjgklsdjgksdjgklhdfnblmdfpogrgkdbpor
+
+      # CASO 2: Usando BD externa (comenta el CASO 1 y descomenta estas líneas)
+      # - NODE_ENV=production
+      # - PORT=3040
+      # - HOST=000.00.000.00         # AQUÍ VA LA IP DEL SERVIDOR
+      # - DB_USERNAME=XXX            # mi user
+      # - PASSWORD=XXX               # pass de mi bd
+      # - DATABASE=XXX               # database creada
+      # - ACCESS_TOKEN_SECRET=dkljgdkjghdkjfhgkjdfhkjdhfgkjdfg
+      # - cookieKey=nsbdfkgjslgjlskjfkldjgklsdjgksdjgklhdfnblmdfpogrgkdbpor
     ports:
-      - "3010:3010"                   # CAMBIAR: Debe coincidir con PORT
+      - "3040:3040"                   # CAMBIAR: Debe coincidir con PORT
     depends_on:
-      - postgres                       # Espera a que la BD esté lista
+      postgres:
+        condition: service_healthy
     networks:
-      - gestion-labs-network          # Misma red que la BD
+      - gestion-labs-network
     restart: unless-stopped           # Reinicia si se detiene
 
   # Frontend Service - Servidor web del cliente
