@@ -10,6 +10,6 @@ coverage
 .env.development.local
 .env.test.local
 .env.production.local
-*.log
+.log
 .DS_Store
 Thumbs.db
