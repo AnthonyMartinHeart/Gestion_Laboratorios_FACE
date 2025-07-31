@@ -14,7 +14,7 @@ services:
       # Configuración local de la base de datos
       POSTGRES_DB: postgres              # Nombre de la BD local
       POSTGRES_USER: postgres            # Usuario local
-      POSTGRES_PASSWORD: ubb             # Contraseña local
+      POSTGRES_PASSWORD: XXX             # Contraseña local
     ports:
       - "5432:5432"                     # Puerto estándar de PostgreSQL
     volumes:
