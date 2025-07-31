@@ -11,7 +11,7 @@ services:
     environment:
       # Configuración para desarrollo local
       POSTGRES_USER: postgres            # Usuario de la BD
-      POSTGRES_PASSWORD: ubb             # Contraseña de la BD
+      POSTGRES_PASSWORD: XXX             # Contraseña de la BD
       POSTGRES_DB: postgres             # Nombre de la BD
     ports:
       - "5432:5432"
