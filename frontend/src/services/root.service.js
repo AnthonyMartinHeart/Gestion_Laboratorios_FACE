@@ -1,8 +1,7 @@
 import axios from 'axios';
 import cookies from 'js-cookie';
 
-const API_URL = import.meta.env.VITE_BASE_URL || 'http://10.4.3.76:80/api';
-//const API_URL = import.meta.env.VITE_BASE_URL || 'http://146.83.194.168:80/api';
+const API_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3040/api';
 
 console.log('API URL:', API_URL); // Esto ayuda a debuggear problemas de conexión
 
