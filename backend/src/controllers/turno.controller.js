@@ -55,7 +55,9 @@ export async function saveOrUpdateTurno(req, res) {
   try {
     const turnoData = req.body;
     
-    // Validaciones básicas
+    console.log('📥 Datos recibidos en controller:', turnoData);
+    
+    // Validaciones más robustas
     if (!turnoData.rut || !turnoData.fecha) {
       return res.status(400).json({
         message: "El RUT y la fecha son requeridos",
@@ -63,13 +65,30 @@ export async function saveOrUpdateTurno(req, res) {
       });
     }
 
-    const turno = await saveOrUpdateTurnoService(turnoData);
+    // Asegurar que las horas vacías sean strings vacíos, no undefined/null
+    const datosLimpios = {
+      rut: turnoData.rut,
+      nombre: turnoData.nombre || "",
+      fecha: turnoData.fecha,
+      horaEntradaAsignada: turnoData.horaEntradaAsignada || "",
+      horaSalidaAsignada: turnoData.horaSalidaAsignada || "",
+      horaEntradaMarcada: turnoData.horaEntradaMarcada || "",
+      horaSalidaMarcada: turnoData.horaSalidaMarcada || "",
+      observacion: turnoData.observacion || ""
+    };
+
+    console.log('🧹 Datos limpiados:', datosLimpios);
+
+    const turno = await saveOrUpdateTurnoService(datosLimpios);
+    
+    console.log('✅ Turno guardado exitosamente:', turno);
     
     res.status(200).json({
       message: "Turno guardado exitosamente",
       data: turno
     });
   } catch (error) {
+    console.error('❌ Error en saveOrUpdateTurno controller:', error);
     handleErrorServer(res, 500, error.message);
   }
 }
