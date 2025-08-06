@@ -90,15 +90,8 @@ export async function createReservationService(data) {
         console.log(`Permitiendo bloque de clases ADMIN en PC ${pcId} - coexistencia con otros bloques`);
       } else {
         // Si la nueva reserva es individual (estudiante/consultor)
-        // Solo permitir si TODAS las reservas existentes son bloques de clases
-        const hasIndividualReservation = pcOverlaps.some(overlap => overlap.carrera !== 'ADMIN');
-        
-        if (hasIndividualReservation) {
-          return [null, "El PC ya está reservado por otro usuario en ese horario"];
-        }
-        
-        // Si solo hay bloques de clases, permitir la reserva individual
-        console.log(`Permitiendo reserva individual durante bloque de clases en PC ${pcId}`);
+        // NO PERMITIR si hay CUALQUIER reserva existente (individual O bloque de clases)
+        return [null, "El PC ya está reservado en ese horario"];
       }
     }
 
