@@ -35,7 +35,7 @@ export const useGetAllReservations = (labId, selectedDate) => {
             const targetDate = new Date(selectedDate).toISOString().split('T')[0];
             const targetLabId = parseInt(labId);
 
-            console.log('🎯 Buscando reservas para:', {
+            console.log(`🎯 [LAB ${targetLabId}] Buscando reservas para:`, {
                 fecha: targetDate,
                 laboratorio: targetLabId
             });
@@ -71,7 +71,7 @@ export const useGetAllReservations = (labId, selectedDate) => {
             console.log('✅ Reservas filtradas:', filtered);
             
             if (filtered.length > 0) {
-                console.log('📋 Detalles de las reservas encontradas:', 
+                console.log(`📋 [LAB ${targetLabId}] Detalles de las reservas encontradas:`, 
                     filtered.map(r => ({
                         pc: r.pcId,
                         inicio: r.horaInicio,
@@ -80,7 +80,7 @@ export const useGetAllReservations = (labId, selectedDate) => {
                     }))
                 );
             } else {
-                console.log('⚠️ No se encontraron reservas para la fecha y laboratorio seleccionados');
+                console.log(`⚠️ [LAB ${targetLabId}] No se encontraron reservas para la fecha y laboratorio seleccionados`);
             }
 
             setReservations(filtered);
