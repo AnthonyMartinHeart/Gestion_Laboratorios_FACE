@@ -32,8 +32,9 @@ const MisReservas = () => {
         
         // Ordenar por fecha más reciente primero
         const reservasOrdenadas = reservasUsuario.sort((a, b) => {
-          const fechaA = new Date(a.fechaReserva + 'T' + a.horaInicio);
-          const fechaB = new Date(b.fechaReserva + 'T' + b.horaInicio);
+          // Crear fechas locales para evitar problemas de zona horaria
+          const fechaA = new Date(a.fechaReserva + 'T' + a.horaInicio + ':00');
+          const fechaB = new Date(b.fechaReserva + 'T' + b.horaInicio + ':00');
           return fechaB - fechaA;
         });
 
@@ -311,7 +312,9 @@ const MisReservas = () => {
   };
 
   const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-CL', {
+    // Crear fecha local para evitar problemas de zona horaria
+    const fechaLocal = new Date(fecha + 'T00:00:00');
+    return fechaLocal.toLocaleDateString('es-CL', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
