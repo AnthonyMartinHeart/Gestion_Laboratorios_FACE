@@ -1,24 +1,66 @@
 import axios from './root.service.js';
 
 const API_URL = '/turnos';
-
-// Temporalmente usar solo localStorage hasta que el backend esté funcionando
 const STORAGE_KEY = 'turnos_consultores';
 
 export async function getTurnosByFecha(fecha) {
   try {
-    // Intentar backend primero
+    // Siempre verificar localStorage primero
+    const localTurnos = getTurnosByFechaLocal(fecha);
+    
+    // Intentar backend
     console.log('🔄 Intentando obtener turnos del backend para fecha:', fecha);
     const response = await axios.get(`${API_URL}/fecha/${fecha}`);
     console.log('✅ Turnos obtenidos del backend:', response.data.data);
-    return response.data.data || [];
+    
+    const backendTurnos = response.data.data || [];
+    
+    // Si tenemos datos en localStorage, combinar con backend priorizando localStorage
+    if (localTurnos.length > 0) {
+      console.log('📦 Combinando datos de localStorage (prioritario) con backend...');
+      
+      // Crear mapa de turnos del backend por RUT
+      const backendMap = new Map();
+      backendTurnos.forEach(turno => {
+        backendMap.set(turno.rut, turno);
+      });
+      
+      // Combinar, priorizando localStorage
+      const turnosCombinados = localTurnos.map(localTurno => {
+        const backendTurno = backendMap.get(localTurno.rut);
+        if (backendTurno) {
+          // Combinar datos, priorizando localStorage para campos marcados
+          return {
+            ...backendTurno,
+            horaEntradaMarcada: localTurno.horaEntradaMarcada || backendTurno.horaEntradaMarcada || "",
+            horaSalidaMarcada: localTurno.horaSalidaMarcada || backendTurno.horaSalidaMarcada || "",
+            observacion: localTurno.observacion || backendTurno.observacion || ""
+          };
+        } else {
+          return localTurno;
+        }
+      });
+      
+      // Agregar turnos que solo están en backend
+      backendTurnos.forEach(backendTurno => {
+        const existe = turnosCombinados.some(t => t.rut === backendTurno.rut);
+        if (!existe) {
+          turnosCombinados.push(backendTurno);
+        }
+      });
+      
+      console.log('🔄 Turnos combinados (localStorage + backend):', turnosCombinados);
+      return turnosCombinados;
+    }
+    
+    return backendTurnos;
   } catch (error) {
     console.warn('⚠️ Backend no disponible, usando localStorage como fallback:', error.message);
     // Fallback a localStorage
     const turnos = getTurnosByFechaLocal(fecha);
-    console.log(' Turnos obtenidos de localStorage:', turnos);
+    console.log('📦 Turnos obtenidos de localStorage:', turnos);
     
-    return turnos; // Devolver tal como vienen de localStorage
+    return turnos;
   }
 }
 
@@ -30,6 +72,11 @@ export async function saveOrUpdateTurno(fecha, turno) {
     const turnoData = { ...turno, fecha };
     const response = await axios.post(API_URL, turnoData);
     console.log('✅ Turno guardado en backend:', response.data);
+    
+    // SIEMPRE guardar en localStorage como backup, incluso cuando el backend funciona
+    saveOrUpdateTurnoLocal(fecha, turno);
+    console.log('📦 Turno también guardado en localStorage como backup');
+    
     return response.data.data;
   } catch (error) {
     console.warn('⚠️ Error al guardar turno en backend, usando localStorage como fallback:', error.message);
