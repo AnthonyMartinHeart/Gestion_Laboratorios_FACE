@@ -55,6 +55,47 @@ const SelectPC = ({ onReservaCreada }) => {
     "15:30", "17:00", "18:30", "20:00"
   ];
 
+  // Función para obtener horarios válidos según la hora actual
+  const getHorariosValidos = () => {
+    const ahora = new Date();
+    const horaActual = ahora.getHours();
+    const minutoActual = ahora.getMinutes();
+    const tiempoActualEnMinutos = horaActual * 60 + minutoActual;
+
+    // Agregar 15 minutos de margen para dar tiempo a completar la reserva
+    const tiempoMinimoReserva = tiempoActualEnMinutos + 15;
+
+    const horariosInicioValidos = horasInicio.filter(hora => {
+      const [h, m] = hora.split(':').map(Number);
+      const tiempoHora = h * 60 + m;
+      return tiempoHora >= tiempoMinimoReserva;
+    });
+
+    const horariosTerminoValidos = horasTermino.filter(hora => {
+      const [h, m] = hora.split(':').map(Number);
+      const tiempoHora = h * 60 + m;
+      return tiempoHora > tiempoMinimoReserva;
+    });
+
+    return {
+      inicioValidos: horariosInicioValidos,
+      terminoValidos: horariosTerminoValidos
+    };
+  };
+
+  // Función para obtener horarios de término válidos según la hora de inicio seleccionada
+  const getHorariosTerminoValidos = (horaInicioSeleccionada) => {
+    if (!horaInicioSeleccionada) return [];
+
+    const { terminoValidos } = getHorariosValidos();
+    const inicioEnMinutos = horaAMinutos(horaInicioSeleccionada);
+
+    return terminoValidos.filter(hora => {
+      const terminoEnMinutos = horaAMinutos(hora);
+      return terminoEnMinutos > inicioEnMinutos;
+    });
+  };
+
   const [showForm, setShowForm] = useState(false);
   const [selectedPC, setSelectedPC] = useState(null);
   const [showOtroCarrera, setShowOtroCarrera] = useState(false);
@@ -500,6 +541,42 @@ const SelectPC = ({ onReservaCreada }) => {
   };
 
   const handlePCClick = (pcNumber) => {
+    // Verificar si hay horarios disponibles
+    const horariosValidos = getHorariosValidos();
+    if (horariosValidos.inicioValidos.length === 0) {
+      const ahora = new Date();
+      const horaActual = ahora.toLocaleTimeString('es-CL', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+      
+      Swal.fire({
+        title: 'Sin horarios disponibles',
+        html: `
+          <div style="text-align: center;">
+            <p>No hay horarios disponibles para reservar en este momento.</p>
+            <p><strong>Hora actual:</strong> ${horaActual}</p>
+            <br>
+            <p>Los horarios de laboratorio son:</p>
+            <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+              <li>08:10 - 09:30</li>
+              <li>09:40 - 11:00</li>
+              <li>11:10 - 12:30</li>
+              <li>12:40 - 14:00</li>
+              <li>14:10 - 15:30</li>
+              <li>15:40 - 17:00</li>
+              <li>17:10 - 18:30</li>
+              <li>Hasta las 20:00</li>
+            </ul>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+
     // Verificar si el usuario es administrador y no permitir reservas individuales
     if (user && user.rol === 'administrador') {
       const classBlockStatus = isInClassBlock();
@@ -593,6 +670,13 @@ const SelectPC = ({ onReservaCreada }) => {
       setFormData({ 
         ...formData, 
         rut: rutFormateado 
+      });
+    } else if (e.target.name === 'horaInicio') {
+      // Al cambiar hora de inicio, limpiar hora de término para que el usuario la vuelva a seleccionar
+      setFormData({ 
+        ...formData, 
+        horaInicio: e.target.value,
+        horaTermino: '' // Limpiar para forzar nueva selección
       });
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -712,12 +796,15 @@ const SelectPC = ({ onReservaCreada }) => {
       carreraAUsar = formData.carrera.toUpperCase(); // Asegurar que esté en mayúsculas
     }
 
-    if (!horasInicio.includes(formData.horaInicio)) {
-      Swal.fire('Error', 'La hora de inicio seleccionada no es válida.', 'error');
+    // Obtener horarios válidos para validación
+    const horariosValidos = getHorariosValidos();
+
+    if (!horariosValidos.inicioValidos.includes(formData.horaInicio)) {
+      Swal.fire('Error', 'La hora de inicio seleccionada no es válida o ya ha pasado.', 'error');
       return;
     }
 
-    if (!horasTermino.includes(formData.horaTermino)) {
+    if (!horariosValidos.terminoValidos.includes(formData.horaTermino)) {
       Swal.fire('Error', 'La hora de término seleccionada no es válida.', 'error');
       return;
     }
@@ -884,6 +971,25 @@ const SelectPC = ({ onReservaCreada }) => {
         <div className="popup-overlay">
           <div className="popup-form">
             <h4>PC {selectedPC} seleccionado - Confirmación de Reserva</h4>
+            
+            {/* Indicador de hora actual */}
+            <div style={{ 
+              marginBottom: '15px', 
+              padding: '10px', 
+              backgroundColor: '#e8f5e8', 
+              borderRadius: '5px', 
+              border: '1px solid #c3e6c3',
+              textAlign: 'center'
+            }}>
+              <div style={{ color: '#2d5016', fontSize: '14px', fontWeight: 'bold' }}>
+                🕐 Hora actual: {new Date().toLocaleTimeString('es-CL', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false 
+                })}
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit}>
               {/* Solo mostrar campo RUT si NO es estudiante/consultor con correo @alumnos.ubiobio.cl */}
               {!(user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
@@ -965,7 +1071,7 @@ const SelectPC = ({ onReservaCreada }) => {
                 disabled={loading}
               >
                 <option value="">Selecciona hora de inicio</option>
-                {horasInicio.map((hora) => (
+                {getHorariosValidos().inicioValidos.map((hora) => (
                   <option key={hora} value={hora}>{hora}</option>
                 ))}
               </select>
@@ -978,8 +1084,10 @@ const SelectPC = ({ onReservaCreada }) => {
                 required
                 disabled={loading}
               >
-                <option value="">Selecciona hora de término</option>
-                {horasTermino.map((hora) => (
+                <option value="">
+                  {formData.horaInicio ? "Selecciona hora de término" : "Primero selecciona hora de inicio"}
+                </option>
+                {getHorariosTerminoValidos(formData.horaInicio).map((hora) => (
                   <option key={hora} value={hora}>{hora}</option>
                 ))}
               </select>
