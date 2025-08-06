@@ -130,10 +130,29 @@ h9 {
   margin-top: 6px;
 }
 
+.limpiar-observacion-button {
+  padding: 8px 14px;
+  background-color: #f59e0b;
+  color: white;
+  font-weight: bold;
+  border: 1.5px solid black; /* Borde negro agregado */
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s, background-color 0.3s;
+  margin-top: 6px;
+  margin-left: 6px;
+}
+
 
 .guardar-button:hover,
 .guardar-observacion-button:hover {
   background-color: #059669;
+  transform: scale(1.05);
+}
+
+.limpiar-observacion-button:hover {
+  background-color: #d97706;
   transform: scale(1.05);
 }
 
