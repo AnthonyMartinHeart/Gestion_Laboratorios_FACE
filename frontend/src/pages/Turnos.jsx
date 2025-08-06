@@ -4,8 +4,12 @@ import '@styles/turnos.css';
 
 const Turnos = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
+   
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // Formato YYYY-MM-DD
   });
 
   return (
