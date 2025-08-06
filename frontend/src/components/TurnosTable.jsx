@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import SweetAlert from "react-sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
+import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 import { getUsers, getUserByRut } from "@services/user.service.js";
 import { getTurnosByFecha, saveOrUpdateTurno } from "@services/turnos.service.js";
 import { useAuth } from "@context/AuthContext.jsx";
@@ -9,38 +8,111 @@ const horarios = [
   "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "13:00 PM", "14:00 PM", "15:00 PM", "16:00 PM", "17:00 PM", "18:00 PM", "19:00 PM", "20:00 PM"
 ];
 
+// Función para validar si el consultor puede marcar dentro de la tolerancia de 15 minutos
+const validarToleranciaHorario = (horaActual, horaAsignada, userRole) => {
+  // Si es administrador, siempre puede marcar
+  if (userRole === 'administrador') {
+    return { puedeMarcar: true, mensaje: null };
+  }
+
+  // Si no es consultor, no puede marcar
+  if (userRole !== 'consultor') {
+    return { puedeMarcar: false, mensaje: 'No tienes permisos para marcar este turno.' };
+  }
+
+  // Convertir las horas a objetos Date para calcular diferencia
+  const parseHora = (horaStr) => {
+    const [tiempo, periodo] = horaStr.split(' ');
+    let [horas, minutos] = tiempo.split(':').map(Number);
+    
+    if (periodo === 'PM' && horas !== 12) horas += 12;
+    if (periodo === 'AM' && horas === 12) horas = 0;
+    
+    const fecha = new Date();
+    fecha.setHours(horas, minutos, 0, 0);
+    return fecha;
+  };
+
+  const horaActualObj = parseHora(horaActual);
+  const horaAsignadaObj = parseHora(horaAsignada);
+  
+  // Calcular diferencia en minutos
+  const diferenciaMs = Math.abs(horaActualObj - horaAsignadaObj);
+  const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+  
+  // Tolerancia de 15 minutos
+  if (diferenciaMinutos <= 15) {
+    return { puedeMarcar: true, mensaje: null };
+  } else {
+    return { 
+      puedeMarcar: false, 
+      mensaje: `Estás ${diferenciaMinutos} minutos fuera del horario asignado (${horaAsignada}). Solo un administrador puede marcar este turno.` 
+    };
+  }
+};
+
 const TurnosTable = ({ selectedDate }) => {
   const { user } = useAuth();
   const [consultores, setConsultores] = useState([]);
   const [turnos, setTurnos] = useState([]);
   const [observaciones, setObservaciones] = useState({});
-  const [swalProps, setSwalProps] = useState({});
   const [isEditing, setIsEditing] = useState(null);
   const [activeHorarioIndex, setActiveHorarioIndex] = useState(null);
 
-  // Cargar consultores y administradores
+  // Cargar consultores
   useEffect(() => {
     if (!user) return;
     if (user.rol.toLowerCase() === "consultor") {
-      // Consultor: solo su propio usuario
       getUserByRut(user.rut).then(consultor => {
         setConsultores(consultor ? [consultor] : []);
       });
     } else {
-      // Administrador: todos los consultores
       getUsers().then(users => {
         setConsultores(users.filter(u => u.rol.toLowerCase() === "consultor"));
       });
     }
   }, [user]);
 
-  // Cargar turnos de localStorage por fecha
-  const fetchTurnos = () => {
-    if (selectedDate) {
-      setTurnos(getTurnosByFecha(selectedDate));
+  // Cargar turnos - SIMPLIFICADO
+  const loadTurnos = async () => {
+    if (selectedDate && consultores.length > 0) {
+      console.log('🔄 Cargando turnos para:', selectedDate);
+      
+      const turnosData = await getTurnosByFecha(selectedDate);
+      console.log('📥 Turnos obtenidos:', turnosData);
+      
+      // Crear turnos para todos los consultores
+      const turnosCompletos = consultores.map(consultor => {
+        const turnoExistente = turnosData.find(t => t.rut === consultor.rut);
+        const turnoCompleto = turnoExistente || {
+          rut: consultor.rut,
+          nombre: consultor.nombreCompleto,
+          fecha: selectedDate,
+          horaEntradaAsignada: "",
+          horaSalidaAsignada: "",
+          horaEntradaMarcada: "",
+          horaSalidaMarcada: "",
+          observacion: ""
+        };
+        
+        console.log(`👤 Consultor ${consultor.nombreCompleto}:`, {
+          turnoExistente,
+          turnoCompleto,
+          horaEntradaMarcada: turnoCompleto.horaEntradaMarcada,
+          horaSalidaMarcada: turnoCompleto.horaSalidaMarcada
+        });
+        
+        return turnoCompleto;
+      });
+      
+      console.log('� Turnos finales:', turnosCompletos);
+      setTurnos(turnosCompletos);
     }
   };
-  useEffect(fetchTurnos, [selectedDate]);
+
+  useEffect(() => {
+    loadTurnos();
+  }, [selectedDate, consultores]);
 
   const handleObservacionChange = (index, value) => {
     const nuevasObservaciones = { ...observaciones };
@@ -54,77 +126,80 @@ const TurnosTable = ({ selectedDate }) => {
     setTurnos(nuevosTurnos);
   };
 
-  const handleGuardarHorario = (index) => {
-    setSwalProps({
-      show: true,
-      title: `Horario asignado al consultor ${consultores[index].nombre}`,
-      text: `Entrada: ${turnos[index].entrada || "No definida"}\nSalida: ${turnos[index].salida || "No definida"}`,
-      icon: "success",
-    });
-    setActiveHorarioIndex(null);
-  };
 
-  const handleGuardarObservacion = (index) => {
-    setSwalProps({
-      show: true,
-      title: `Observación guardada`,
-      text: observaciones[index] || "Sin observación escrita.",
-      icon: "info",
-    });
-    setIsEditing(null);
-  };
 
-  const handleMarcarEntrada = (index) => {
-    const horaActual = new Date().toLocaleTimeString();
-    setSwalProps({
-      show: true,
-      title: `Entrada registrada`,
-      text: `Consultor ${consultores[index].nombre} - Hora: ${horaActual}`,
-      icon: "success",
-    });
-  };
 
-  const handleMarcarSalida = (index) => {
-    const horaActual = new Date().toLocaleTimeString();
-    setSwalProps({
-      show: true,
-      title: `Salida registrada`,
-      text: `Consultor ${consultores[index].nombre} - Hora: ${horaActual}`,
-      icon: "warning",
-    });
-  };
-
-  // Guardar turno/observación en localStorage
-  const handleGuardar = (i, consultor, extra = {}) => {
-    const turno = turnos.find(t => t.rut === consultor.rut) || {};
-    const newTurno = {
-      rut: consultor.rut,
-      nombre: consultor.nombreCompleto,
-      fecha: selectedDate,
-      horaEntradaAsignada: turno.horaEntradaAsignada || "",
-      horaSalidaAsignada: turno.horaSalidaAsignada || "",
-      horaEntradaMarcada: extra.horaEntradaMarcada || turno.horaEntradaMarcada || "",
-      horaSalidaMarcada: extra.horaSalidaMarcada || turno.horaSalidaMarcada || "",
-      observacion: observaciones[i] !== undefined ? observaciones[i] : turno.observacion || "",
-    };
-    if (activeHorarioIndex === i) {
-      newTurno.horaEntradaAsignada = turnos[i]?.entrada || turno.horaEntradaAsignada || "";
-      newTurno.horaSalidaAsignada = turnos[i]?.salida || turno.horaSalidaAsignada || "";
+  // Guardar turno/observación en el backend
+  const handleGuardar = async (i, consultor, extra = {}) => {
+    try {
+      console.log('� Guardando turno para:', consultor.nombreCompleto);
+      
+      if (!selectedDate) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Selecciona una fecha primero'
+        });
+        return;
+      }
+      
+      const turno = turnos.find(t => t.rut === consultor.rut) || {};
+      
+      const newTurno = {
+        rut: consultor.rut,
+        nombre: consultor.nombreCompleto,
+        fecha: selectedDate,
+        horaEntradaAsignada: turno.horaEntradaAsignada || "",
+        horaSalidaAsignada: turno.horaSalidaAsignada || "",
+        horaEntradaMarcada: extra.horaEntradaMarcada || turno.horaEntradaMarcada || "",
+        horaSalidaMarcada: extra.horaSalidaMarcada || turno.horaSalidaMarcada || "",
+        observacion: observaciones[i] !== undefined ? observaciones[i] : turno.observacion || "",
+      };
+      
+      // Si estamos asignando horarios
+      if (activeHorarioIndex === i) {
+        const entradaSelect = document.querySelector(`select[data-consultor="${i}"][data-tipo="entrada"]`);
+        const salidaSelect = document.querySelector(`select[data-consultor="${i}"][data-tipo="salida"]`);
+        
+        if (entradaSelect && salidaSelect) {
+          newTurno.horaEntradaAsignada = entradaSelect.value || "";
+          newTurno.horaSalidaAsignada = salidaSelect.value || "";
+        }
+      }
+      
+      console.log('💾 Guardando:', newTurno);
+      await saveOrUpdateTurno(selectedDate, newTurno);
+      
+      // Recargar datos
+      await loadTurnos();
+      
+      // Mensaje de éxito
+      let message = 'Turno guardado exitosamente';
+      if (extra.horaEntradaMarcada) {
+        message = `Entrada marcada a las ${extra.horaEntradaMarcada}`;
+      } else if (extra.horaSalidaMarcada) {
+        message = `Salida marcada a las ${extra.horaSalidaMarcada}`;
+      }
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: message,
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
+      setActiveHorarioIndex(null);
+      setIsEditing(null);
+      
+    } catch (error) {
+      console.error('❌ Error al guardar:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el turno'
+      });
     }
-    saveOrUpdateTurno(selectedDate, newTurno);
-    
-    // Mostrar mensaje específico según el tipo de marcado
-    let message = 'Turno guardado';
-    if (extra.horaEntradaMarcada) {
-      message = `Entrada marcada a las ${extra.horaEntradaMarcada}`;
-    } else if (extra.horaSalidaMarcada) {
-      message = `Salida marcada a las ${extra.horaSalidaMarcada}`;
-    }
-    
-    setSwalProps({ show: true, title: 'Turno Marcado', text: message, icon: 'success' });
-    setActiveHorarioIndex(null);
-    setIsEditing(null);
-    fetchTurnos();
   };
 
   // Validaciones de permisos
@@ -154,8 +229,9 @@ const TurnosTable = ({ selectedDate }) => {
             ) : (
               consultores.map((consultor, i) => {
                 const turno = turnos.find(t => t.rut === consultor.rut) || {};
+                console.log(`🔍 Renderizando consultor ${consultor.nombreCompleto} con turno:`, turno);
                 return (
-                  <tr key={consultor.rut}>
+                  <tr key={`${consultor.rut}-${i}`}>
                     <td className="nombre-cell">{consultor.nombreCompleto}</td>
                     <td className="turno-cell">
                       {activeHorarioIndex === i && user.rol.toLowerCase() === 'administrador' ? (
@@ -163,6 +239,8 @@ const TurnosTable = ({ selectedDate }) => {
                         <>
                           <strong>Hora Entrada:</strong>
                           <select
+                            data-consultor={i}
+                            data-tipo="entrada"
                             value={turno.horaEntradaAsignada || ""}
                             onChange={e => {
                               const nuevos = [...turnos];
@@ -179,6 +257,8 @@ const TurnosTable = ({ selectedDate }) => {
                           </select>
                           <strong>Hora Salida:</strong>
                           <select
+                            data-consultor={i}
+                            data-tipo="salida"
                             value={turno.horaSalidaAsignada || ""}
                             onChange={e => {
                               const nuevos = [...turnos];
@@ -193,7 +273,7 @@ const TurnosTable = ({ selectedDate }) => {
                               <option key={idx} value={hora}>{hora}</option>
                             ))}
                           </select>
-                          <button className="guardar-button" onClick={() => handleGuardar(i, consultor)}>
+                          <button className="guardar-button" onClick={async () => await handleGuardar(i, consultor)}>
                             GUARDAR
                           </button>
                           <button className="cancelar-button" onClick={() => setActiveHorarioIndex(null)}>
@@ -204,10 +284,10 @@ const TurnosTable = ({ selectedDate }) => {
                         <>
                           <p><strong>Entrada:</strong> {turno.horaEntradaAsignada || "Sin turno"}</p>
                           <p><strong>Salida:</strong> {turno.horaSalidaAsignada || "Sin turno"}</p>
-                          {/* Solo el administrador puede ver el botón Seleccionar Horario */}
+                          {/* Solo el administrador puede ver el botón para asignar/modificar horario */}
                           {user.rol.toLowerCase() === 'administrador' && (
                             <button className="editar-observacion-button" onClick={() => setActiveHorarioIndex(i)}>
-                              Asignar Turno
+                              {turno.horaEntradaAsignada || turno.horaSalidaAsignada ? "Modificar Turno" : "Asignar Turno"}
                             </button>
                           )}
                         </>
@@ -220,55 +300,127 @@ const TurnosTable = ({ selectedDate }) => {
                     <td className="button-cell">
                       <div>
                         <span>Entrada:  </span>
-                        <button className="entrada-button" onClick={() => {
-                          const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-                          if (
-                            user.rol.toLowerCase() === 'consultor' &&
-                            turno.horaEntradaAsignada &&
-                            hora !== turno.horaEntradaAsignada
-                          ) {
-                            setSwalProps({
-                              show: true,
-                              title: '¡Atención!',
-                              text: `La hora marcada (${hora}) no coincide con la asignada (${turno.horaEntradaAsignada})`,
-                              icon: 'warning',
-                            });
-                            return;
+                        <button 
+                          className="entrada-button" 
+                          disabled={
+                            !puedeEditar(consultor) || 
+                            (user.rol.toLowerCase() !== 'administrador' && (!turno.horaEntradaAsignada || turno.horaEntradaAsignada === ""))
                           }
-                          const nuevos = [...turnos];
-                          const idx = nuevos.findIndex(t => t.rut === consultor.rut);
-                          if (idx >= 0) nuevos[idx].horaEntradaMarcada = hora;
-                          else nuevos.push({ rut: consultor.rut, horaEntradaMarcada: hora });
-                          setTurnos(nuevos);
-                          handleGuardar(i, consultor, { horaEntradaMarcada: hora });
-                        }}>
+                          onClick={async () => {
+                            console.log('Intentando marcar entrada:', {
+                              userRole: user.rol,
+                              turno: turno,
+                              horaEntradaAsignada: turno.horaEntradaAsignada,
+                              consultor: consultor,
+                              puedeEditar: puedeEditar(consultor)
+                            });
+
+                            // Verificar permisos primero
+                            if (!puedeEditar(consultor)) {
+                              Swal.fire({
+                                title: '¡Sin permisos!',
+                                text: 'No tienes permisos para marcar el turno de este consultor.',
+                                icon: 'error',
+                              });
+                              return;
+                            }
+
+                            // Los administradores pueden marcar sin turno asignado
+                            if (user.rol.toLowerCase() !== 'administrador') {
+                              // Verificar si tiene turno asignado (solo para no-administradores)
+                              if (!turno.horaEntradaAsignada || turno.horaEntradaAsignada === "") {
+                                Swal.fire({
+                                  title: '¡Sin turno asignado!',
+                                  text: 'No puedes marcar entrada sin tener un turno asignado.',
+                                  icon: 'error',
+                                });
+                                return;
+                              }
+                            }
+
+                            const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                            
+                            // Validar tolerancia de horario para consultores (administradores siempre pueden)
+                            if (user.rol.toLowerCase() !== 'administrador') {
+                              const validacion = validarToleranciaHorario(hora, turno.horaEntradaAsignada, user.rol.toLowerCase());
+                              
+                              if (!validacion.puedeMarcar) {
+                                Swal.fire({
+                                  title: '¡Fuera de horario!',
+                                  text: validacion.mensaje,
+                                  icon: 'error',
+                                });
+                                return;
+                              }
+                            }
+                            
+                            // No actualizar el estado local aquí, dejar que fetchTurnos() lo haga
+                            await handleGuardar(i, consultor, { horaEntradaMarcada: hora });
+                          }}
+                        >
                           ✅
                         </button>
                       </div>
                       <div>
                         <span>Salida:  </span>
-                        <button className="salida-button" onClick={() => {
-                          const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-                          if (
-                            user.rol.toLowerCase() === 'consultor' &&
-                            turno.horaSalidaAsignada &&
-                            hora !== turno.horaSalidaAsignada
-                          ) {
-                            setSwalProps({
-                              show: true,
-                              title: '¡Atención!',
-                              text: `La hora marcada (${hora}) no coincide con la asignada (${turno.horaSalidaAsignada})`,
-                              icon: 'warning',
-                            });
-                            return;
+                        <button 
+                          className="salida-button" 
+                          disabled={
+                            !puedeEditar(consultor) || 
+                            (user.rol.toLowerCase() !== 'administrador' && (!turno.horaSalidaAsignada || turno.horaSalidaAsignada === ""))
                           }
-                          const nuevos = [...turnos];
-                          const idx = nuevos.findIndex(t => t.rut === consultor.rut);
-                          if (idx >= 0) nuevos[idx].horaSalidaMarcada = hora;
-                          else nuevos.push({ rut: consultor.rut, horaSalidaMarcada: hora });
-                          setTurnos(nuevos);
-                          handleGuardar(i, consultor, { horaSalidaMarcada: hora });
-                        }}>
+                          onClick={async () => {
+                            console.log('Intentando marcar salida:', {
+                              userRole: user.rol,
+                              turno: turno,
+                              horaSalidaAsignada: turno.horaSalidaAsignada,
+                              consultor: consultor,
+                              puedeEditar: puedeEditar(consultor)
+                            });
+
+                            // Verificar permisos primero
+                            if (!puedeEditar(consultor)) {
+                              Swal.fire({
+                                title: '¡Sin permisos!',
+                                text: 'No tienes permisos para marcar el turno de este consultor.',
+                                icon: 'error',
+                              });
+                              return;
+                            }
+
+                            // Los administradores pueden marcar sin turno asignado
+                            if (user.rol.toLowerCase() !== 'administrador') {
+                              // Verificar si tiene turno asignado (solo para no-administradores)
+                              if (!turno.horaSalidaAsignada || turno.horaSalidaAsignada === "") {
+                                Swal.fire({
+                                  title: '¡Sin turno asignado!',
+                                  text: 'No puedes marcar salida sin tener un turno asignado.',
+                                  icon: 'error',
+                                });
+                                return;
+                              }
+                            }
+
+                            const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                            
+                            // Validar tolerancia de horario para consultores (administradores siempre pueden)
+                            if (user.rol.toLowerCase() !== 'administrador') {
+                              const validacion = validarToleranciaHorario(hora, turno.horaSalidaAsignada, user.rol.toLowerCase());
+                              
+                              if (!validacion.puedeMarcar) {
+                                Swal.fire({
+                                  title: '¡Fuera de horario!',
+                                  text: validacion.mensaje,
+                                  icon: 'error',
+                                });
+                                return;
+                              }
+                            }
+                            
+                            // No actualizar el estado local aquí, dejar que fetchTurnos() lo haga
+                            await handleGuardar(i, consultor, { horaSalidaMarcada: hora });
+                          }}
+                        >
                           ❌
                         </button>
                       </div>
@@ -282,7 +434,7 @@ const TurnosTable = ({ selectedDate }) => {
                             onChange={e => setObservaciones({ ...observaciones, [i]: e.target.value })}
                             placeholder="Escribe observación..."
                           />
-                          <button className="guardar-observacion-button" onClick={() => handleGuardar(i, consultor)}>
+                          <button className="guardar-observacion-button" onClick={async () => await handleGuardar(i, consultor)}>
                             Guardar
                           </button>
                           <button className="cancelar-button" onClick={() => setIsEditing(null)}>
@@ -307,7 +459,6 @@ const TurnosTable = ({ selectedDate }) => {
           </tbody>
         </table>
       </div>
-      <SweetAlert {...swalProps} onConfirm={() => setSwalProps({})} />
     </div>
   );
 };
