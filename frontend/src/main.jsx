@@ -12,6 +12,7 @@ import Turnos from '@pages/Turnos';
 import Horarios from '@pages/Horarios';   
 import Bitacoras from '@pages/Bitacoras'; 
 import MiPerfil from '@pages/MiPerfil';
+import MisReservas from '@pages/MisReservas';
 import Estadisticas from '@pages/Estadisticas';
 import '@styles/styles.css';
 
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
             <Turnos />
           </ProtectedRoute>
         ),
-      },,
+      },
       {
         path: '/bitacoras',
         element: (
@@ -58,6 +59,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['administrador', 'consultor', 'usuario', 'estudiante']}>
             <MiPerfil />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/mis-reservas',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante', 'consultor']}>
+            <MisReservas />
           </ProtectedRoute>
         ),
       },
