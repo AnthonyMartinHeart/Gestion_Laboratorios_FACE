@@ -1,4 +1,3 @@
-
 "use strict";
 import User from "../entity/user.entity.js";
 import { AppDataSource } from "./configDb.js";
@@ -19,8 +18,6 @@ async function createUsers() {
           email: "jorge.martinez2101@alumnos.ubiobio.cl",
           password: await encryptPassword("admin1234"),
           rol: "administrador",
-          carrera: "IECI",
-          anioIngreso: "2020",
         }),
       ),
       userRepository.save(
@@ -48,51 +45,26 @@ async function createUsers() {
           email: "luis.fernandez2101@alumnos.ubiobio.cl",
           password: await encryptPassword("fernan454"),
           rol: "consultor",
-          carrera: "IECI",
-          anioIngreso: "2020",
         }),
       ),
-      userRepository.save(
+userRepository.save(
         userRepository.create({
           nombreCompleto: "Felipe Nicolas Medina Retamal",
           rut: "19.814.553-K",
           email: "felipe.medina1701@alumnos.ubiobio.cl",
           password: await encryptPassword("felipnicmed1234"),
           rol: "consultor",
-          carrera: "IECI",
-          anioIngreso: "2019",
         }),
       ),
+
+      // Usuario de prueba agregado
       userRepository.save(
         userRepository.create({
           nombreCompleto: "Usuario de Prueba",
           rut: "12.184.931-3",
           email: "prueba.usuario2025@gmail.cl",
-          password: await encryptPassword("CONTRA1234"),
+          password: await encryptPassword("CONTRA1234"), // Contraseña aleatoria
           rol: "usuario",
-        }),
-      ),
-
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Jorge Ivan Antonio Diaz Villar",
-          rut: "21.004.677-1",
-          email: "jorge.diaz2001@alumnos.ubiobio.cl",
-          password: await encryptPassword("jorge2025"),
-          rol: "estudiante",
-          carrera: "IECI",
-          anioIngreso: "2020",
-        }),
-      ),
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Valter Sergio Esau Lineros Zambrano",
-          rut: "20.487.531-6",
-          email: "valter.lineros2001@alumnos.ubiobio.cl",
-          password: await encryptPassword("valter2025"),
-          rol: "estudiante",
-          carrera: "ICCI",
-          anioIngreso: "2021",
         }),
       ),
     ]);
