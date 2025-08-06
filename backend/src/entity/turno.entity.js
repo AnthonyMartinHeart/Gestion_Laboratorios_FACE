@@ -25,22 +25,22 @@ const Turno = new EntitySchema({
     },
     horaEntradaAsignada: {
       type: "varchar",
-      length: 10,
+      length: 20,
       nullable: true,
     },
     horaSalidaAsignada: {
       type: "varchar",
-      length: 10,
+      length: 20,
       nullable: true,
     },
     horaEntradaMarcada: {
       type: "varchar",
-      length: 10,
+      length: 20,
       nullable: true,
     },
     horaSalidaMarcada: {
       type: "varchar",
-      length: 10,
+      length: 20,
       nullable: true,
     },
     observacion: {
