@@ -33,6 +33,8 @@ export async function saveOrUpdateTurnoService(turnoData) {
   try {
     const turnoRepository = AppDataSource.getRepository(Turno);
     
+    console.log('🔍 Buscando turno existente para:', turnoData.rut, turnoData.fecha);
+    
     // Buscar si existe un turno para este RUT y fecha
     const existingTurno = await turnoRepository.findOne({
       where: { 
@@ -41,26 +43,48 @@ export async function saveOrUpdateTurnoService(turnoData) {
       }
     });
 
+    console.log('🔍 Turno existente encontrado:', existingTurno);
+
+    // Preparar datos limpios
+    const datosParaGuardar = {
+      rut: turnoData.rut,
+      nombre: turnoData.nombre || "",
+      fecha: turnoData.fecha,
+      horaEntradaAsignada: turnoData.horaEntradaAsignada || "",
+      horaSalidaAsignada: turnoData.horaSalidaAsignada || "",
+      horaEntradaMarcada: turnoData.horaEntradaMarcada || "",
+      horaSalidaMarcada: turnoData.horaSalidaMarcada || "",
+      observacion: turnoData.observacion || ""
+    };
+
+    console.log('💾 Datos preparados para guardar:', datosParaGuardar);
+
     if (existingTurno) {
       // Actualizar turno existente
+      console.log('🔄 Actualizando turno existente...');
       await turnoRepository.update(
         { rut: turnoData.rut, fecha: turnoData.fecha },
-        turnoData
+        datosParaGuardar
       );
       
       // Obtener el turno actualizado
       const updatedTurno = await turnoRepository.findOne({
         where: { rut: turnoData.rut, fecha: turnoData.fecha }
       });
+      
+      console.log('✅ Turno actualizado:', updatedTurno);
       return updatedTurno;
     } else {
       // Crear nuevo turno
-      const newTurno = turnoRepository.create(turnoData);
+      console.log('➕ Creando nuevo turno...');
+      const newTurno = turnoRepository.create(datosParaGuardar);
       const savedTurno = await turnoRepository.save(newTurno);
+      
+      console.log('✅ Turno creado:', savedTurno);
       return savedTurno;
     }
   } catch (error) {
-    console.error("Error al guardar/actualizar turno:", error);
+    console.error("❌ Error al guardar/actualizar turno:", error);
     throw error;
   }
 }
