@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { getUsers, getUserByRut } from "@services/user.service.js";
-import { getTurnosByFecha, saveOrUpdateTurno } from "@services/turnos.service.js";
+import { getTurnosByFecha, saveOrUpdateTurno, debugObservaciones } from "@services/turnos.service.js";
 import { useAuth } from "@context/AuthContext.jsx";
 
 const horarios = [
@@ -79,6 +79,9 @@ const TurnosTable = ({ selectedDate }) => {
     if (selectedDate && consultores.length > 0 && !guardandoTurno) {
       console.log('🔄 Cargando turnos para:', selectedDate);
       
+      // Hacer debug de observaciones antes de cargar
+      debugObservaciones(selectedDate);
+      
       try {
         const turnosData = await getTurnosByFecha(selectedDate);
         console.log('📥 Turnos obtenidos:', turnosData);
@@ -98,6 +101,7 @@ const TurnosTable = ({ selectedDate }) => {
           };
           
           console.log(`👤 Consultor ${consultor.nombreCompleto}:`, turnoCompleto);
+          console.log(`📝 Observación cargada: "${turnoCompleto.observacion}"`);
           
           return turnoCompleto;
         });
@@ -109,8 +113,11 @@ const TurnosTable = ({ selectedDate }) => {
         const nuevasObservaciones = {};
         turnosCompletos.forEach((turno, index) => {
           nuevasObservaciones[index] = turno.observacion || "";
+          console.log(`📋 Observación inicializada para índice ${index}: "${nuevasObservaciones[index]}"`);
         });
         setObservaciones(nuevasObservaciones);
+        
+        console.log('🗂️ Estado de observaciones inicializado:', nuevasObservaciones);
         
       } catch (error) {
         console.error('❌ Error cargando turnos:', error);
@@ -192,7 +199,21 @@ const TurnosTable = ({ selectedDate }) => {
       }
       
       console.log('💾 Guardando:', turnoData);
+      console.log('📝 Observación a guardar:', turnoData.observacion);
+      
       await saveOrUpdateTurno(selectedDate, turnoData);
+      
+      // Verificar que se guardó correctamente
+      setTimeout(async () => {
+        console.log('🔍 Verificando guardado de observación...');
+        debugObservaciones(selectedDate);
+        
+        // Recargar turnos para confirmar sincronización
+        const turnosVerificacion = await getTurnosByFecha(selectedDate);
+        const turnoVerificado = turnosVerificacion.find(t => t.rut === consultor.rut);
+        console.log('✅ Turno verificado después de guardar:', turnoVerificado);
+        console.log('📝 Observación verificada:', turnoVerificado?.observacion);
+      }, 500);
       
       // Actualizar SOLO el estado local sin recargar desde el backend
       const nuevosTurnos = [...turnos];
@@ -255,6 +276,43 @@ const TurnosTable = ({ selectedDate }) => {
 
   return (
     <div className="turnos-container">
+      {/* Botón de debugging temporal */}
+      {user?.rol?.toLowerCase() === 'administrador' && (
+        <div style={{ margin: '10px 0', padding: '10px', backgroundColor: '#f0f8ff', border: '1px solid #ccc', borderRadius: '5px' }}>
+          <button 
+            onClick={() => {
+              console.log('🔍 DEBUG MANUAL - Estado actual:');
+              console.log('📅 Fecha seleccionada:', selectedDate);
+              console.log('👥 Consultores:', consultores);
+              console.log('⏰ Turnos:', turnos);
+              console.log('📝 Observaciones:', observaciones);
+              
+              if (selectedDate) {
+                debugObservaciones(selectedDate);
+              }
+              
+              // Verificar backend
+              if (selectedDate) {
+                getTurnosByFecha(selectedDate).then(data => {
+                  console.log('🔄 Turnos desde backend:', data);
+                  data.forEach(turno => {
+                    if (turno.observacion) {
+                      console.log(`📝 ${turno.nombre}: "${turno.observacion}"`);
+                    }
+                  });
+                });
+              }
+            }}
+            style={{ padding: '5px 10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+          >
+            🔍 Debug Observaciones
+          </button>
+          <span style={{ marginLeft: '10px', fontSize: '12px', color: '#666' }}>
+            (Botón temporal para debugging - revisar consola)
+          </span>
+        </div>
+      )}
+      
       <div className="turnos-table">
         <table>
           <thead>
