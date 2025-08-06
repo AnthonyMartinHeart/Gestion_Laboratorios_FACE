@@ -276,43 +276,6 @@ const TurnosTable = ({ selectedDate }) => {
 
   return (
     <div className="turnos-container">
-      {/* Botón de debugging temporal */}
-      {user?.rol?.toLowerCase() === 'administrador' && (
-        <div style={{ margin: '10px 0', padding: '10px', backgroundColor: '#f0f8ff', border: '1px solid #ccc', borderRadius: '5px' }}>
-          <button 
-            onClick={() => {
-              console.log('🔍 DEBUG MANUAL - Estado actual:');
-              console.log('📅 Fecha seleccionada:', selectedDate);
-              console.log('👥 Consultores:', consultores);
-              console.log('⏰ Turnos:', turnos);
-              console.log('📝 Observaciones:', observaciones);
-              
-              if (selectedDate) {
-                debugObservaciones(selectedDate);
-              }
-              
-              // Verificar backend
-              if (selectedDate) {
-                getTurnosByFecha(selectedDate).then(data => {
-                  console.log('🔄 Turnos desde backend:', data);
-                  data.forEach(turno => {
-                    if (turno.observacion) {
-                      console.log(`📝 ${turno.nombre}: "${turno.observacion}"`);
-                    }
-                  });
-                });
-              }
-            }}
-            style={{ padding: '5px 10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
-          >
-            🔍 Debug Observaciones
-          </button>
-          <span style={{ marginLeft: '10px', fontSize: '12px', color: '#666' }}>
-            (Botón temporal para debugging - revisar consola)
-          </span>
-        </div>
-      )}
-      
       <div className="turnos-table">
         <table>
           <thead>
