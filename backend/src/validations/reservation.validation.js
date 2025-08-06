@@ -27,7 +27,7 @@ const horariosInicio = [
   "14:10",
   "15:40",
   "17:10",
-  "00:00", // Para mantenimiento
+  "00:00", 
 ];
 
 const horariosTermino = [
@@ -39,7 +39,7 @@ const horariosTermino = [
   "17:00",
   "18:30",
   "20:00",
-  "23:59", // Para mantenimiento
+  "23:59",
 ];
 
 export const reservationValidation = Joi.object({
