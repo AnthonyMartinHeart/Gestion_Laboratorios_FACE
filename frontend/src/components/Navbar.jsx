@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import "@styles/navbar.css";
 import { useState, useEffect } from "react";
 import { HiArrowSmLeft, HiArrowSmRight } from "react-icons/hi";
-import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt, FaChartBar } from "react-icons/fa";
+import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt, FaChartBar, FaClipboardList } from "react-icons/fa";
 import { ImExit } from "react-icons/im";
 import logoWhite from "../assets/GL-WHITE.png";
 
@@ -110,6 +110,15 @@ const Navbar = () => {
                   </NavLink>
                 </li>
               </>
+            )}
+
+            {(userRole === "estudiante" || userRole === "consultor") && (
+              <li>
+                <NavLink to="/mis-reservas" className={({ isActive }) => (isActive ? "active" : "")}>
+                  <FaClipboardList className="nav-icon" />
+                  <span>Mis Reservas</span>
+                </NavLink>
+              </li>
             )}
 
             <li>
