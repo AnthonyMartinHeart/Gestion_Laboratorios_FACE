@@ -58,6 +58,7 @@ const TurnosTable = ({ selectedDate }) => {
   const [observaciones, setObservaciones] = useState({});
   const [isEditing, setIsEditing] = useState(null);
   const [activeHorarioIndex, setActiveHorarioIndex] = useState(null);
+  const [guardandoTurno, setGuardandoTurno] = useState(false);
 
   // Cargar consultores
   useEffect(() => {
@@ -73,51 +74,64 @@ const TurnosTable = ({ selectedDate }) => {
     }
   }, [user]);
 
-  // Cargar turnos - SIMPLIFICADO
+  // Cargar turnos - SIMPLIFICADO Y SIN LOOPS
   const loadTurnos = async () => {
-    if (selectedDate && consultores.length > 0) {
+    if (selectedDate && consultores.length > 0 && !guardandoTurno) {
       console.log('🔄 Cargando turnos para:', selectedDate);
       
-      const turnosData = await getTurnosByFecha(selectedDate);
-      console.log('📥 Turnos obtenidos:', turnosData);
-      
-      // Crear turnos para todos los consultores
-      const turnosCompletos = consultores.map(consultor => {
-        const turnoExistente = turnosData.find(t => t.rut === consultor.rut);
-        const turnoCompleto = turnoExistente || {
-          rut: consultor.rut,
-          nombre: consultor.nombreCompleto,
-          fecha: selectedDate,
-          horaEntradaAsignada: "",
-          horaSalidaAsignada: "",
-          horaEntradaMarcada: "",
-          horaSalidaMarcada: "",
-          observacion: ""
-        };
+      try {
+        const turnosData = await getTurnosByFecha(selectedDate);
+        console.log('📥 Turnos obtenidos:', turnosData);
         
-        console.log(`👤 Consultor ${consultor.nombreCompleto}:`, {
-          turnoExistente,
-          turnoCompleto,
-          horaEntradaMarcada: turnoCompleto.horaEntradaMarcada,
-          horaSalidaMarcada: turnoCompleto.horaSalidaMarcada
+        // Crear turnos para todos los consultores
+        const turnosCompletos = consultores.map(consultor => {
+          const turnoExistente = turnosData.find(t => t.rut === consultor.rut);
+          const turnoCompleto = turnoExistente || {
+            rut: consultor.rut,
+            nombre: consultor.nombreCompleto,
+            fecha: selectedDate,
+            horaEntradaAsignada: "",
+            horaSalidaAsignada: "",
+            horaEntradaMarcada: "",
+            horaSalidaMarcada: "",
+            observacion: ""
+          };
+          
+          console.log(`👤 Consultor ${consultor.nombreCompleto}:`, turnoCompleto);
+          
+          return turnoCompleto;
         });
         
-        return turnoCompleto;
-      });
-      
-      console.log('� Turnos finales:', turnosCompletos);
-      setTurnos(turnosCompletos);
+        console.log('📝 Turnos finales:', turnosCompletos);
+        setTurnos(turnosCompletos);
+        
+        // Inicializar observaciones desde los turnos cargados
+        const nuevasObservaciones = {};
+        turnosCompletos.forEach((turno, index) => {
+          nuevasObservaciones[index] = turno.observacion || "";
+        });
+        setObservaciones(nuevasObservaciones);
+        
+      } catch (error) {
+        console.error('❌ Error cargando turnos:', error);
+      }
     }
   };
 
   useEffect(() => {
-    loadTurnos();
-  }, [selectedDate, consultores]);
+    // Solo cargar si hay cambios reales en selectedDate o consultores
+    if (selectedDate && consultores.length > 0 && !guardandoTurno) {
+      loadTurnos();
+    }
+  }, [selectedDate, consultores]); // Removido 'turnos' de dependencias para evitar loop
 
   const handleObservacionChange = (index, value) => {
     const nuevasObservaciones = { ...observaciones };
     nuevasObservaciones[index] = value;
     setObservaciones(nuevasObservaciones);
+    
+    // NO guardamos automáticamente, solo actualizamos el estado local
+    // El usuario debe presionar "Guardar" para persistir los cambios
   };
 
   const handleTurnoChange = (index, tipo, value) => {
@@ -129,10 +143,10 @@ const TurnosTable = ({ selectedDate }) => {
 
 
 
-  // Guardar turno/observación en el backend
+  // Guardar turno/observación en el backend - SIN LOOPS
   const handleGuardar = async (i, consultor, extra = {}) => {
     try {
-      console.log('� Guardando turno para:', consultor.nombreCompleto);
+      console.log('💾 Guardando turno para:', consultor.nombreCompleto);
       
       if (!selectedDate) {
         Swal.fire({
@@ -142,18 +156,28 @@ const TurnosTable = ({ selectedDate }) => {
         });
         return;
       }
+
+      // Evitar guardados múltiples simultáneos
+      if (guardandoTurno) {
+        console.log('⚠️ Ya se está guardando un turno, cancelando...');
+        return;
+      }
+
+      setGuardandoTurno(true);
       
-      const turno = turnos.find(t => t.rut === consultor.rut) || {};
+      const turnoActual = turnos.find(t => t.rut === consultor.rut) || {};
+      const observacionActual = observaciones[i] !== undefined ? observaciones[i] : turnoActual.observacion || "";
       
-      const newTurno = {
+      const turnoData = {
         rut: consultor.rut,
         nombre: consultor.nombreCompleto,
         fecha: selectedDate,
-        horaEntradaAsignada: turno.horaEntradaAsignada || "",
-        horaSalidaAsignada: turno.horaSalidaAsignada || "",
-        horaEntradaMarcada: extra.horaEntradaMarcada || turno.horaEntradaMarcada || "",
-        horaSalidaMarcada: extra.horaSalidaMarcada || turno.horaSalidaMarcada || "",
-        observacion: observaciones[i] !== undefined ? observaciones[i] : turno.observacion || "",
+        horaEntradaAsignada: turnoActual.horaEntradaAsignada || "",
+        horaSalidaAsignada: turnoActual.horaSalidaAsignada || "",
+        horaEntradaMarcada: turnoActual.horaEntradaMarcada || "",
+        horaSalidaMarcada: turnoActual.horaSalidaMarcada || "",
+        observacion: observacionActual,
+        ...extra // Esto sobrescribe los valores anteriores si hay cambios
       };
       
       // Si estamos asignando horarios
@@ -162,16 +186,33 @@ const TurnosTable = ({ selectedDate }) => {
         const salidaSelect = document.querySelector(`select[data-consultor="${i}"][data-tipo="salida"]`);
         
         if (entradaSelect && salidaSelect) {
-          newTurno.horaEntradaAsignada = entradaSelect.value || "";
-          newTurno.horaSalidaAsignada = salidaSelect.value || "";
+          turnoData.horaEntradaAsignada = entradaSelect.value || "";
+          turnoData.horaSalidaAsignada = salidaSelect.value || "";
         }
       }
       
-      console.log('💾 Guardando:', newTurno);
-      await saveOrUpdateTurno(selectedDate, newTurno);
+      console.log('💾 Guardando:', turnoData);
+      await saveOrUpdateTurno(selectedDate, turnoData);
       
-      // Recargar datos
-      await loadTurnos();
+      // Actualizar SOLO el estado local sin recargar desde el backend
+      const nuevosTurnos = [...turnos];
+      const indiceExistente = nuevosTurnos.findIndex(t => t.rut === consultor.rut);
+      
+      if (indiceExistente >= 0) {
+        nuevosTurnos[indiceExistente] = turnoData;
+      } else {
+        nuevosTurnos.push(turnoData);
+      }
+      
+      setTurnos(nuevosTurnos);
+      
+      // Actualizar observaciones en el estado local
+      if (extra.observacion !== undefined || observacionActual) {
+        setObservaciones(prev => ({ ...prev, [i]: turnoData.observacion }));
+      }
+      
+      // NO recargar automáticamente para evitar sobrescribir los datos recién guardados
+      console.log('✅ Estado local actualizado, no recargando para preservar datos');
       
       // Mensaje de éxito
       let message = 'Turno guardado exitosamente';
@@ -185,7 +226,7 @@ const TurnosTable = ({ selectedDate }) => {
         icon: 'success',
         title: 'Éxito',
         text: message,
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false
       });
       
@@ -199,6 +240,8 @@ const TurnosTable = ({ selectedDate }) => {
         title: 'Error',
         text: 'No se pudo guardar el turno'
       });
+    } finally {
+      setGuardandoTurno(false);
     }
   };
 
@@ -303,10 +346,13 @@ const TurnosTable = ({ selectedDate }) => {
                         <button 
                           className="entrada-button" 
                           disabled={
+                            guardandoTurno ||
                             !puedeEditar(consultor) || 
                             (user.rol.toLowerCase() !== 'administrador' && (!turno.horaEntradaAsignada || turno.horaEntradaAsignada === ""))
                           }
                           onClick={async () => {
+                            if (guardandoTurno) return;
+                            
                             console.log('Intentando marcar entrada:', {
                               userRole: user.rol,
                               turno: turno,
@@ -354,7 +400,7 @@ const TurnosTable = ({ selectedDate }) => {
                               }
                             }
                             
-                            // No actualizar el estado local aquí, dejar que fetchTurnos() lo haga
+                            // Marcar entrada y actualizar estado local inmediatamente
                             await handleGuardar(i, consultor, { horaEntradaMarcada: hora });
                           }}
                         >
@@ -366,10 +412,12 @@ const TurnosTable = ({ selectedDate }) => {
                         <button 
                           className="salida-button" 
                           disabled={
+                            guardandoTurno ||
                             !puedeEditar(consultor) || 
                             (user.rol.toLowerCase() !== 'administrador' && (!turno.horaSalidaAsignada || turno.horaSalidaAsignada === ""))
                           }
                           onClick={async () => {
+                            if (guardandoTurno) return;
                             console.log('Intentando marcar salida:', {
                               userRole: user.rol,
                               turno: turno,
@@ -417,7 +465,7 @@ const TurnosTable = ({ selectedDate }) => {
                               }
                             }
                             
-                            // No actualizar el estado local aquí, dejar que fetchTurnos() lo haga
+                            // Marcar salida y actualizar estado local inmediatamente  
                             await handleGuardar(i, consultor, { horaSalidaMarcada: hora });
                           }}
                         >
@@ -430,14 +478,29 @@ const TurnosTable = ({ selectedDate }) => {
                         <>
                           <input
                             type="text"
-                            value={observaciones[i] || turno.observacion || ""}
-                            onChange={e => setObservaciones({ ...observaciones, [i]: e.target.value })}
+                            value={observaciones[i] !== undefined ? observaciones[i] : (turno.observacion || "")}
+                            onChange={e => handleObservacionChange(i, e.target.value)}
                             placeholder="Escribe observación..."
                           />
-                          <button className="guardar-observacion-button" onClick={async () => await handleGuardar(i, consultor)}>
+                          <button className="guardar-observacion-button" onClick={async () => {
+                            // Guardar específicamente la observación actualizada
+                            const observacionActual = observaciones[i] !== undefined ? observaciones[i] : (turno.observacion || "");
+                            await handleGuardar(i, consultor, { observacion: observacionActual });
+                          }}>
                             Guardar
                           </button>
-                          <button className="cancelar-button" onClick={() => setIsEditing(null)}>
+                          <button className="limpiar-observacion-button" onClick={async () => {
+                            // Limpiar la observación
+                            setObservaciones(prev => ({ ...prev, [i]: "" }));
+                            await handleGuardar(i, consultor, { observacion: "" });
+                          }}>
+                            Limpiar
+                          </button>
+                          <button className="cancelar-button" onClick={() => {
+                            // Restaurar observación original y cancelar edición
+                            setObservaciones(prev => ({ ...prev, [i]: turno.observacion || "" }));
+                            setIsEditing(null);
+                          }}>
                             Cancelar
                           </button>
                         </>
