@@ -68,6 +68,7 @@ const MisReservas = () => {
 
   const abrirModalEdicion = (reserva) => {
     console.log('Abriendo modal de edición para:', reserva);
+    
     // Horarios disponibles - mismos que en SelectPC.jsx
     const horariosInicio = [
       "08:10", "09:40", "11:10", "12:40",
@@ -77,6 +78,85 @@ const MisReservas = () => {
       "09:30", "11:00", "12:30", "14:00",
       "15:30", "17:00", "18:30", "20:00"
     ];
+
+    // Función para obtener horarios válidos según la hora actual
+    const getHorariosValidos = () => {
+      const ahora = new Date();
+      const horaActual = ahora.getHours();
+      const minutoActual = ahora.getMinutes();
+      const tiempoActualEnMinutos = horaActual * 60 + minutoActual;
+
+      // Agregar 15 minutos de margen para dar tiempo a completar la edición
+      const tiempoMinimoReserva = tiempoActualEnMinutos + 15;
+
+      const horariosInicioValidos = horariosInicio.filter(hora => {
+        const [h, m] = hora.split(':').map(Number);
+        const tiempoHora = h * 60 + m;
+        return tiempoHora >= tiempoMinimoReserva;
+      });
+
+      const horariosTerminoValidos = horariosTermino.filter(hora => {
+        const [h, m] = hora.split(':').map(Number);
+        const tiempoHora = h * 60 + m;
+        return tiempoHora > tiempoMinimoReserva;
+      });
+
+      return {
+        inicioValidos: horariosInicioValidos,
+        terminoValidos: horariosTerminoValidos
+      };
+    };
+
+    // Función para obtener horarios de término válidos según la hora de inicio seleccionada
+    const getHorariosTerminoValidos = (horaInicioSeleccionada) => {
+      if (!horaInicioSeleccionada) return [];
+
+      const { terminoValidos } = getHorariosValidos();
+      const inicioEnMinutos = horaInicioSeleccionada.split(':').map(Number);
+      const inicioTotal = inicioEnMinutos[0] * 60 + inicioEnMinutos[1];
+
+      return terminoValidos.filter(hora => {
+        const terminoEnMinutos = hora.split(':').map(Number);
+        const terminoTotal = terminoEnMinutos[0] * 60 + terminoEnMinutos[1];
+        return terminoTotal > inicioTotal;
+      });
+    };
+
+    const horariosValidos = getHorariosValidos();
+
+    // Verificar si hay horarios disponibles
+    if (horariosValidos.inicioValidos.length === 0) {
+      const horaActual = new Date().toLocaleTimeString('es-CL', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+      
+      Swal.fire({
+        title: 'Sin horarios disponibles',
+        html: `
+          <div style="text-align: center;">
+            <p>No hay horarios disponibles para editar en este momento.</p>
+            <p><strong>Hora actual:</strong> ${horaActual}</p>
+            <br>
+            <p>Los horarios de laboratorio son:</p>
+            <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+              <li>08:10 - 09:30</li>
+              <li>09:40 - 11:00</li>
+              <li>11:10 - 12:30</li>
+              <li>12:40 - 14:00</li>
+              <li>14:10 - 15:30</li>
+              <li>15:40 - 17:00</li>
+              <li>17:10 - 18:30</li>
+              <li>Hasta las 20:00</li>
+            </ul>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
 
     Swal.fire({
       title: 'Editar Reserva',
@@ -89,17 +169,26 @@ const MisReservas = () => {
           <div style="margin: 15px 0;">
             <label for="horaInicio" style="display: block; margin-bottom: 5px; font-weight: bold;">Hora de inicio:</label>
             <select id="horaInicio" class="swal2-input" style="margin-bottom: 10px;">
-              ${horariosInicio.map(hora => 
+              <option value="">Selecciona hora de inicio</option>
+              ${horariosValidos.inicioValidos.map(hora => 
                 `<option value="${hora}" ${hora === reserva.horaInicio ? 'selected' : ''}>${hora}</option>`
               ).join('')}
             </select>
             
             <label for="horaTermino" style="display: block; margin-bottom: 5px; font-weight: bold;">Hora de término:</label>
             <select id="horaTermino" class="swal2-input">
-              ${horariosTermino.map(hora => 
-                `<option value="${hora}" ${hora === reserva.horaTermino ? 'selected' : ''}>${hora}</option>`
-              ).join('')}
+              <option value="">Selecciona hora de término</option>
             </select>
+          </div>
+          
+          <div id="info-horarios" style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; font-size: 14px;">
+            <p style="margin: 0; color: #666;">
+              ⏰ <strong>Hora actual:</strong> ${new Date().toLocaleTimeString('es-CL', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+              })}
+            </p>
           </div>
         </div>
       `,
@@ -107,6 +196,38 @@ const MisReservas = () => {
       confirmButtonText: 'Guardar Cambios',
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#3498db',
+      didOpen: () => {
+        const horaInicioSelect = document.getElementById('horaInicio');
+        const horaTerminoSelect = document.getElementById('horaTermino');
+        
+        // Función para actualizar horarios de término
+        const actualizarHorariosTermino = () => {
+          const horaInicioSeleccionada = horaInicioSelect.value;
+          const horariosTerminoDisponibles = getHorariosTerminoValidos(horaInicioSeleccionada);
+          
+          // Limpiar opciones actuales
+          horaTerminoSelect.innerHTML = '<option value="">Selecciona hora de término</option>';
+          
+          // Agregar nuevas opciones
+          horariosTerminoDisponibles.forEach(hora => {
+            const option = document.createElement('option');
+            option.value = hora;
+            option.textContent = hora;
+            if (hora === reserva.horaTermino && horaInicioSeleccionada === reserva.horaInicio) {
+              option.selected = true;
+            }
+            horaTerminoSelect.appendChild(option);
+          });
+        };
+        
+        // Inicializar horarios de término si hay una hora de inicio seleccionada
+        if (horaInicioSelect.value) {
+          actualizarHorariosTermino();
+        }
+        
+        // Agregar listener para cambios en hora de inicio
+        horaInicioSelect.addEventListener('change', actualizarHorariosTermino);
+      },
       preConfirm: () => {
         const horaInicio = document.getElementById('horaInicio').value;
         const horaTermino = document.getElementById('horaTermino').value;
