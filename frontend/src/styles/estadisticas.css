@@ -25,7 +25,6 @@
   color: white;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -47,7 +46,6 @@
   background: rgba(255, 255, 255, 0.95);
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   margin-bottom: 30px;
@@ -57,6 +55,7 @@
   margin: 0 0 20px 0;
   color: #033163;
   font-size: 1.3rem;
+  text-shadow: none;
 }
 
 .filtros-form {
@@ -98,7 +97,6 @@
   background: rgba(255, 255, 255, 0.95);
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   margin-bottom: 30px;
@@ -108,6 +106,7 @@
   margin: 0 0 20px 0;
   color: #033163;
   font-size: 1.3rem;
+  text-shadow: none;
 }
 
 .resumen-cards {
@@ -155,7 +154,6 @@
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -291,7 +289,6 @@
   background: rgba(255, 255, 255, 0.95);
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -375,7 +372,6 @@
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .lab-equipos {
@@ -411,7 +407,6 @@
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .lab-usage-bar {
@@ -435,7 +430,6 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
 
@@ -515,7 +509,6 @@
   color: white;
   font-size: 0.8rem;
   font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .no-data-message {
@@ -534,7 +527,6 @@
   background: white;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
 }
 
@@ -592,7 +584,6 @@
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tabla-estadisticas {
@@ -814,7 +805,6 @@
   background: rgba(255, 255, 255, 0.95);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -900,7 +890,6 @@
 
 .data-point-label {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .x-axis-labels {
