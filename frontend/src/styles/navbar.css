@@ -151,12 +151,109 @@
 	flex-grow: 0;
   }
   
-  /* Logo fijo abajo del menú */
-  .navbar-bottom-logo {
-	padding: 1rem;
-	text-align: center;
-	flex-shrink: 0;
+  /* Estilos para submenús mejorados */
+.submenu-item {
+  position: relative;
+}
+
+.submenu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-color);
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  border-radius: 6px;
+  margin: 2px 0;
+}
+
+.submenu-toggle:hover,
+.submenu-toggle.active {
+  background-color: var(--hover-color);
+}
+
+.submenu-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+  margin-left: auto;
+}
+
+.submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0;
+  padding: 0;
+  border-radius: 6px;
+  margin-top: 4px;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  margin-left: 10px;
+  list-style: none;
+}
+
+.submenu-open {
+  max-height: 300px;
+  padding: 8px 0;
+}
+
+.submenu li {
+  margin: 0;
+}
+
+.submenu a {
+  padding: 0.5rem 1rem 0.5rem 2rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: background-color var(--transition-speed);
+}
+
+.submenu a:hover,
+.submenu a.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.submenu-icon {
+  font-size: 1rem;
+  margin-right: 0.6rem;
+}
+
+/* Animación de flecha del submenú */
+.submenu-toggle .submenu-arrow {
+  transform: rotate(0deg);
+}
+
+.submenu-open + .submenu-toggle .submenu-arrow,
+.submenu-toggle.active .submenu-arrow {
+  transform: rotate(90deg);
+}
+
+/* Variables CSS para el navbar */
+:root {
+  --text-color: #ffffff;
+  --hover-color: rgba(255, 255, 255, 0.1);
+  --transition-speed: 0.3s;
+}
+
+/* Responsive para submenús */
+@media (max-width: 768px) {
+  .submenu a {
+    padding: 0.5rem 1rem 0.5rem 1.5rem;
+    font-size: 0.85rem;
   }
+  
+  .submenu-icon {
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+  }
+}
   
   /*tama imagen logo face*/
   .bottom-logo-img {
