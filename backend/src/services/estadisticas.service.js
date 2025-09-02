@@ -1,5 +1,6 @@
 "use strict";
 import Reservation from "../entity/reservation.entity.js";
+import Turno from "../entity/turno.entity.js";
 import { AppDataSource } from "../config/configDb.js";
 
 export async function getEstadisticasGeneralesService(filtros = {}) {
@@ -221,4 +222,211 @@ const LAB_CONFIG = {
 
 function getLabInfo(labId) {
   return LAB_CONFIG[labId] || null;
+}
+
+export async function getEstadisticasAsistenciaService(filtros = {}) {
+  try {
+    const repo = AppDataSource.getRepository(Turno);
+    
+    // Construir query base
+    let query = repo.createQueryBuilder("t");
+
+    // Aplicar filtros de fecha
+    if (filtros.fechaInicio) {
+      query.andWhere("t.fecha >= :fechaInicio", { fechaInicio: filtros.fechaInicio });
+    }
+    if (filtros.fechaFin) {
+      query.andWhere("t.fecha <= :fechaFin", { fechaFin: filtros.fechaFin });
+    }
+    if (filtros.consultor && filtros.consultor !== 'todos') {
+      query.andWhere("LOWER(t.nombre) LIKE :consultor", { 
+        consultor: `%${filtros.consultor.toLowerCase()}%` 
+      });
+    }
+
+    const turnos = await query.getMany();
+
+    // Calcular estadísticas de asistencia
+    const estadisticas = {
+      resumenGeneral: calcularResumenAsistencia(turnos),
+      asistenciaPorConsultor: calcularAsistenciaPorConsultor(turnos),
+      puntualidadPorConsultor: calcularPuntualidadPorConsultor(turnos),
+      horasPorConsultor: calcularHorasPorConsultor(turnos),
+      observacionesPorConsultor: calcularObservacionesPorConsultor(turnos),
+      tendenciasAsistencia: calcularTendenciasAsistencia(turnos)
+    };
+
+    return [estadisticas, null];
+  } catch (error) {
+    console.error("Error calculando estadísticas de asistencia:", error);
+    return [null, "Error interno del servidor"];
+  }
+}
+
+// Funciones auxiliares para estadísticas de asistencia
+function calcularResumenAsistencia(turnos) {
+  const consultoresUnicos = new Set(turnos.map(t => t.nombre));
+  const turnosPresentes = turnos.filter(t => t.horaEntradaMarcada);
+  const turnosAusentes = turnos.filter(t => !t.horaEntradaMarcada);
+  
+  let totalRetrasos = 0;
+  let contadorRetrasos = 0;
+  let totalHoras = 0;
+  let contadorHoras = 0;
+
+  turnos.forEach(turno => {
+    if (turno.horaEntradaMarcada && turno.horaEntradaAsignada) {
+      const retraso = calcularRetraso(turno.horaEntradaAsignada, turno.horaEntradaMarcada);
+      if (retraso !== null) {
+        totalRetrasos += retraso;
+        contadorRetrasos++;
+      }
+    }
+    
+    if (turno.horaEntradaMarcada && turno.horaSalidaMarcada) {
+      const horas = calcularHorasTrabajadas(turno.horaEntradaMarcada, turno.horaSalidaMarcada);
+      if (horas > 0) {
+        totalHoras += horas;
+        contadorHoras++;
+      }
+    }
+  });
+
+  return {
+    totalTurnos: turnos.length,
+    totalConsultores: consultoresUnicos.size,
+    turnosPresentes: turnosPresentes.length,
+    turnosAusentes: turnosAusentes.length,
+    porcentajeAsistencia: turnos.length > 0 ? ((turnosPresentes.length / turnos.length) * 100).toFixed(1) : 0,
+    promedioRetraso: contadorRetrasos > 0 ? (totalRetrasos / contadorRetrasos).toFixed(1) : 0,
+    promedioHoras: contadorHoras > 0 ? (totalHoras / contadorHoras).toFixed(1) : 0
+  };
+}
+
+function calcularAsistenciaPorConsultor(turnos) {
+  const asistencia = {};
+  
+  turnos.forEach(turno => {
+    const nombre = turno.nombre || 'Sin nombre';
+    if (!asistencia[nombre]) {
+      asistencia[nombre] = { asignados: 0, presentes: 0, ausentes: 0 };
+    }
+    
+    asistencia[nombre].asignados++;
+    if (turno.horaEntradaMarcada) {
+      asistencia[nombre].presentes++;
+    } else {
+      asistencia[nombre].ausentes++;
+    }
+  });
+  
+  return asistencia;
+}
+
+function calcularPuntualidadPorConsultor(turnos) {
+  const puntualidad = {};
+  
+  turnos.forEach(turno => {
+    const nombre = turno.nombre || 'Sin nombre';
+    if (!puntualidad[nombre]) {
+      puntualidad[nombre] = [];
+    }
+    
+    if (turno.horaEntradaMarcada && turno.horaEntradaAsignada) {
+      const retraso = calcularRetraso(turno.horaEntradaAsignada, turno.horaEntradaMarcada);
+      if (retraso !== null) {
+        puntualidad[nombre].push({
+          fecha: turno.fecha,
+          retraso: retraso,
+          estado: retraso <= 0 ? 'puntual' : retraso <= 5 ? 'aceptable' : 'tarde'
+        });
+      }
+    }
+  });
+  
+  return puntualidad;
+}
+
+function calcularHorasPorConsultor(turnos) {
+  const horas = {};
+  
+  turnos.forEach(turno => {
+    const nombre = turno.nombre || 'Sin nombre';
+    if (!horas[nombre]) {
+      horas[nombre] = 0;
+    }
+    
+    if (turno.horaEntradaMarcada && turno.horaSalidaMarcada) {
+      const horasTrabajadas = calcularHorasTrabajadas(turno.horaEntradaMarcada, turno.horaSalidaMarcada);
+      horas[nombre] += horasTrabajadas;
+    }
+  });
+  
+  return horas;
+}
+
+function calcularObservacionesPorConsultor(turnos) {
+  const observaciones = {};
+  
+  turnos.forEach(turno => {
+    const nombre = turno.nombre || 'Sin nombre';
+    if (!observaciones[nombre]) {
+      observaciones[nombre] = [];
+    }
+    
+    if (turno.observacion && turno.observacion.trim()) {
+      observaciones[nombre].push({
+        fecha: turno.fecha,
+        observacion: turno.observacion
+      });
+    }
+  });
+  
+  return observaciones;
+}
+
+function calcularTendenciasAsistencia(turnos) {
+  const tendencias = {};
+  
+  turnos.forEach(turno => {
+    const fecha = new Date(turno.fecha);
+    const mesAno = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!tendencias[mesAno]) {
+      tendencias[mesAno] = { total: 0, presentes: 0, ausentes: 0 };
+    }
+    
+    tendencias[mesAno].total++;
+    if (turno.horaEntradaMarcada) {
+      tendencias[mesAno].presentes++;
+    } else {
+      tendencias[mesAno].ausentes++;
+    }
+  });
+  
+  return tendencias;
+}
+
+function calcularRetraso(horaAsignada, horaMarcada) {
+  if (!horaAsignada || !horaMarcada) return null;
+  
+  const [horaA, minA] = horaAsignada.split(':').map(Number);
+  const [horaM, minM] = horaMarcada.split(':').map(Number);
+  
+  const minutosAsignados = horaA * 60 + minA;
+  const minutosMarcados = horaM * 60 + minM;
+  
+  return minutosMarcados - minutosAsignados; // Positivo = tarde, Negativo = temprano
+}
+
+function calcularHorasTrabajadas(horaEntrada, horaSalida) {
+  if (!horaEntrada || !horaSalida) return 0;
+  
+  const [horaE, minE] = horaEntrada.split(':').map(Number);
+  const [horaS, minS] = horaSalida.split(':').map(Number);
+  
+  const minutosEntrada = horaE * 60 + minE;
+  const minutosSalida = horaS * 60 + minS;
+  
+  return Math.max(0, (minutosSalida - minutosEntrada) / 60);
 }
