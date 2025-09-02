@@ -58,16 +58,16 @@ html, body {
   justify-content: flex-start;
   align-items: center;
   text-align: center;
-  padding: 40px 10px 20px 10px;
-  gap: 25px;
-  padding-top: 60px;
+  padding: 30px 20px 20px 20px; /* Mejor padding */
+  gap: 0px; /* Sin gap entre elementos principales */
+  padding-top: 40px; /* Padding top ajustado */
   width: 100%;
 }
 /* ===== HEADER PRINCIPAL ===== */
 .solicitudes-header {
   border: none;
-  padding: 25px;
-  margin-bottom: 25px;
+  padding: 20px 25px 15px 25px; /* Padding más balanceado */
+  margin-bottom: 10px; /* Margen para separar del filtro */
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -80,41 +80,46 @@ html, body {
 
 @keyframes titleGlow {
   from {
-    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
   }
   to {
-    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 255, 255, 0.5);
+    color: #f0f8ff;
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.3);
   }
+}
+
+.solicitudes-header h1 {
+  color: #ffffff !important; /* Forzado en blanco */
+  font-size: 2.8rem !important; /* Tamaño ajustado */
+  font-weight: 800 !important;
+  text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8) !important;
+  margin: 0 !important; /* Sin margin */
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+  display: block;
+  text-align: left; /* Alineado a la izquierda */
+}
+
+.solicitudes-header h1::before {
+  /* Removido el emoji */
+  content: "";
+  font-size: 0;
 }
 
 .solicitudes-header h1::after {
   content: '';
   position: absolute;
   bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, transparent, #ffffff, transparent);
-  opacity: 0.7;
-}
-
-.solicitudes-header h1 {
-  color: #FFFFFF;
-  margin: 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  position: relative;
-}
-
-.solicitudes-header h1::before {
-  content: "📋";
-  font-size: 1.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
 }
 
 .btn-nueva-solicitud {
@@ -145,22 +150,179 @@ html, body {
 }
 
 .btn-limpiar-procesadas {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #003366 0%, #0055A4 100%);
+  padding: 12px 20px; /* Padding consistente con filter-button */
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); /* Color rojo para diferenciarlo */
   color: #ffffff;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px; /* Bordes consistentes */
   font-weight: 600;
   transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
-  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  font-size: 0.95rem; /* Tamaño consistente */
+  min-height: 45px; /* Altura mínima igual */
 }
 
 .btn-limpiar-procesadas:hover {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  transform: translateY(-2px); /* Efecto hover consistente */
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+/* ===== FILTROS ===== */
+.filters-section {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 25px; /* Padding más generoso */
+  margin-top: 0px; /* Sin margen superior */
+  margin-bottom: 25px; /* Margen inferior para separar de las tarjetas */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  width: 100%;
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Más espacio después del header de filtros */
+}
+
+.filters-title {
+  font-size: 1.4rem; /* Tamaño aumentado */
+  font-weight: 700; /* Más peso */
+  color: #003366;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Más espacio entre icon y texto */
+}
+
+.filters-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Más espacio entre elementos */
+  align-items: flex-end; /* Alinear al final para que los botones estén en la misma línea */
+  justify-content: flex-start; /* Alineado al inicio */
+}
+
+/* Contenedor específico para los botones */
+.filters-buttons {
+  display: flex;
+  gap: 15px; /* Espacio entre botones */
+  align-items: center;
+  margin-left: auto; /* Empujar los botones hacia la derecha */
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Más espacio entre label e input */
+  min-width: 160px; /* Ancho mínimo consistente */
+}
+
+.filter-label {
+  font-size: 0.95rem; /* Tamaño ligeramente mayor */
+  font-weight: 600; /* Más peso */
+  color: #003366; /* Color más fuerte */
+  text-align: left; /* Alineado a la izquierda */
+}
+
+.filter-input {
+  padding: 12px 15px; /* Padding más generoso */
+  border: 2px solid #e0e0e0;
+  border-radius: 10px; /* Bordes más redondeados */
+  font-size: 0.95rem; /* Tamaño ligeramente mayor */
+  transition: all 0.3s ease;
+  background: white;
+  min-width: 160px; /* Ancho mínimo consistente */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #0066CC;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.filter-button {
+  background: linear-gradient(135deg, #0066CC 0%, #003366 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px; /* Padding más generoso */
+  border-radius: 10px; /* Bordes consistentes */
+  font-weight: 600; /* Más peso */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem; /* Tamaño consistente */
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.3); /* Sombra atractiva */
+  min-height: 45px; /* Altura mínima */
+}
+
+.filter-button:hover {
   background: linear-gradient(135deg, #004080 0%, #0066CC 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 51, 102, 0.4);
+  transform: translateY(-2px); /* Efecto hover más pronunciado */
+  box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+}
+
+.filter-button.clear {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.filter-button.clear:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+}
+
+@media (max-width: 768px) {
+  .solicitudes-container {
+    padding: 20px 15px 20px 15px;
+    padding-top: 30px;
+  }
+  
+  .solicitudes-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 20px;
+    text-align: center;
+  }
+  
+  .solicitudes-header h1 {
+    font-size: 2.2rem !important;
+    text-align: center;
+  }
+  
+  .filters-section {
+    padding: 20px;
+  }
+  
+  .filters-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .filters-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .filters-buttons {
+    margin-left: 0; /* Resetear margin en móviles */
+    justify-content: center; /* Centrar botones en móviles */
+    flex-wrap: wrap;
+  }
+  
+  .filter-group {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .filter-input {
+    width: 100%;
+    min-width: 100%;
+  }
 }
 
 /* ===== LOADING Y ERROR ===== */
@@ -456,7 +618,7 @@ html, body {
 .solicitudes-list {
   background: transparent;
   max-width: 1500px;
-  margin: 0 auto;
+  margin: 0 auto; /* Centrado sin margen superior extra */
   padding: 0;
   width: 100%;
   display: flex;
