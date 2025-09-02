@@ -5,7 +5,13 @@ import { comparePassword, encryptPassword } from "../helpers/bcrypt.helper.js";
 
 function normalizeRut(rut) {
   if (!rut) return "";
-  return rut.replace(/\./g, "").replace(/-k$/i, "-K").toUpperCase();
+  // Limpiar el RUT: quitar puntos, espacios y normalizar K
+  return rut.toString()
+    .replace(/\./g, "")
+    .replace(/\s/g, "")
+    .replace(/-k$/i, "-K")
+    .toUpperCase()
+    .trim();
 }
 
 export async function getUserService(query) {
@@ -113,21 +119,98 @@ export async function deleteUserService(query) {
     const { id, rut, email } = query;
     const userRepository = AppDataSource.getRepository(User);
     let userFound = null;
+    
+    console.log(`🔍 Buscando usuario para eliminar - RUT: ${rut}, ID: ${id}, Email: ${email}`);
+    
     if (rut) {
       const users = await userRepository.find();
-      userFound = users.find((u) => normalizeRut(u.rut) === normalizeRut(rut));
+      console.log(`📊 Total usuarios en BD: ${users.length}`);
+      console.log(`🔎 Buscando RUT normalizado: ${normalizeRut(rut)}`);
+      
+      userFound = users.find((u) => {
+        const rutNormalizado = normalizeRut(u.rut);
+        console.log(`🔸 Comparando: ${rutNormalizado} === ${normalizeRut(rut)}`);
+        return rutNormalizado === normalizeRut(rut);
+      });
     } else if (id) {
       userFound = await userRepository.findOne({ where: { id } });
     } else if (email) {
       userFound = await userRepository.findOne({ where: { email } });
     }
-    if (!userFound) return [null, "Usuario no encontrado"];
+    
+    if (!userFound) {
+      console.log(`❌ Usuario NO encontrado - RUT: ${rut}`);
+      return [null, "Usuario no encontrado"];
+    }
+    
+    console.log(`✅ Usuario encontrado: ${userFound.nombreCompleto} (${userFound.rut})`);
+    
     if (userFound.rol === "administrador") {
       return [null, "No se puede eliminar un usuario con rol de administrador"];
     }
-    const userDeleted = await userRepository.remove(userFound);
-    const { password, ...dataUser } = userDeleted;
-    return [dataUser, null];
+    
+    // 🛠️ VERIFICAR Y MANEJAR RELACIONES ANTES DE ELIMINAR
+    try {
+      // Verificar si tiene tareas asignadas (como asignador o asignado)
+      const taskCountAsignadoPor = await AppDataSource.query(
+        'SELECT COUNT(*) as count FROM tareas WHERE "asignado_por_id" = $1',
+        [userFound.id]
+      );
+      
+      const taskCountAsignadoA = await AppDataSource.query(
+        'SELECT COUNT(*) as count FROM tareas WHERE "asignado_a_id" = $1',
+        [userFound.id]
+      );
+      
+      const totalTasks = parseInt(taskCountAsignadoPor[0].count) + parseInt(taskCountAsignadoA[0].count);
+      console.log(`📋 Tareas relacionadas al usuario: ${totalTasks}`);
+      
+      if (totalTasks > 0) {
+        // Eliminar tareas donde el usuario es el asignador
+        if (parseInt(taskCountAsignadoPor[0].count) > 0) {
+          await AppDataSource.query(
+            'DELETE FROM tareas WHERE "asignado_por_id" = $1',
+            [userFound.id]
+          );
+          console.log(`🗑️ Tareas eliminadas (como asignador): ${taskCountAsignadoPor[0].count}`);
+        }
+        
+        // Eliminar tareas donde el usuario es el asignado
+        if (parseInt(taskCountAsignadoA[0].count) > 0) {
+          await AppDataSource.query(
+            'DELETE FROM tareas WHERE "asignado_a_id" = $1',
+            [userFound.id]
+          );
+          console.log(`�️ Tareas eliminadas (como asignado): ${taskCountAsignadoA[0].count}`);
+        }
+      }
+      
+      // Verificar reservaciones por RUT (no por ID)
+      const reservationCount = await AppDataSource.query(
+        'SELECT COUNT(*) as count FROM reservations WHERE "rut" = $1',
+        [userFound.rut]
+      );
+      
+      if (parseInt(reservationCount[0].count) > 0) {
+        await AppDataSource.query(
+          'DELETE FROM reservations WHERE "rut" = $1',
+          [userFound.rut]
+        );
+        console.log(`🗑️ Reservaciones eliminadas: ${reservationCount[0].count}`);
+      }
+      
+      // Ahora sí eliminar el usuario
+      const userDeleted = await userRepository.remove(userFound);
+      console.log(`✅ Usuario eliminado exitosamente: ${userFound.nombreCompleto}`);
+      
+      const { password, ...dataUser } = userDeleted;
+      return [dataUser, null];
+      
+    } catch (relationError) {
+      console.error("Error manejando relaciones:", relationError);
+      return [null, `No se puede eliminar el usuario porque tiene datos asociados: ${relationError.message}`];
+    }
+    
   } catch (error) {
     console.error("Error al eliminar un usuario:", error);
     return [null, "Error interno del servidor"];
