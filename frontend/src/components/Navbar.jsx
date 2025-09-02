@@ -16,6 +16,7 @@ const Navbar = () => {
   const [usuariosSubmenuOpen, setUsuariosSubmenuOpen] = useState(false);
   const [bitacorasSubmenuOpen, setBitacorasSubmenuOpen] = useState(false);
   const [horariosSubmenuOpen, setHorariosSubmenuOpen] = useState(false);
+  const [estadisticasSubmenuOpen, setEstadisticasSubmenuOpen] = useState(false);
 
   let user = null;
   try {
@@ -72,6 +73,10 @@ const Navbar = () => {
     setHorariosSubmenuOpen(prev => !prev);
   };
 
+  const toggleEstadisticasSubmenu = () => {
+    setEstadisticasSubmenuOpen(prev => !prev);
+  };
+
   // Verificar si estamos en alguna página de usuarios
   const isUsuariosActive = location.pathname.includes('/users') || 
                            location.pathname.includes('/administradores') || 
@@ -89,6 +94,13 @@ const Navbar = () => {
                           location.pathname.includes('/horarios-laboratorio-1') ||
                           location.pathname.includes('/horarios-laboratorio-2') ||
                           location.pathname.includes('/horarios-laboratorio-3');
+
+  // Verificar si estamos en alguna página de estadísticas
+  const isEstadisticasActive = location.pathname.includes('/estadisticas') ||
+                              location.pathname.includes('/estadisticas-lab-1') ||
+                              location.pathname.includes('/estadisticas-lab-2') ||
+                              location.pathname.includes('/estadisticas-lab-3') ||
+                              location.pathname.includes('/estadisticas-asistencia');
 
   return (
     <nav className={`navbar2 ${menuOpen ? "activado" : "oculta"}`}>
@@ -231,11 +243,44 @@ const Navbar = () => {
                     </li>
                   </ul>
                 </li>
-                <li>
-                  <NavLink to="/estadisticas" className={({ isActive }) => (isActive ? "active" : "")}>
+                <li className="submenu-item">
+                  <div 
+                    className={`submenu-toggle ${isEstadisticasActive ? 'active' : ''}`}
+                    onClick={toggleEstadisticasSubmenu}
+                  >
                     <FaChartBar className="nav-icon" />
                     <span>Estadísticas</span>
-                  </NavLink>
+                    {estadisticasSubmenuOpen ? 
+                      <FaChevronDown className="submenu-arrow" /> : 
+                      <FaChevronRight className="submenu-arrow" />
+                    }
+                  </div>
+                  <ul className={`submenu ${estadisticasSubmenuOpen ? 'submenu-open' : ''}`}>
+                    <li>
+                      <NavLink to="/estadisticas-lab-1" className={({ isActive }) => (isActive ? "active" : "")}>
+                        <FaFlask className="nav-icon submenu-icon" />
+                        <span>Laboratorio 1</span>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/estadisticas-lab-2" className={({ isActive }) => (isActive ? "active" : "")}>
+                        <FaFlask className="nav-icon submenu-icon" />
+                        <span>Laboratorio 2</span>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/estadisticas-lab-3" className={({ isActive }) => (isActive ? "active" : "")}>
+                        <FaFlask className="nav-icon submenu-icon" />
+                        <span>Laboratorio 3</span>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/estadisticas-asistencia" className={({ isActive }) => (isActive ? "active" : "")}>
+                        <FaClock className="nav-icon submenu-icon" />
+                        <span>Asistencia Consultores</span>
+                      </NavLink>
+                    </li>
+                  </ul>
                 </li>
               </>
             )}
