@@ -18,7 +18,10 @@ import MiPerfil from '@pages/MiPerfil';
 import MisReservas from '@pages/MisReservas';
 import MisSolicitudes from '@pages/MisSolicitudes';
 import MisClases from '@pages/MisClases';
-import Estadisticas from '@pages/Estadisticas';
+import EstadisticasLab1 from '@pages/EstadisticasLab1';
+import EstadisticasLab2 from '@pages/EstadisticasLab2';
+import EstadisticasLab3 from '@pages/EstadisticasLab3';
+import EstadisticasAsistencia from '@pages/EstadisticasAsistencia';
 import GestionTareas from '@pages/GestionTareas';
 import '@styles/styles.css';
 
@@ -174,10 +177,34 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/estadisticas',
+        path: '/estadisticas-lab-1',
         element: (
           <ProtectedRoute allowedRoles={['administrador']}>
-            <Estadisticas />
+            <EstadisticasLab1 />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/estadisticas-lab-2',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <EstadisticasLab2 />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/estadisticas-lab-3',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <EstadisticasLab3 />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/estadisticas-asistencia',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <EstadisticasAsistencia />
           </ProtectedRoute>
         ),
       },
