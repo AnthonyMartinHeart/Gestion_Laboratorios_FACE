@@ -2,7 +2,8 @@
 import {
   getEstadisticasGeneralesService,
   getEstadisticasEquiposService,
-  getEstadisticasTemporalesService
+  getEstadisticasTemporalesService,
+  getEstadisticasAsistenciaService
 } from "../services/estadisticas.service.js";
 import {
   handleErrorClient,
@@ -131,6 +132,36 @@ export async function getReporteCompleto(req, res) {
     handleSuccess(res, 200, "Reporte completo generado", reporteCompleto);
   } catch (error) {
     console.error('Error en getReporteCompleto:', error);
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+/**
+ * Controlador para obtener estadísticas de asistencia de consultores
+ */
+export async function getEstadisticasAsistencia(req, res) {
+  try {
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    });
+
+    const filtros = {
+      fechaInicio: req.query.fechaInicio,
+      fechaFin: req.query.fechaFin,
+      consultor: req.query.consultor
+    };
+
+    const [estadisticas, error] = await getEstadisticasAsistenciaService(filtros);
+    
+    if (error) {
+      return handleErrorClient(res, 500, error);
+    }
+
+    handleSuccess(res, 200, "Estadísticas de asistencia obtenidas exitosamente", estadisticas);
+  } catch (error) {
+    console.error('Error en getEstadisticasAsistencia:', error);
     handleErrorServer(res, 500, error.message);
   }
 }
