@@ -665,9 +665,10 @@ html, body {
 /* ===== GRID DE SOLICITUDES ===== */
 .solicitudes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 400px));
   gap: 25px;
   width: 100%;
+  justify-content: center;
 }
 
 /* ===== TARJETAS DE SOLICITUD ===== */
@@ -680,6 +681,7 @@ html, body {
   transition: all 0.3s ease;
   border-left: 4px solid #e2e8f0;
   width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
 }
