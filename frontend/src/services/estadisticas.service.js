@@ -154,3 +154,33 @@ export function exportarDatosExcel(datos, nombreArchivo = 'estadisticas') {
   link.click();
   document.body.removeChild(link);
 }
+
+/**
+ * Obtiene estadísticas de asistencia de consultores
+ * @param {Object} filtros - Filtros para aplicar a las estadísticas de asistencia
+ * @param {string} filtros.fechaInicio - Fecha de inicio en formato YYYY-MM-DD
+ * @param {string} filtros.fechaFin - Fecha de fin en formato YYYY-MM-DD  
+ * @param {string} filtros.consultor - Nombre del consultor o 'todos'
+ */
+export async function getEstadisticasAsistencia(filtros = {}) {
+  try {
+    const params = new URLSearchParams();
+    
+    if (filtros.fechaInicio) params.append('fechaInicio', filtros.fechaInicio);
+    if (filtros.fechaFin) params.append('fechaFin', filtros.fechaFin);
+    if (filtros.consultor && filtros.consultor !== 'todos') {
+      params.append('consultor', filtros.consultor);
+    }
+
+    const { data: response } = await axios.get(`/estadisticas/asistencia?${params.toString()}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    return response.data || response;
+  } catch (error) {
+    throw new Error(handleError(error).message || 'Error al obtener estadísticas de asistencia');
+  }
+}
