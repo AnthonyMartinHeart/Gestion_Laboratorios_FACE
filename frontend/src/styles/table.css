@@ -1,0 +1,168 @@
+/* Estilos modernos para las tablas con paleta original */
+.table-container {
+  margin-bottom: 30px;
+}
+
+.table-container .tabulator {
+  background: transparent;
+  border: none;
+  overflow: hidden;
+}
+
+/* Encabezados de tabla modernos con colores originales */
+.table-container .tabulator .tabulator-col {
+  background: linear-gradient(135deg, #003366 0%, #004080 100%);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 12px;
+  border: none;
+  position: relative;
+}
+
+.table-container .tabulator .tabulator-col:first-child {
+  border-top-left-radius: 0;
+}
+
+.table-container .tabulator .tabulator-col:last-child {
+  border-top-right-radius: 0;
+}
+
+.table-container .tabulator .tabulator-col::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #E4332C, #003366, #0055A4, #E4332C);
+}
+
+/* Filas de la tabla */
+.tabulator .tabulator-row {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(0, 51, 102, 0.1);
+  transition: all 0.3s ease;
+}
+
+.tabulator .tabulator-row:nth-child(even) {
+  background-color: rgba(240, 245, 250, 0.7);
+}
+
+.tabulator .tabulator-row:hover {
+  background: rgba(0, 51, 102, 0.1);
+  transform: translateY(-1px);
+}
+
+.tabulator .tabulator-row .tabulator-cell {
+  padding: 16px 12px;
+  font-size: 14px;
+  color: #2d3748;
+  border: none;
+}
+
+/* Filas seleccionadas */
+.tabulator .tabulator-row.tabulator-selected {
+  background: rgba(0, 51, 102, 0.15) !important;
+  border-left: 4px solid #003366;
+}
+
+/* Checkboxes modernos con colores originales */
+.tabulator .tabulator-row .tabulator-cell .tabulator-row-selection {
+  width: 20px;
+  height: 20px;
+  accent-color: #0055A4;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.tabulator .tabulator-row .tabulator-cell .tabulator-row-selection:checked {
+  accent-color: #0055A4;
+  transform: scale(1.1);
+}
+
+/* Paginación moderna con colores originales */
+.tabulator .tabulator-footer {
+  background: rgba(255, 255, 255, 0.6);
+  border-top: 1px solid rgba(0, 51, 102, 0.1);
+  padding: 16px;
+}
+
+.tabulator .tabulator-footer .tabulator-page {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #003366;
+  border: 1px solid rgba(0, 51, 102, 0.3);
+  padding: 8px 16px;
+  margin: 0 4px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tabulator .tabulator-footer .tabulator-page:hover {
+  background: linear-gradient(135deg, #003366, #0055A4);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.tabulator .tabulator-footer .tabulator-page.active {
+  background: linear-gradient(135deg, #003366, #0055A4);
+  color: white;
+}
+
+/* Ordenamiento de columnas */
+.tabulator .tabulator-col .tabulator-col-sorter {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tabulator .tabulator-col.tabulator-sortable:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+/* Loading spinner moderno */
+.tabulator .tabulator-loader {
+  background: transparent;
+}
+
+.tabulator .tabulator-loader-msg {
+  color: #003366;
+  font-weight: 600;
+}
+
+/* Scrollbar personalizado con colores originales */
+.tabulator .tabulator-tableHolder::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tabulator .tabulator-tableHolder::-webkit-scrollbar-track {
+  background: rgba(0, 51, 102, 0.1);
+  border-radius: 4px;
+}
+
+.tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #003366, #0055A4);
+  border-radius: 4px;
+}
+
+.tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #002244, #004080);
+}
+
+/* Responsive design mejorado */
+@media (max-width: 768px) {
+  .table-container {
+    margin-bottom: 20px;
+  }
+  
+  .table-container .tabulator .tabulator-col {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+  
+  .tabulator .tabulator-row .tabulator-cell {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+}

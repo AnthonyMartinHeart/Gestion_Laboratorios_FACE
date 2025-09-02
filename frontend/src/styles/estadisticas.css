@@ -1,0 +1,1030 @@
+/* Contenedor principal de estadísticas */
+
+/* FONDO */
+.estadisticas-container::before {
+    content: "";
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.estadisticas-container {
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+}
+
+.estadisticas-header {
+  text-align: center;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, rgba(3, 49, 99, 0.95) 0%, rgba(30, 64, 175, 0.95) 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.estadisticas-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.estadisticas-subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Filtros */
+.filtros-container {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 30px;
+}
+
+.filtros-container h3 {
+  margin: 0 0 20px 0;
+  color: #033163;
+  font-size: 1.3rem;
+  text-shadow: none;
+}
+
+.filtros-form {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filtro-item label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.filtro-item input,
+.filtro-item select {
+  padding: 8px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.filtro-item input:focus,
+.filtro-item select:focus {
+  outline: none;
+  border-color: #033163;
+}
+
+/* Resumen general */
+.estadisticas-resumen {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 30px;
+}
+
+.estadisticas-resumen h3 {
+  margin: 0 0 20px 0;
+  color: #033163;
+  font-size: 1.3rem;
+  text-shadow: none;
+}
+
+.resumen-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border-left: 4px solid #033163;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #033163;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Grid de estadísticas */
+.estadisticas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* Tablas de estadísticas */
+.estadisticas-tabla {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.estadisticas-tabla h4 {
+  margin: 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #033163 0%, #1e40af 100%);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.tabla-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.estadisticas-tabla table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.estadisticas-tabla th {
+  background-color: #f9fafb;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.estadisticas-tabla td {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.estadisticas-tabla tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.ranking {
+  display: inline-block;
+  background: #033163;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+/* Barras de porcentaje */
+.porcentaje-bar {
+  position: relative;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  height: 20px;
+  min-width: 100px;
+  overflow: hidden;
+}
+
+.porcentaje-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.porcentaje-bar span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  z-index: 2;
+}
+
+/* Botones */
+.export-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.refresh-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.refresh-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Información adicional */
+.info-adicional {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.info-card h4 {
+  margin: 0 0 15px 0;
+  color: #033163;
+  font-size: 1.1rem;
+}
+
+.info-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.info-card li {
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.info-card p {
+  margin: 0 0 15px 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #033163;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Comparación de laboratorios */
+.comparacion-labs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.lab-comparison-card {
+  background: linear-gradient(135deg, #033163 0%, #1e40af 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 5px solid #ffffff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.lab-comparison-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(3, 49, 99, 0.15);
+}
+
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.lab-header h5 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.lab-equipos {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.lab-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lab-stat .stat-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.lab-stat .stat-value {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.lab-usage-bar {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.lab-usage-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Componente de gráficos */
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.chart-container h4 {
+  margin: 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #033163 0%, #1e40af 100%);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.chart-content {
+  padding: 20px;
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.chart-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.bar-ranking {
+  display: inline-block;
+  background: #033163;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.bar-text {
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.chart-bar-container {
+  flex: 1;
+  position: relative;
+  height: 30px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  position: relative;
+  transition: width 0.6s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  min-width: 40px;
+}
+
+.bar-value {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.no-data-message {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.no-data-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Vista Comparativa */
+.vista-comparativa {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.vista-comparativa h3 {
+  margin: 0 0 20px 0;
+  color: #033163;
+  font-size: 1.3rem;
+}
+
+.filtro-fecha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.filtro-fecha label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.filtro-fecha input {
+  padding: 6px 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.clear-filter {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-filter:hover {
+  background: #4b5563;
+}
+
+.tablas-comparativas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.tabla-laboratorio {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tabla-estadisticas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.lab-header {
+  background: linear-gradient(135deg, #033163 0%, #1e40af 100%);
+  color: white;
+  padding: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.tabla-estadisticas th {
+  background: #f3f4f6;
+  padding: 10px 8px;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tabla-estadisticas td {
+  padding: 8px;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+
+.tabla-estadisticas td:first-child {
+  text-align: left;
+  font-weight: 500;
+  padding-left: 12px;
+}
+
+.row-highlight {
+  background-color: #fef3c7;
+}
+
+.row-total {
+  background-color: #dbeafe;
+  font-weight: 600;
+}
+
+.row-total td {
+  border-bottom: 2px solid #033163;
+  color: #033163;
+}
+
+.resumen-comparativo {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.resumen-comparativo h4 {
+  margin: 0 0 15px 0;
+  color: #033163;
+  font-size: 1.1rem;
+}
+
+.resumen-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.resumen-item {
+  display: grid;
+  grid-template-columns: 150px 100px 1fr;
+  align-items: center;
+  gap: 15px;
+}
+
+.resumen-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.resumen-valor {
+  font-weight: 700;
+  color: #033163;
+}
+
+.resumen-bar {
+  height: 20px;
+  background: #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.resumen-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+
+.resumen-fill.lab2 {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.resumen-fill.lab3 {
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .estadisticas-container {
+    padding: 15px;
+  }
+  
+  .estadisticas-header h2 {
+    font-size: 2rem;
+  }
+  
+  .filtros-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .estadisticas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .resumen-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .info-adicional {
+    grid-template-columns: 1fr;
+  }
+
+  /* Vista comparativa responsive */
+  .tablas-comparativas {
+    grid-template-columns: 1fr;
+  }
+  
+  .resumen-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .resumen-item .resumen-label,
+  .resumen-item .resumen-valor {
+    text-align: left;
+  }
+  
+  .filtro-fecha {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* Gráficos responsive */
+  .chart-bar-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .chart-bar-label {
+    min-width: auto;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .resumen-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .estadisticas-header {
+    padding: 20px;
+  }
+  
+  .estadisticas-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .tabla-estadisticas {
+    font-size: 0.8rem;
+  }
+  
+  .tabla-estadisticas th,
+  .tabla-estadisticas td {
+    padding: 6px 4px;
+  }
+}
+
+/* Estilos para el contenedor con tabla y gráfico de laboratorios */
+.grafico-tendencias-section {
+  margin: 30px 0;
+}
+
+.laboratorios-demanda-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.laboratorios-tabla-wrapper {
+  flex: 1;
+  min-width: 400px;
+}
+
+.laboratorios-chart-wrapper {
+  flex: 1;
+  min-width: 300px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.laboratorios-chart-title {
+  margin: 0 0 20px 0;
+  color: #033163;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Gráfico de curvas para laboratorios */
+.curve-chart-container {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.y-axis-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.y-axis-values {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 200px;
+  padding: 0 5px;
+}
+
+.y-axis-tick {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-align: right;
+}
+
+.chart-area {
+  flex: 1;
+  position: relative;
+}
+
+.curve-chart-svg {
+  width: 100%;
+  height: 200px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+}
+
+.curve-line {
+  filter: drop-shadow(0 2px 4px rgba(3, 49, 99, 0.3));
+  animation: draw-line 2s ease-in-out;
+}
+
+.data-point {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.data-point:hover {
+  r: 8;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.data-point-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.data-point-label {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.x-axis-labels {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+  padding: 0 40px;
+}
+
+.x-axis-label {
+  text-align: center;
+}
+
+.lab-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.lab-percentage {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Animaciones para el gráfico de curvas */
+@keyframes draw-line {
+  0% {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Indicadores de capacidad */
+.lab-capacity-indicators {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.capacity-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.capacity-indicator:last-child {
+  border-bottom: none;
+}
+
+.capacity-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.capacity-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.capacity-high {
+  color: #dc2626;
+}
+
+.capacity-medium {
+  color: #d97706;
+}
+
+.capacity-low {
+  color: #059669;
+}
+
+/* Responsive para el gráfico de laboratorios */
+@media (max-width: 768px) {
+  .laboratorios-demanda-container {
+    flex-direction: column;
+  }
+  
+  .laboratorios-tabla-wrapper,
+  .laboratorios-chart-wrapper {
+    min-width: 100%;
+  }
+  
+  .curve-chart-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .chart-y-axis {
+    flex-direction: row;
+    min-width: 100%;
+    justify-content: space-around;
+  }
+  
+  .y-axis-label {
+    writing-mode: horizontal-tb;
+    text-orientation: unset;
+  }
+  
+  .y-axis-values {
+    flex-direction: row;
+    height: auto;
+    width: 100%;
+  }
+  
+  .curve-chart-svg {
+    height: 150px;
+  }
+  
+  .x-axis-labels {
+    padding: 0 20px;
+  }
+  
+  .lab-name {
+    font-size: 0.8rem;
+  }
+  
+  .lab-percentage {
+    font-size: 0.7rem;
+  }
+}

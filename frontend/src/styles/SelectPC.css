@@ -1,0 +1,547 @@
+.pc-selection-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.pc-selection-container {
+    text-align: center;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  h3 {
+    font-size: 3rem;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+    margin-top: 110px;
+  }
+  
+  /* Estilo mejorado para el texto */
+h6 {
+  font-size: 2rem; /* Aumenta ligeramente el tamaño de la fuente para mayor legibilidad */
+  color: #075113; /* Un tono más oscuro para mejor contraste */
+  margin: 15px 0; /* Reducción del margen para mejorar el espacio alrededor */
+  line-height: 1; /* Aumenta la altura de línea para mejorar la legibilidad */
+  font-family: 'Roboto', sans-serif; /* Aplica una fuente limpia y moderna */
+  text-align: center; /* Centra el texto para que se vea más ordenado */
+  letter-spacing: 0.5px; /* Añade un poco de espaciado entre las letras */
+  background-color: rgba(255, 255, 255, 0.8); /* Fondo suave con transparencia */
+  padding: 10px 20px; /* Añade un poco de espacio alrededor del texto */
+  border-radius: 8px; /* Bordes redondeados para un toque más moderno */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidad */
+}
+  
+  .pc-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 columnas */
+    gap: 20px; /* Aumentado más el espacio entre los iconos */
+    margin-top: 30px;
+    padding: 25px; /* Más padding para el nuevo tamaño */
+  }
+  
+  .pc-icon {
+    width: 100px; /* Aumentado de 80px a 100px */
+    height: 100px; /* Aumentado de 80px a 100px */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #586192;
+    color: white;
+    border-radius: 15px; /* Aumentado para mantener proporción */
+    font-size: 2.2rem; /* Aumentado de 1.8rem */
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+    border: 5px solid #000; /* Aumentado el borde también */
+  }
+  
+  /* Estado reservado */
+  .pc-icon.reserved {
+    background-color: #ff0000;
+    cursor: not-allowed;
+    border-color: #800000;
+    transform: none;
+  }
+
+  /* Deshabilitar efectos hover en PCs reservados */
+  .pc-icon.reserved:hover {
+    transform: none;
+    background-color: #ff0000;
+    box-shadow: none;
+  }
+  
+  /* PCs en mantenimiento */
+  .pc-icon.maintenance {
+    background-color: #9b59b6;
+    cursor: not-allowed;
+    border-color: #8e44ad;
+    transform: none;
+  }
+
+  .pc-icon.maintenance:hover {
+    transform: none;
+    background-color: #9b59b6;
+    box-shadow: none;
+  }
+  
+  /* 💫 Animación al pasar el mouse (solo para PCs no reservados) */
+  .pc-icon:not(.reserved):hover {
+    transform: scale(1.1) rotate(2deg);
+    background-color: #45d24c;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .pc-icon.selected {
+    background-color: #220b67;
+    transform: scale(1.1);
+  }
+  
+  .pc-icon i {
+    font-size: 2.5rem; /* Aumentado de 2rem */
+    margin-bottom: 8px; /* Más espacio entre icono y número */
+  }
+  
+  .pc-icon span {
+    position: absolute;
+    bottom: 10px; /* Ajustado para la nueva altura */
+    right: 10px; /* Ajustado para la nueva anchura */
+    font-size: 1.4rem; /* Aumentado de 1.1rem */
+    font-weight: bold;
+  }
+  
+  button {
+    margin-top: 30px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #586192;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #220b67;
+  }
+  
+  /* POPUP STYLES */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.popup-form {
+  background: #ffffff;
+  padding: 2rem;
+  width: 90%;
+  max-width: 520px;
+  border-radius: 15px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: slideDownFade 0.4s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.popup-form h4 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.popup-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.popup-form label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #444;
+  text-align: left;
+}
+
+.popup-form input[type="text"],
+.popup-form select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border 0.3s;
+}
+
+.popup-form input[type="text"]:focus,
+.popup-form select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 10px;
+}
+
+.form-buttons button {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form-buttons button[type="submit"] {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.form-buttons button[type="submit"]:hover {
+  background-color: #218838;
+}
+
+.form-buttons button[type="button"] {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.form-buttons button[type="button"]:hover {
+  background-color: #c82333;
+}
+
+/* Animación de entrada */
+@keyframes slideDownFade {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Botón para toggle mantenimiento */
+.maintenance-toggle-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 2px 5px;
+  font-size: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.maintenance-toggle-btn:hover {
+  background-color: #555;
+}
+
+/* Popup overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-form {
+  background-color: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.popup-form h4 {
+  margin-bottom: 15px;
+}
+
+.popup-form label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.popup-form input, .popup-form select {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.form-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-buttons button[type="submit"] {
+  background-color: #4caf50;
+  color: white;
+}
+
+.form-buttons button[type="button"] {
+  background-color: #f44336;
+  color: white;
+}
+
+/* PCs reservados */
+.pc-icon.reserved {
+  background-color: #dc3545;
+  color: white;
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.pc-icon .time-left {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.action-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reset-button {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.reset-button:hover {
+    background-color: #9f0812;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.back-button {
+    background-color: #2980b9;
+    color: white;
+}
+
+.back-button:hover {
+    background-color: #00913f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.maintenance-button {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.maintenance-button:hover {
+    background-color: #8e44ad;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para bloques de clases */
+.pc-icon.class-block {
+    background-color: #28a745;
+    border-color: #155724;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.pc-icon.class-block:hover {
+    transform: none;
+    background-color: #28a745;
+    box-shadow: none;
+}
+
+.class-block-label {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(40, 167, 69, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1;
+}
+
+.maintenance-label {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(155, 89, 182, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1;
+}
+
+.class-block-button {
+    background-color: #28a745;
+    color: white;
+    border: 2px solid #155724;
+    font-weight: bold;
+}
+
+.class-block-button:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Ajuste al grid para dar espacio a las etiquetas de bloques */
+.pc-grid {
+    margin-bottom: 40px;
+}
+
+/* Indicador visual para bloques de clases activos */
+.pc-icon.class-block::before {
+    content: "📚";
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #155724;
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    z-index: 2;
+}
+
+/* Etiqueta para reservas individuales */
+.reservation-label {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+/* Indicador de bloque de clases activo */
+.class-block-indicator {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    text-align: center;
+}
+
+.class-block-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.class-block-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+}
+
+.class-block-details {
+    text-align: left;
+}
+
+.class-block-details strong {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.class-block-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-style: italic;
+}

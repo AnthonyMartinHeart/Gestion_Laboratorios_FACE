@@ -1,0 +1,261 @@
+:root {
+	--navbar-width: 240px;
+	--navbar-collapsed-width: 60px;
+	--primary-color: #2e3a59;
+	--highlight-color: #3085d6;
+	--text-color: #fff;
+	--hover-color: #3f4d6d;
+	--transition-speed: 0.3s;
+  }
+  
+  body[data-navbar-collapsed="true"] .navbar2 {
+	width: var(--navbar-collapsed-width);
+  }
+  
+  .navbar2 {
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100vh;
+	width: var(--navbar-width);
+	background-color: var(--primary-color);
+	color: var(--text-color);
+	display: flex;
+	flex-direction: column;
+	transition: width var(--transition-speed);
+	z-index: 1000;
+  }
+  
+  .navbar2.oculta {
+	width: var(--navbar-collapsed-width);
+  }
+
+  /* ===== SECCIÓN SUPERIOR DEL NAVBAR ===== */
+  .navbar-top-section {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem;
+	background: rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	overflow: visible;
+  }
+  
+  .navbar2.oculta .navbar-top-section {
+	flex-direction: column;
+	gap: 0.5rem;
+	align-items: center;
+  }
+  
+  .notification-container {
+	margin-right: 0.5rem;
+	position: relative;
+	z-index: 1001;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 48px;
+  }
+  
+  .navbar2.oculta .notification-container {
+	margin-right: 0;
+	margin-left: auto;
+	margin-top: 0.5rem;
+  }
+  
+  .flechamenu {
+	background: none;
+	border: none;
+	color: var(--text-color);
+	font-size: 1.8rem;
+	cursor: pointer;
+	padding: 0.5rem;
+	border-radius: 4px;
+	transition: background-color var(--transition-speed);
+  }
+  
+  .flechamenu:hover {
+	background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav-menu {
+	margin-top: 2rem;
+	flex: 1;
+  }
+  
+  .nav-menu ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+  }
+  
+  .nav-menu ul li {
+	margin: 0.5rem 0;
+  }
+  
+  .nav-menu a {
+	display: flex;
+	align-items: center;
+	color: var(--text-color);
+	text-decoration: none;
+	padding: 0.75rem 1rem;
+	transition: background-color var(--transition-speed);
+  }
+  
+  .nav-menu a:hover,
+  .nav-menu a.active {
+	background-color: var(--hover-color);
+  }
+  
+  .nav-icon {
+	font-size: 1.25rem;
+	margin-right: 0.8rem;
+  }
+  
+  .navbar2.oculta .nav-icon {
+	margin: 0 auto;
+  }
+  
+  .navbar2.oculta .nav-menu a span {
+	display: none;
+  }
+  
+  .logout-item {
+	margin-top: auto;
+  }
+  
+  .logout-link {
+	color: #ff6b6b;
+  }
+  
+  .logout-link:hover {
+	background-color: #8b1c1c;
+  }
+  
+  /* Contenedor del menú ajustado como columna con espacio entre */
+.nav-menu {
+	margin-top: 2rem;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between; /* <-- clave para empujar el logo al final */
+	height: 100%;
+	overflow-y: auto;
+  }
+  
+  /* Asegura que el ul no tome todo el alto y deje espacio para el logo */
+  .nav-menu ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	flex-grow: 0;
+  }
+  
+  /* Logo fijo abajo del menú */
+  .navbar-bottom-logo {
+	padding: 1rem;
+	text-align: center;
+	flex-shrink: 0;
+  }
+  
+  /*tama imagen logo face*/
+  .bottom-logo-img {
+	max-width: 200px; 
+	height: auto;
+	opacity: 0.9;
+  }
+  
+  
+  /* Logo más pequeño cuando está colapsado */
+  .navbar2.oculta .bottom-logo-img {
+	max-width: 40px;
+  }
+
+  /* ===== ESTILOS PARA SUBMENU ===== */
+  .submenu-item {
+    position: relative;
+  }
+
+  .submenu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    color: var(--text-color);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--transition-speed);
+    border-radius: 8px;
+    margin: 0.25rem 0;
+  }
+
+  .submenu-toggle:hover {
+    background-color: var(--hover-color);
+  }
+
+  .submenu-toggle.active {
+    background-color: var(--highlight-color);
+    color: white;
+  }
+
+  .submenu-arrow {
+    font-size: 0.8rem;
+    transition: transform var(--transition-speed);
+    margin-left: auto;
+  }
+
+  .submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-speed) ease-out;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin: 0.25rem 0;
+  }
+
+  .submenu-open {
+    max-height: 200px;
+    transition: max-height var(--transition-speed) ease-in;
+  }
+
+  .submenu li {
+    list-style: none;
+  }
+
+  .submenu a {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem 0.5rem 2rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+    border-radius: 6px;
+    margin: 0.125rem 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .submenu a:hover {
+    background-color: var(--hover-color);
+    color: white;
+    transform: translateX(5px);
+  }
+
+  .submenu a.active {
+    background-color: var(--highlight-color);
+    color: white;
+  }
+
+  .submenu-icon {
+    font-size: 0.8rem !important;
+    margin-right: 0.75rem;
+  }
+
+  /* Estilos para navbar colapsado */
+  .navbar2.oculta .submenu-toggle span,
+  .navbar2.oculta .submenu-arrow {
+    display: none;
+  }
+
+  .navbar2.oculta .submenu {
+    display: none;
+  }

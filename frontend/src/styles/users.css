@@ -1,0 +1,223 @@
+/* Contenedor principal con fondo moderno */
+.users-container::before {
+    content: "";
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.1), rgba(0, 85, 164, 0.1)), 
+                url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+    backdrop-filter: blur(5px);
+}
+
+.users-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 30px 20px;
+    gap: 30px;
+}
+
+.table-container {
+    width: 90%;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.top-table {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.title-table {
+    color: #ffffff;
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    margin: 0;
+    position: relative;
+}
+
+.title-table::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #003366, #0055A4);
+    border-radius: 2px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.filter-actions button {
+    background: #ffffff;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.filter-actions button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 51, 102, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.filter-actions button:hover::before {
+    left: 100%;
+}
+
+.filter-actions button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 51, 102, 0.3);
+    border-color: #ffffff;
+    background: #ffffff;
+}
+
+.filter-actions button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 51, 102, 0.2);
+}
+
+.filter-actions button:disabled {
+    background: linear-gradient(135deg, rgba(200, 200, 200, 0.5), rgba(220, 220, 220, 0.5));
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-color: rgba(200, 200, 200, 0.5);
+}
+
+.filter-actions button:disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.filter-actions button img {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.delete-user-button {
+    margin-right: 0;
+}
+
+/* Efectos adicionales para mejorar la experiencia visual */
+.table-container:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+
+/* Animaciones de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.table-container {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.table-container:nth-child(1) { animation-delay: 0.1s; }
+.table-container:nth-child(2) { animation-delay: 0.2s; }
+.table-container:nth-child(3) { animation-delay: 0.3s; }
+
+/* Responsive design mejorado */
+@media (max-width: 767px) {
+    .users-container {
+        padding: 20px 15px;
+        gap: 20px;
+    }
+
+    .title-table {
+        font-size: 1.8rem;
+        margin: 0;
+        text-align: center;
+    }
+    
+    .top-table {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 0 10px;
+        margin-bottom: 15px;
+    }
+
+    .filter-actions {
+        margin-bottom: 0;
+        justify-content: center;
+    }
+
+    .filter-actions button {
+        padding: 10px;
+    }
+    
+    .table-container {
+        margin: 0;
+        width: 95%;
+        max-width: none;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .users-container {
+        padding: 25px 20px;
+    }
+
+    .title-table {
+        font-size: 2rem;
+    }
+    
+    .top-table {
+        padding: 0 15px;
+    }
+}
+
+/* Mejoras para dispositivos con pantallas grandes */
+@media (min-width: 1400px) {
+    .table-container {
+        max-width: 1600px;
+    }
+    
+    .title-table {
+        font-size: 2.5rem;
+    }
+}

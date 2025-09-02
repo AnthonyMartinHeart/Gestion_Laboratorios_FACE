@@ -1,0 +1,72 @@
+
+services:
+
+  postgres:
+    image: postgres:15-alpine            
+    container_name: gestion-labs-db      
+    environment:
+      # Configuración para desarrollo local
+      POSTGRES_USER: postgres            # Usuario de la BD
+      POSTGRES_PASSWORD: ubb             # Contraseña de la BD
+      POSTGRES_DB: postgres             # Nombre de la BD
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gestion-labs-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped             # Reinicia si se detiene
+
+  # ============================================================================
+  # CONFIGURACIÓN DEL BACKEND
+  # ============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: gestion-labs-backend
+    environment:
+
+      # CASO 2: Usando BD externa (comenta el CASO 1 y descomenta estas líneas)
+       - NODE_ENV=production
+       - PORT=80
+       - HOST=postgres        # AQUÍ VA LA IP DEL SERVIDOR
+       - DB_USERNAME=postgres            # mi user
+       - PASSWORD=ubb              # pass de mi bd
+       - DATABASE=postgres               # database creada
+       - ACCESS_TOKEN_SECRET=dkljgdkjghdkjfhgkjdfhkjdhfgkjdfg
+       - cookieKey=nsbdfkgjslgjlskjfkldjgklsdjgksdjgklhdfnblmdfpogrgkdbpor
+    ports:
+      - "80:80"                   # CAMBIAR: Debe coincidir con PORT
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gestion-labs-network
+    restart: unless-stopped           # Reinicia si se detiene
+
+  # Frontend Service - Servidor web del cliente
+  frontend:
+    build:
+      context: ./frontend             # Directorio del frontend
+      dockerfile: dockerfile          # Dockerfile para producción
+    container_name: gestion-labs-frontend
+    ports:
+      - "8080:80"                    # Puerto 8080 en el host, 80 en el contenedor
+    depends_on:
+      - backend                      # Espera a que el backend esté listo
+    networks:
+      - gestion-labs-network         # Misma red que los otros servicios
+    restart: unless-stopped          # Reinicia si se detiene
+
+networks:
+  gestion-labs-network:              # Red compartida para todos los servicios
+    driver: bridge                   # Tipo de red Docker estándar
+
+volumes:
+  postgres_data:                     # Volumen para persistir datos de la BD

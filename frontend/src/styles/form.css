@@ -1,0 +1,189 @@
+/* --- MOBILE FIRST --- */
+@media (max-width: 480px) {
+    .form {
+        padding-left: 2px;
+        padding-right: 2px;
+        width: 90%;
+    }
+    .form h1 {
+        font-size: 24px;
+        margin-bottom: 2vh;
+    }
+    .form input, .form select {
+        padding: 10px;
+        font-size: 14px;
+    }
+    .form button {
+        padding: 10px;
+        font-size: 16px;
+    }
+    .form .footerContent {
+        font-size: 12px;
+    }
+    .container {
+        min-height: 100vh;
+        height: auto;
+        padding: 0 10px;
+        background-size: cover;
+        background-position: center;
+    }
+    .toggle-password-icon {
+        width: 20px;
+        height: 20px;
+    }
+    .form-logo-img {
+        max-width: 65px;
+        margin-bottom: 12px;
+    }
+}
+
+/* --- DESKTOP --- */
+.container {
+    min-height: 100vh;
+    height: auto;
+    background: url('/image4.png') no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+}
+
+.form {
+    background-color: rgba(238, 247, 255, 0.737);
+    padding: 7vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+    align-items: center;
+    /* Title */
+    h1 {
+        color: #003366;
+        font-size: 30px;
+        font-weight: bold;
+        margin: 0 0 4vh 0;
+    }
+    /* Layout */
+    div {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    label {
+        color: #003366;
+        font-weight: bold;
+        margin-bottom: 0.7vh;
+    }
+    input, select, textarea {
+        display: flex;
+        border: 3px solid #003366;
+        border-radius: 12px;
+        padding: 8px 5px;
+        background-repeat: no-repeat;
+        margin-bottom: 0.8vh;
+        background-color: #eef7ff;
+        font-size: 16px;
+        color: #003366;
+        box-sizing: border-box;
+    }
+    input {
+        background-position: right 10px center;
+        background-size: 25px 25px;
+        padding-right: 40px;
+        width: 100%;
+    }
+    select {
+        background-position: calc(100% - 12px) center;
+        background-size: 25px 25px;
+        background-image: url('../assets/ChevronDownIcon.svg');
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    textarea {
+        background-position: right 10px center;
+        background-size: 25px 25px;
+    }
+    input::placeholder, select::placeholder, textarea::placeholder {
+        color: rgba(0, 51, 102, 0.3);
+        font-weight: 300;
+    }
+    input:focus, select:focus, textarea:focus {
+        background-color: rgba(0, 110, 223, 0.14);
+    }
+    button {
+        display: flex;
+        justify-content: center;
+        padding: 1.2vh 0;
+        border-radius: 12px;
+        border: 3px solid #003366;
+        width: 100%;
+        background-color: #003366;
+        color: #eef7ff;
+        font-weight: bold;
+        font-size: 16px;
+        margin-top: 10px;
+        transition: .3s ease-out;
+    }
+    button:hover {
+        background-color: #eef7ff;
+        color: #003366;
+    }
+    .footerContent {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+    }
+}
+
+.form .error-message {
+    visibility: hidden;
+    height: 20px;
+    color: red;
+    font-size: 13px;
+    padding-left: 5px;
+}
+.form .error-message.visible {
+    visibility: visible;
+}
+
+input[type='email'] {
+    background-image: url('../assets/MentionIcon.svg');
+}
+input[name='nombreCompleto'] {
+    background-image: url('../assets/PersonIcon.svg');
+}
+input[name='rol'] {
+    background-image: url('../assets/PasskeyIcon.svg');
+}
+
+.container_inputs {
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.toggle-password-icon {
+    position: absolute;
+    right: 15px;
+    top: 44%;
+    transform: translateY(-50%);
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+.toggle-password-icon img {
+    width: 25px;
+    height: 25px;
+    margin-top: 4px;
+}
+
+.form-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.form-logo-img {
+    max-width: 200px;
+    height: auto;
+}

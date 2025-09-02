@@ -1,0 +1,1242 @@
+/* FONDO */
+.bitacoras-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+.bitacoras-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px 20px 20px;
+    gap: 10px;
+    padding-top: 60px;
+}
+
+/* Título principal */
+h9 {
+    color: #ffffff;
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
+    margin: 0 0 20px 0;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    from {
+        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+    to {
+        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 255, 255, 0.5);
+    }
+}
+
+h9::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #ffffff, transparent);
+    border-radius: 2px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+/* TÍTULOS */
+.bitacoras-container h1 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 1.9rem;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+h7 {
+    font-size: 2.5rem;
+    color: #231b91;
+    text-align: center;
+    margin: 55px 0 10px 0;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    display: inline-block;
+    font-weight: bold; 
+}
+
+h8 {
+  margin: 55px 0 20px 0;
+  font-size: 50px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.bitacora-titulo {
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 30px 0 0.1px 0;
+  color: #231b91;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+  display: inline-block;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* TABLA */
+.bitacora-table {
+    overflow-x: auto;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%;
+    background-color: transparent;
+    padding: 10px;
+    scrollbar-width: thin; /* Para Firefox */
+    scrollbar-color: #586192 rgba(255, 255, 255, 0.1); /* Para Firefox */
+}
+
+/* Estilo del scrollbar */
+.bitacora-table::-webkit-scrollbar {
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.bitacora-table::-webkit-scrollbar-thumb {
+    background-color: #586192;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.bitacora-table::-webkit-scrollbar-thumb:hover {
+    background-color: #39417a;
+}
+
+.bitacora-table::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.bitacora-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* Asegura que la tabla sea lo suficientemente ancha */
+    background-color: white;
+}
+
+.bitacora-table th,
+.bitacora-table td {
+    border: 1px solid #000000;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.95rem;
+    background-color: white;
+    color: black;
+}
+
+/* CABECERA HORIZONTAL */
+.bitacora-table thead th {
+    background-color: #033163;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+/* PRIMERA COLUMNA (PCs) AZUL GRISÁCEO */
+.bitacora-table tbody td:first-child {
+    background-color: #a6b2bd;
+    font-weight: bold;
+    color: #001f3f;
+    border: 1px solid #000; /* borde negro */
+}
+
+/* CELDAS RESTANTES CON BORDES NEGROS */
+.bitacora-table tbody td:not(:first-child) {
+    border: 1px solid #000; /* borde negro */
+}
+
+/* OTRAS FILAS INTERCALADAS (visuales con fondo blanco o gris) */
+.bitacora-table tbody tr:nth-child(even) td:not(:first-child) {
+    background-color: #ffffff;
+}
+.bitacora-table tbody tr:nth-child(odd) td:not(:first-child) {
+    background-color: #f9f9f9;
+}
+
+
+/* RESERVA */
+.bitacora-table td.reservado {
+    background-color: #e6f3ff;  /* Fondo celeste suave */
+    font-weight: bold;
+    padding: 4px;
+}
+
+/* INFO RESERVA */
+.reservation-info {
+    background-color: white;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 0.9em;
+}
+
+.reservation-info div:first-child {
+    color: #0066cc;  /* RUT en azul */
+}
+
+.reservation-info div:last-child {
+    color: #000000;  /* Carrera en negro */
+}
+
+/* EXPORTAR Y DATE */
+.bitacoras-container input[type="date"] {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+  
+.export-container {
+  margin-top: 8px; 
+  text-align: center;
+}
+
+.export-btn {
+  background-color: #210fc2;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:hover {
+  background-color: #e67e00;
+  transform: translateY(-2px);
+}
+
+.export-btn:active {
+  transform: scale(0.97);
+}
+
+label[for="fecha"] {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+  background-color: #f0f4ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Controles de Zoom mejorados */
+.zoom-controls {
+    display: flex;
+    gap: 8px;
+    margin: 15px auto 30px;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    width: fit-content;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.zoom-button {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 50%, #1f618d 100%);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+}
+
+.zoom-button:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1f618d 50%, #1a5490 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+}
+
+.zoom-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.zoom-button i {
+    font-size: 15px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.zoom-info {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+    color: #2c3e50;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    min-width: 60px;
+    text-align: center;
+    font-weight: 700;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Contenedor de la tabla con zoom */
+.table-container {
+    overflow: auto;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bitacora-table table {
+    transition: transform 0.3s ease;
+    transform-origin: top left;
+}
+
+/* Controles de la tabla (solo zoom) */
+.table-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+/* Selector de fecha mejorado */
+.fecha-selector {
+  text-align: center;
+  margin: 5px 0 30px 0;
+  position: relative;
+}
+
+.fecha-selector label {
+  display: inline-block;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  padding: 12px 24px;
+  border-radius: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.fecha-selector label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.fecha-selector input[type="date"] {
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  outline: none;
+  width: 100%;
+  max-width: 350px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.fecha-selector input[type="date"]:focus {
+  border-color: #3498db;
+  box-shadow: 0 12px 35px rgba(52, 152, 219, 0.3);
+  transform: translateY(-2px);
+}
+
+.fecha-selector input[type="date"]:hover {
+  border-color: rgba(52, 152, 219, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Controles por laboratorio mejorados */
+.laboratorio-section {
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.laboratorio-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.laboratorio-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 25px 0 35px 0;
+  flex-wrap: wrap;
+}
+
+.laboratorio-controls .export-button {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 50%, #58d68d 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.laboratorio-controls .export-button:hover {
+  background: linear-gradient(135deg, #229954 0%, #27ae60 50%, #2ecc71 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(39, 174, 96, 0.4);
+}
+
+.laboratorio-controls .export-button:active {
+  transform: translateY(-1px);
+}
+
+.laboratorio-controls .export-button i {
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.laboratorio-controls .admin-button {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #a93226 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.laboratorio-controls .admin-button:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 50%, #922b21 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(231, 76, 60, 0.4);
+}
+
+.laboratorio-controls .admin-button:active {
+  transform: translateY(-1px);
+}
+
+.laboratorio-controls .admin-button i {
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .bitacoras-container {
+        padding: 100px 10px 10px 10px;
+    }
+
+    .bitacoras-container h1 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    .bitacora-table th,
+    .bitacora-table td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+
+    .laboratorio-controls {
+        flex-direction: column;
+        gap: 15px;
+        margin: 20px 0 30px 0;
+    }
+    
+    .laboratorio-controls .export-button,
+    .laboratorio-controls .admin-button {
+        width: 100%;
+        justify-content: center;
+        max-width: 280px;
+        padding: 16px 24px;
+        font-size: 14px;
+    }
+
+    .fecha-selector {
+        margin: 20px 0 40px 0;
+    }
+
+    .fecha-selector label {
+        font-size: 1.2rem;
+        padding: 10px 20px;
+        margin-bottom: 15px;
+    }
+
+    .fecha-selector input[type="date"] {
+        max-width: 100%;
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+
+    .zoom-controls {
+        margin: 10px auto 25px;
+        padding: 6px 12px;
+        gap: 6px;
+    }
+
+    .zoom-button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .zoom-info {
+        padding: 6px 12px;
+        font-size: 12px;
+        min-width: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bitacoras-container {
+        padding: 80px 10px 10px 10px; 
+    }
+
+    .bitacoras-container h1 {
+        font-size: 1.3rem;
+    }
+
+    h8 {
+        font-size: 36px;
+        margin: 40px 0 15px 0;
+        letter-spacing: 1px;
+    }
+
+    .bitacora-table th,
+    .bitacora-table td {
+        padding: 6px;
+        font-size: 0.75rem;
+    }
+
+    .laboratorio-controls .export-button,
+    .laboratorio-controls .admin-button {
+        padding: 14px 20px;
+        font-size: 13px;
+        gap: 8px;
+    }
+
+    .fecha-selector label {
+        font-size: 1.1rem;
+        padding: 8px 16px;
+    }
+
+    .fecha-selector input[type="date"] {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+
+    .zoom-controls {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 4px 8px;
+    }
+
+    .zoom-button {
+        padding: 6px 10px;
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .zoom-button i {
+        font-size: 13px;
+    }
+
+    .zoom-info {
+        padding: 4px 8px;
+        font-size: 11px;
+        min-width: 45px;
+    }
+}
+
+/* Centrado del contenido dentro de las celdas de reserva */
+.reservation-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra horizontalmente */
+    justify-content: center; /* Centra verticalmente si hay altura disponible */
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+    text-align: center; /* Asegura el texto centrado */
+}
+
+/* Estilos para bloques de clases en bitácoras */
+.class-block-cell {
+    background-color: #d4edda !important;
+    border: 2px solid #ffcc00 !important;
+}
+
+.class-block-reservation {
+    background-color: #ffcc00 !important;
+    color: white !important;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 8px;
+    text-align: center;
+}
+
+.class-block-title {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.class-block-subtitle {
+    font-size: 10px;
+    opacity: 0.9;
+}
+
+/* Hover para celdas de bloques de clases */
+.class-block-cell:hover {
+    background-color: #c3e6cb !important;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* Estilos para controles de administrador */
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.admin-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-button {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-button:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+.admin-button i {
+  font-size: 16px;
+}
+
+/* Estilos para el modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(248, 250, 252, 0.9) 25%, 
+    rgba(240, 245, 251, 0.92) 50%, 
+    rgba(243, 248, 253, 0.9) 75%, 
+    rgba(255, 255, 255, 0.93) 100%);
+  border-radius: 15px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid rgba(52, 152, 219, 0.2);
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(46, 204, 113, 0.1) 100%);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #7f8c8d;
+  transition: color 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.modal-close:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.modal-body {
+  padding: 25px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.search-controls {
+  margin-bottom: 20px;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 15px;
+  border: 2px solid rgba(52, 152, 219, 0.2);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+.filter-select {
+  padding: 12px 15px;
+  border: 2px solid rgba(52, 152, 219, 0.2);
+  border-radius: 8px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.reservations-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-results {
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 40px;
+  font-size: 16px;
+}
+
+.reservation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: linear-gradient(145deg, 
+    rgba(255, 255, 255, 0.98) 0%, 
+    rgba(248, 252, 255, 0.95) 50%, 
+    rgba(245, 250, 255, 0.96) 100%);
+  border: 1px solid rgba(52, 152, 219, 0.15);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  border-left: 4px solid #3498db;
+}
+
+.reservation-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.2);
+  border-color: rgba(52, 152, 219, 0.3);
+}
+
+.reservation-details {
+  flex: 1;
+}
+
+.reservation-main {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.lab-badge, .pc-badge, .date-badge {
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.lab-badge {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.pc-badge {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.date-badge {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.reservation-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.time-info {
+  color: #8e44ad;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(142, 68, 173, 0.1), rgba(155, 89, 182, 0.1));
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.user-info {
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.admin-badge {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delete-reservation-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+  min-width: 100px;
+}
+
+.delete-reservation-btn:hover {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+/* Scrollbar personalizada para el modal */
+.modal-body::-webkit-scrollbar,
+.reservations-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track,
+.reservations-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb,
+.reservations-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover,
+.reservations-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2980b9, #1f618d);
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .search-input-group {
+    flex-direction: column;
+  }
+  
+  .search-input,
+  .filter-select {
+    min-width: 100%;
+  }
+  
+  .reservation-main {
+    justify-content: center;
+  }
+  
+  .reservation-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .reservation-item {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .delete-reservation-btn {
+    align-self: stretch;
+  }
+}
+
+/* Estilos específicos para el modal de liberar equipos */
+.modal-title {
+  display: flex;
+  align-items: center;
+}
+
+.lab-info {
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #3498db;
+}
+
+.lab-info h4 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.no-equipos {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.equipos-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.equipo-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 252, 255, 0.8));
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.equipo-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+.equipo-checkbox {
+  margin-right: 12px;
+}
+
+.equipo-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.equipo-info {
+  flex: 1;
+}
+
+.equipo-main {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 4px;
+}
+
+.pc-number {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.time-range {
+  background: linear-gradient(135deg, #8e44ad, #9b59b6);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.equipo-details {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: #5a6c7d;
+}
+
+.reserva-type {
+  font-weight: 600;
+}
+
+.user-name {
+  color: #2c3e50;
+}
+
+.eliminar-individual-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.eliminar-individual-btn:hover {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-1px);
+}
+
+.modal-note {
+  background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(243, 156, 18, 0.1));
+  padding: 12px 15px;
+  border-radius: 8px;
+  border-left: 4px solid #f1c40f;
+  margin-bottom: 20px;
+}
+
+.modal-note p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #8e44ad;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-seleccionar {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-seleccionar:hover {
+  background: linear-gradient(135deg, #2980b9, #1f618d);
+  transform: translateY(-2px);
+}
+
+.btn-eliminar-especifico {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-eliminar-especifico:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  transform: translateY(-2px);
+}
+
+.btn-eliminar-especifico:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.btn-eliminar-todos {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-eliminar-todos:hover {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-2px);
+}
+
+.btn-cancelar {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
+  transform: translateY(-2px);
+}
+
+/* Responsive para el modal de equipos */
+@media (max-width: 768px) {
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+  
+  .equipo-item {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .equipo-main {
+    justify-content: center;
+  }
+  
+  .eliminar-individual-btn {
+    margin-left: 0;
+    align-self: stretch;
+  }
+}

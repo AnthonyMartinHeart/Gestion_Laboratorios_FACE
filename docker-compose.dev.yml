@@ -1,0 +1,88 @@
+
+
+services:
+  # ============================================================================
+  # CONFIGURACIÓN DE LA BASE DE DATOS (DESARROLLO)
+  # ============================================================================
+  # NOTA 1: Este archivo es para desarrollo local principalmente
+  # NOTA 2: Cuando te den la IP externa (000.00.000.00), usa el docker-compose.yml
+  #        y comenta o elimina este servicio 'postgres'
+  postgres:
+    image: postgres:15-alpine
+    container_name: gestion-labs-db
+    environment:
+      # Configuración local de la base de datos
+      POSTGRES_DB: postgres              # Nombre de la BD local
+      POSTGRES_USER: postgres            # Usuario local
+      POSTGRES_PASSWORD: XXX             # Contraseña local
+    ports:
+      - "5432:5432"                     # Puerto estándar de PostgreSQL
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data  # Para persistir los datos
+    networks:
+      - gestion-labs-network            # Red interna para los contenedores
+
+  # ============================================================================
+  # CONFIGURACIÓN DEL BACKEND (DESARROLLO)
+  # ============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: gestion-labs-backend-dev
+    environment:
+      # CASO 1: Desarrollo local (BD en Docker) - CONFIGURACIÓN ACTUAL
+      - NODE_ENV=development
+      - PORT=3040
+      - HOST=postgres                   # Usa 'postgres' porque la BD está en Docker
+      - DB_USERNAME=postgres
+      - PASSWORD=ubb
+      - DATABASE=postgres
+
+      # CASO 2: Usando BD externa - NO USES ESTE ARCHIVO
+      # Para BD externa (000.00.000.00) usa el docker-compose.yml en su lugar
+      # Ya que este archivo está optimizado para desarrollo local
+    ports:
+      - "3040:3040"                    # CAMBIAR: Debe coincidir con PORT (ej: "80:80")
+    depends_on:
+      - postgres
+    networks:
+      - gestion-labs-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # ============================================================================
+  # CONFIGURACIÓN DEL FRONTEND (DESARROLLO)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile.dev      # Usamos el Dockerfile de desarrollo
+    container_name: gestion-labs-frontend-dev
+    environment:
+
+      # CASO 1: Desarrollo local (actual)
+      - VITE_BASE_URL=http://localhost:3040/api
+
+      # CASO 2: Cuando uses la IP externa, cambia la URL a:
+      # - VITE_BASE_URL=http://000.00.000.00:3040/api
+      #
+      # Nota: Para producción, usa el docker-compose.yml en su lugar
+    ports:
+      - "5173:5173"                  # Puerto de Vite - NO CAMBIAR (siempre local)
+    depends_on:
+      - backend                      # Espera a que el backend esté listo
+    networks:
+      - gestion-labs-network         # Misma red que los otros servicios
+    volumes:
+      - ./frontend:/app             # Código fuente del frontend
+      - /app/node_modules           # node_modules del contenedor
+
+networks:
+  gestion-labs-network:              # Red compartida para todos los servicios
+    driver: bridge                   # Tipo de red Docker
+
+volumes:
+  postgres_dev_data:                 # Volumen para la BD (solo necesario en desarrollo local)

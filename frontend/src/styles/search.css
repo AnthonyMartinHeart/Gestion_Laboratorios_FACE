@@ -1,0 +1,37 @@
+.search-input-table {
+    padding: 12px 20px 12px 45px;
+    border-radius: 12px;
+    background-image: url('../assets/SearchIcon.svg');
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    background-size: 18px 18px;
+    border: 1px solid rgba(0, 51, 102, 0.3);
+    font-size: 14px;
+    width: 250px;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #2d3748;
+    font-family: "Inter", "Montserrat", sans-serif;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.search-input-table:focus {
+    outline: none;
+    border-color: #003366;
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.2);
+    background-color: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+}
+
+.search-input-table::placeholder {
+    color: #718096;
+    font-family: "Inter", "Montserrat", sans-serif;
+    font-weight: 400;
+}
+
+.search-input-table:hover {
+    border-color: #003366;
+    box-shadow: 0 6px 20px rgba(0, 51, 102, 0.15);
+}
