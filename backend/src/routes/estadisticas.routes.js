@@ -6,7 +6,8 @@ import {
   getEstadisticasGenerales,
   getEstadisticasEquipos,
   getEstadisticasTemporales,
-  getReporteCompleto
+  getReporteCompleto,
+  getEstadisticasAsistencia
 } from "../controllers/estadisticas.controller.js";
 
 const router = Router();
@@ -26,5 +27,8 @@ router.get("/temporales", getEstadisticasTemporales);
 
 // Ruta para obtener reporte completo (todas las estadísticas)
 router.get("/reporte-completo", getReporteCompleto);
+
+// Ruta para obtener estadísticas de asistencia de consultores
+router.get("/asistencia", getEstadisticasAsistencia);
 
 export default router;
