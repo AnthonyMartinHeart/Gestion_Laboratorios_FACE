@@ -18,6 +18,11 @@ const MisSolicitudes = () => {
   const { crear: crearSolicitud, loading: creandoSolicitud } = useCrearSolicitud(onSolicitudCreated);
   
   const [showForm, setShowForm] = useState(false);
+  const [filtros, setFiltros] = useState({
+    fechaCreacion: '',
+    estado: '',
+    laboratorio: ''
+  });
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
@@ -56,7 +61,7 @@ const MisSolicitudes = () => {
     { value: 'sabado', label: 'Sábado', numero: 6 }
   ];
 
-  // Filtrar solicitudes según el rol
+    // Filtrar solicitudes según el rol
   const solicitudesFiltradas = useMemo(() => {
     if (!solicitudes) return [];
     
@@ -70,6 +75,111 @@ const MisSolicitudes = () => {
     
     return [];
   }, [solicitudes, user]);
+
+  // Función helper para convertir fecha a formato comparable
+  const parseDate = useCallback((fechaStr) => {
+    if (!fechaStr) return null;
+    
+    // Si ya es un objeto Date válido
+    if (fechaStr instanceof Date) return fechaStr;
+    
+    const str = fechaStr.toString().trim();
+    
+    // Formato YYYY-MM-DD (del input date)
+    if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return new Date(str + 'T00:00:00');
+    }
+    
+    // Formato DD-MM-YYYY (del backend)
+    if (str.match(/^\d{2}-\d{2}-\d{4}$/)) {
+      const [dia, mes, año] = str.split('-');
+      return new Date(año, mes - 1, dia); // mes - 1 porque Date usa 0-11
+    }
+    
+    // Formato DD/MM/YYYY 
+    if (str.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [dia, mes, año] = str.split('/');
+      return new Date(año, mes - 1, dia);
+    }
+    
+    // Formato ISO con tiempo (ejemplo: 2025-08-22T14:18:56.000Z)
+    if (str.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+      return new Date(str);
+    }
+    
+    // Formato con tiempo incluido (DD-MM-YYYY, HH:MM:SS a. m./p. m.)
+    if (str.match(/^\d{2}-\d{2}-\d{4},?\s+\d{1,2}:\d{2}:\d{2}/)) {
+      const fechaPart = str.split(',')[0].trim();
+      if (fechaPart.match(/^\d{2}-\d{2}-\d{4}$/)) {
+        const [dia, mes, año] = fechaPart.split('-');
+        return new Date(año, mes - 1, dia);
+      }
+    }
+    
+    // Intentar parseo directo como último recurso
+    const parsed = new Date(str);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }, []);
+
+  // Aplicar filtros adicionales
+  const solicitudesConFiltros = useMemo(() => {
+    let filtered = [...solicitudesFiltradas];
+
+    // Filtro por fecha de creación
+    if (filtros.fechaCreacion) {
+      filtered = filtered.filter(solicitud => {
+        // Buscar la fecha de creación en diferentes campos posibles
+        const fechaCreacionSolicitud = parseDate(
+          solicitud.createdAt ||        // Campo principal con la fecha de creación
+          solicitud.fechaCreacion || 
+          solicitud.creada || 
+          solicitud.fecha ||
+          solicitud.fechaInicio
+        );
+        const fechaFiltro = parseDate(filtros.fechaCreacion);
+        
+        if (!fechaCreacionSolicitud || !fechaFiltro) return false;
+        
+        // Comparar solo las fechas (sin horas)
+        const fechaSol = new Date(fechaCreacionSolicitud.getFullYear(), fechaCreacionSolicitud.getMonth(), fechaCreacionSolicitud.getDate());
+        const fechaFil = new Date(fechaFiltro.getFullYear(), fechaFiltro.getMonth(), fechaFiltro.getDate());
+        
+        return fechaSol.getTime() === fechaFil.getTime(); // Fecha exacta
+      });
+    }
+
+    // Filtro por estado
+    if (filtros.estado) {
+      filtered = filtered.filter(solicitud => {
+        const estadoSolicitud = (solicitud.estado || '').toString().toLowerCase();
+        const estadoFiltro = filtros.estado.toLowerCase();
+        return estadoSolicitud === estadoFiltro;
+      });
+    }
+
+    // Filtro por laboratorio
+    if (filtros.laboratorio) {
+      filtered = filtered.filter(solicitud => {
+        const labSolicitud = (solicitud.laboratorio || '').toString().toUpperCase();
+        const labFiltro = filtros.laboratorio.toString().toUpperCase();
+        
+        // Comparación directa primero
+        if (labSolicitud === labFiltro) return true;
+        
+        // Manejar diferentes formatos posibles
+        const formatosLab = {
+          'LAB1': ['LAB1', 'LABORATORIO 1', 'LABORATORIO1'],
+          'LAB2': ['LAB2', 'LABORATORIO 2', 'LABORATORIO2'], 
+          'LAB3': ['LAB3', 'LABORATORIO 3', 'LABORATORIO3']
+        };
+        
+        const formatosValidos = formatosLab[labFiltro] || [];
+        return formatosValidos.includes(labSolicitud);
+      });
+    }
+
+    return filtered;
+  }, [solicitudesFiltradas, filtros]);
 
   // Obtener horarios de término válidos según la hora de inicio
   const getHorariosTerminoValidos = (horaInicioSeleccionada) => {
@@ -116,6 +226,23 @@ const MisSolicitudes = () => {
     } else {
       setFormData({ ...formData, [name]: value });
     }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    console.log('🔄 Cambio en filtro:', { name, value });
+    setFiltros(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const limpiarFiltros = () => {
+    setFiltros({
+      fechaCreacion: '',
+      estado: '',
+      laboratorio: ''
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -309,7 +436,7 @@ const MisSolicitudes = () => {
 
   const handleLimpiarSolicitudesProcesadas = async () => {
     // Obtener solicitudes aprobadas y rechazadas
-    const solicitudesProcesadas = solicitudesFiltradas.filter(
+    const solicitudesProcesadas = solicitudesConFiltros.filter(
       solicitud => solicitud.estado === 'aprobada' || solicitud.estado === 'rechazada'
     );
 
@@ -477,29 +604,88 @@ const MisSolicitudes = () => {
   return (
     <div className="solicitudes-container">
       <div className="solicitudes-header">
-        <h1>Mis Solicitudes de Bloques de Clases</h1>
+        <h1>Solicitudes De Clases</h1>
         
-        <div className="header-buttons" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          {user?.rol === 'profesor' && (
-            <button 
-              className="btn-nueva-solicitud"
-              onClick={() => setShowForm(true)}
-              disabled={creandoSolicitud}
-            >
-              ➕ Nueva Solicitud
-            </button>
-          )}
+        {user?.rol === 'profesor' && (
+          <button 
+            className="btn-nueva-solicitud"
+            onClick={() => setShowForm(true)}
+            disabled={creandoSolicitud}
+          >
+            ➕ Nueva Solicitud
+          </button>
+        )}
+      </div>
+
+      {/* Sección de filtros */}
+      <div className="filters-section">
+        <div className="filters-header">
+          <div className="filters-title">
+            🔍 Filtros de Búsqueda
+          </div>
+        </div>
+        
+        <div className="filters-content">
+          <div className="filter-group">
+            <label className="filter-label">Creación:</label>
+            <input
+              type="date"
+              name="fechaCreacion"
+              value={filtros.fechaCreacion}
+              onChange={handleFilterChange}
+              className="filter-input"
+            />
+          </div>
           
-          {user?.rol === 'administrador' && (
-            <button 
-              className="btn-limpiar-procesadas"
-              onClick={handleLimpiarSolicitudesProcesadas}
-              disabled={loading}
-              title="Eliminar todas las solicitudes aprobadas y rechazadas"
+          <div className="filter-group">
+            <label className="filter-label">Estado:</label>
+            <select
+              name="estado"
+              value={filtros.estado}
+              onChange={handleFilterChange}
+              className="filter-input"
             >
-              🧹 Limpiar Procesadas
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label className="filter-label">Laboratorio:</label>
+            <select
+              name="laboratorio"
+              value={filtros.laboratorio}
+              onChange={handleFilterChange}
+              className="filter-input"
+            >
+              <option value="">Todos los laboratorios</option>
+              <option value="LAB1">LAB1</option>
+              <option value="LAB2">LAB2</option>
+              <option value="LAB3">LAB3</option>
+            </select>
+          </div>
+          
+          <div className="filters-buttons">
+            <button 
+              onClick={limpiarFiltros}
+              className="filter-button clear"
+            >
+              🗑️ Limpiar Filtros
             </button>
-          )}
+            
+            {user?.rol === 'administrador' && (
+              <button 
+                className="btn-limpiar-procesadas"
+                onClick={handleLimpiarSolicitudesProcesadas}
+                disabled={loading}
+                title="Eliminar todas las solicitudes aprobadas y rechazadas"
+              >
+                🧹 Limpiar Procesadas
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -834,7 +1020,7 @@ const MisSolicitudes = () => {
 
       {/* Lista de solicitudes */}
       <div className="solicitudes-list">
-        {solicitudesFiltradas.length === 0 ? (
+        {solicitudesConFiltros.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📝</div>
             <h3>No hay solicitudes</h3>
@@ -847,7 +1033,7 @@ const MisSolicitudes = () => {
           </div>
         ) : (
           <div className="solicitudes-grid">
-            {solicitudesFiltradas.map(solicitud => (
+            {solicitudesConFiltros.map(solicitud => (
               <div key={solicitud.id} className={`solicitud-card ${solicitud.estado}`}>
                 <div className="card-header">
                   <h4>{solicitud.titulo}</h4>
