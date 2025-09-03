@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getAllReservations } from '@services/reservation.service.js';
 import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '@helpers/sweetAlert.js';
+import { formatearNombre } from '@helpers/formatText.js';
 import '@styles/miPerfil.css';
 
 const MiPerfil = () => {
@@ -183,7 +184,7 @@ const MiPerfil = () => {
       </div>
 
       <div className="perfil-details">
-        <p><strong>Nombre:</strong> {userData.nombreCompleto}</p>
+        <p><strong>Nombre:</strong> {formatearNombre(userData.nombreCompleto)}</p>
         {esCorreoValido ? (
           <p><strong>Correo:</strong> {userData.email}</p>
         ) : (
