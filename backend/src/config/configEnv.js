@@ -18,3 +18,10 @@ export const PASSWORD = process.env.PASSWORD;
 export const DATABASE = process.env.DATABASE;
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 export const cookieKey = process.env.cookieKey;
+
+// Variables de configuración de correo
+export const MAIL_HOST = process.env.MAIL_HOST;
+export const MAIL_PORT = process.env.MAIL_PORT;
+export const MAIL_USER = process.env.MAIL_USER;
+export const MAIL_PASS = process.env.MAIL_PASS;
+export const MAIL_FROM = process.env.MAIL_FROM;
