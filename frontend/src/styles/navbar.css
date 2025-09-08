@@ -255,17 +255,32 @@
   }
 }
   
-  /*tama imagen logo face*/
+  /* ===== LOGO INFERIOR DEL NAVBAR ===== */
+  .navbar-bottom-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /*tamaño imagen logo face*/
   .bottom-logo-img {
 	max-width: 200px; 
 	height: auto;
 	opacity: 0.9;
   }
   
-  
   /* Logo más pequeño cuando está colapsado */
   .navbar2.oculta .bottom-logo-img {
 	max-width: 40px;
+  }
+
+  /* Centrar logo cuando está colapsado */
+  .navbar2.oculta .navbar-bottom-logo {
+    padding: 0.5rem;
+    justify-content: center;
   }
 
   /* ===== ESTILOS PARA SUBMENU ===== */
