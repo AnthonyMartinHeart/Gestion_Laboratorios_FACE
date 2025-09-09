@@ -27,13 +27,13 @@ async function setupServer() {
     app.use(
       urlencoded({
         extended: true,
-        limit: "1mb",
+        limit: "10mb",
       }),
     );
 
     app.use(
       json({
-        limit: "1mb",
+        limit: "10mb",
       }),
     );
 
