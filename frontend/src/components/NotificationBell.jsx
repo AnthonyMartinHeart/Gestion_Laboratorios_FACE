@@ -14,6 +14,7 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
   const [showAllModal, setShowAllModal] = useState(false);
+  const [notificationsCleared, setNotificationsCleared] = useState(false);
 
   // Mostrar para administradores, profesores y consultores
   if (!user || !['administrador', 'consultor', 'profesor'].includes(user.rol)) {
@@ -23,6 +24,7 @@ const NotificationBell = () => {
   // Cargar notificaciones al montar el componente
   useEffect(() => {
     if (user && ['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+      setNotificationsCleared(false); // Reiniciar estado al cambiar usuario
       loadNotifications();
       
       // Actualizar cada 15 segundos (más frecuente)
@@ -69,6 +71,12 @@ const NotificationBell = () => {
     if (loadNotifications.loading) return;
     loadNotifications.loading = true;
 
+    // Si las notificaciones fueron limpiadas manualmente, no cargar nada
+    if (notificationsCleared) {
+      loadNotifications.loading = false;
+      return;
+    }
+
     try {
       console.log('🔔 Cargando notificaciones para usuario:', user?.rut, 'rol:', user?.rol);
       const data = await notificationsService.getNotifications();
@@ -78,128 +86,13 @@ const NotificationBell = () => {
       console.log('🔕 Notificaciones no leídas:', data.filter(n => !n.leida).length);
     } catch (error) {
       console.error('❌ Error al cargar notificaciones:', error);
-      
-      // Fallback a datos mock específicos por rol
-      let mockNotifications = [];
-      
-      if (user.rol === 'administrador') {
-        mockNotifications = [
-          {
-            id: 1,
-            tipo: 'tarea_asignada_admin',
-            titulo: 'Tarea asignada exitosamente',
-            mensaje: 'Se ha asignado una nueva tarea: Actualizar Winrar a Luis Alfredo Fernandez Canullan',
-            fechaCreacion: new Date().toISOString(),
-            leida: false,
-            detalles: JSON.stringify({
-              tareaId: 1,
-              titulo: "Actualizar Winrar",
-              prioridad: "alta",
-              asignadoA: "Luis Alfredo Fernandez Canullan"
-            })
-          },
-          {
-            id: 2,
-            tipo: 'cancelacion',
-            titulo: 'Reserva Cancelada',
-            mensaje: 'Se ha cancelado una reserva para el Lab 1',
-            fechaCreacion: new Date(Date.now() - 15 * 60000).toISOString(),
-            leida: false,
-            detalles: JSON.stringify({
-              usuario: "María González",
-              laboratorio: "Laboratorio 1",
-              motivo: "Cancelación manual"
-            })
-          },
-          {
-            id: 3,
-            tipo: 'solicitud',
-            titulo: 'Nueva Solicitud de Clase',
-            mensaje: 'Hay una nueva solicitud de bloque de clases pendiente de revisión',
-            fechaCreacion: new Date(Date.now() - 30 * 60000).toISOString(),
-            leida: false
-          },
-          {
-            id: 4,
-            tipo: 'mantenimiento',
-            titulo: '🔧 Mantenimiento Finalizado',
-            mensaje: 'Se ha finalizado el mantenimiento del equipo PC-8',
-            fechaCreacion: new Date(Date.now() - 45 * 60000).toISOString(),
-            leida: true,
-            detalles: JSON.stringify({
-              pcId: 8,
-              usuario: "Técnico López",
-              laboratorio: "Laboratorio 1"
-            })
-          }
-        ];
-      } else if (user.rol === 'profesor') {
-        mockNotifications = [
-          {
-            id: 5,
-            tipo: 'solicitud_aprobada',
-            titulo: '✅ Solicitud Aprobada',
-            mensaje: 'Tu solicitud de clase para el Lab 2 ha sido aprobada',
-            fechaCreacion: new Date(Date.now() - 15 * 60000).toISOString(),
-            leida: false
-          },
-          {
-            id: 6,
-            tipo: 'mantenimiento',
-            titulo: '🔧 Equipo en Mantenimiento',
-            mensaje: 'El equipo PC-12 que tenías reservado está en mantenimiento',
-            fechaCreacion: new Date(Date.now() - 30 * 60000).toISOString(),
-            leida: false,
-            detalles: JSON.stringify({
-              pcId: 12,
-              laboratorio: "Laboratorio 3"
-            })
-          },
-          {
-            id: 7,
-            tipo: 'solicitud_rechazada',
-            titulo: '❌ Solicitud Rechazada',
-            mensaje: 'Tu solicitud de clase para el Lab 3 ha sido rechazada',
-            fechaCreacion: new Date(Date.now() - 60 * 60000).toISOString(),
-            leida: false
-          }
-        ];
-      } else if (user.rol === 'consultor') {
-        mockNotifications = [
-          {
-            id: 8,
-            tipo: 'turno_asignado',
-            titulo: '⏰ Turno Asignado',
-            mensaje: 'Se te ha asignado un nuevo turno para mañana',
-            fechaCreacion: new Date(Date.now() - 5 * 60000).toISOString(),
-            leida: false
-          },
-          {
-            id: 9,
-            tipo: 'mantenimiento',
-            titulo: '� Equipo Reportado en Mantenimiento',
-            mensaje: 'El equipo PC-7 ha sido reportado para mantenimiento',
-            fechaCreacion: new Date(Date.now() - 10 * 60000).toISOString(),
-            leida: false,
-            detalles: JSON.stringify({
-              pcId: 7,
-              laboratorio: "Laboratorio 1",
-              motivo: "Problema de hardware reportado"
-            })
-          },
-          {
-            id: 10,
-            tipo: 'horario_actualizado',
-            titulo: '📅 Horario Actualizado',
-            mensaje: 'Los horarios de laboratorio han sido actualizados',
-            fechaCreacion: new Date(Date.now() - 45 * 60000).toISOString(),
-            leida: false
-          }
-        ];
+      // Si hay un error, mantener las notificaciones actuales en lugar de mostrar mock
+      // Solo usar mock si no hay notificaciones previas
+      if (notifications.length === 0) {
+        console.log('� Sin notificaciones previas, usando estado vacío por defecto');
+        setNotifications([]);
+        setHasUnread(false);
       }
-      
-      setNotifications(mockNotifications);
-      setHasUnread(mockNotifications.some(n => !n.leida));
     } finally {
       loadNotifications.loading = false;
     }
@@ -234,9 +127,6 @@ const NotificationBell = () => {
         n.id === notificationId ? { ...n, leida: true } : n
       );
       setHasUnread(updatedNotifications.some(n => !n.leida));
-      
-      // Recargar notificaciones para asegurar sincronización
-      setTimeout(() => loadNotifications(), 1000);
     } catch (error) {
       console.error('Error al marcar como leída:', error);
     }
@@ -247,9 +137,6 @@ const NotificationBell = () => {
       await notificationsService.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, leida: true })));
       setHasUnread(false);
-      
-      // Recargar notificaciones para asegurar sincronización
-      setTimeout(() => loadNotifications(), 1000);
     } catch (error) {
       console.error('Error al marcar todas como leídas:', error);
     }
@@ -258,14 +145,17 @@ const NotificationBell = () => {
   // Limpiar todas las notificaciones
   const clearAllNotifications = async () => {
     try {
-      // await notificationsService.clearAll(); // TODO: Implementar en el backend
+      await notificationsService.clearAll();
       setNotifications([]);
       setHasUnread(false);
-      
-      // Recargar notificaciones para asegurar sincronización
-      setTimeout(() => loadNotifications(), 1000);
+      setNotificationsCleared(true);
+      console.log('🗑️ Notificaciones limpiadas exitosamente');
     } catch (error) {
       console.error('Error al limpiar notificaciones:', error);
+      // En caso de error, limpiar localmente
+      setNotifications([]);
+      setHasUnread(false);
+      setNotificationsCleared(true);
     }
   };
 
@@ -339,6 +229,17 @@ const NotificationBell = () => {
             <div className="notification-header">
               <h3>📢 Notificaciones</h3>
               <div className="notification-header-buttons">
+                {notificationsCleared && (
+                  <button 
+                    className="refresh-notifications"
+                    onClick={() => {
+                      setNotificationsCleared(false);
+                      loadNotifications();
+                    }}
+                  >
+                    🔄 Actualizar
+                  </button>
+                )}
                 {notifications.length > 0 && (
                   <button 
                     className="mark-all-read"
@@ -449,6 +350,17 @@ const NotificationBell = () => {
               <div className="modal-header-content">
                 <h2>📋 Todas las Notificaciones</h2>
                 <div className="modal-header-buttons">
+                  {notificationsCleared && (
+                    <button 
+                      className="modal-refresh-notifications"
+                      onClick={() => {
+                        setNotificationsCleared(false);
+                        loadNotifications();
+                      }}
+                    >
+                      🔄 Actualizar
+                    </button>
+                  )}
                   {notifications.length > 0 && (
                     <button 
                       className="modal-mark-all-read"
