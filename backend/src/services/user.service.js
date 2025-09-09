@@ -248,3 +248,44 @@ export async function getConsultoresService() {
     return [null, "Error interno del servidor"];
   }
 }
+
+export async function updateFotoPerfilService(email, fotoPerfil) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    
+    const userFound = await userRepository.findOne({ where: { email } });
+    
+    if (!userFound) {
+      return [null, "Usuario no encontrado"];
+    }
+
+    userFound.fotoPerfil = fotoPerfil;
+    await userRepository.save(userFound);
+
+    const { password, ...userData } = userFound;
+    return [userData, null];
+  } catch (error) {
+    console.error("Error al actualizar foto de perfil:", error);
+    return [null, "Error interno del servidor"];
+  }
+}
+
+export async function getFotoPerfilService(email) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    
+    const userFound = await userRepository.findOne({ 
+      where: { email },
+      select: ["fotoPerfil"]
+    });
+    
+    if (!userFound) {
+      return [null, "Usuario no encontrado"];
+    }
+
+    return [userFound.fotoPerfil, null];
+  } catch (error) {
+    console.error("Error al obtener foto de perfil:", error);
+    return [null, "Error interno del servidor"];
+  }
+}
