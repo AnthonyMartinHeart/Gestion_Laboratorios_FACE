@@ -16,6 +16,10 @@ const useCreateReservation = () => {
             
             // Si tenemos una respuesta exitosa
             if (response.status === 201 || response.message === "Reserva creada correctamente") {
+                // Refrescar notificaciones inmediatamente
+                if (window.refreshNotifications) {
+                    window.refreshNotifications();
+                }
                 if (showAlerts) {
                     showSuccessAlert('¡Éxito!', 'La reserva ha sido creada correctamente.');
                 }
