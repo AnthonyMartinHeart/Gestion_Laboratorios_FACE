@@ -25,6 +25,47 @@ export async function createReservation(req, res) {
     const [reserva, err] = await createReservationService(req.body);
     if (err) return handleErrorClient(res, 400, err);
 
+    // Detectar si es un mantenimiento
+    const esMantenimiento = req.body.carrera === 'MAINTENANCE';
+    
+    if (esMantenimiento) {
+      // Crear notificación para el usuario que marca el mantenimiento
+      try {
+        await crearNotificacion(
+          "mantenimiento_marcado",
+          "🔧 Equipo Marcado en Mantenimiento",
+          `Has marcado el equipo PC-${req.body.pcId} en mantenimiento`,
+          {
+            pcId: req.body.pcId,
+            usuario: req.body.usuario || "Sistema",
+            laboratorio: req.body.laboratorio || "No especificado",
+            motivo: "Mantenimiento de equipo",
+            accion: "marcar"
+          },
+          req.user?.rut // Notificación para quien lo marca
+        );
+
+        // Crear notificación general para administradores (si no es admin quien lo marca)
+        if (req.userRole !== 'administrador') {
+          await crearNotificacion(
+            "mantenimiento_reportado",
+            "🔧 Equipo Reportado en Mantenimiento",
+            `Se ha reportado el equipo PC-${req.body.pcId} en mantenimiento por ${req.body.usuario || req.user?.nombreCompleto || 'Usuario'}`,
+            {
+              pcId: req.body.pcId,
+              usuario: req.body.usuario || req.user?.nombreCompleto || "Sistema",
+              laboratorio: req.body.laboratorio || "No especificado",
+              motivo: "Equipo reportado para mantenimiento",
+              reportadoPor: req.user?.nombreCompleto || 'Usuario'
+            }
+            // Sin targetRut = notificación para administradores
+          );
+        }
+      } catch (notificationError) {
+        console.error("Error al crear notificación de mantenimiento:", notificationError);
+      }
+    }
+
     handleSuccess(res, 201, "Reserva creada correctamente", reserva);
   } catch (e) {
     handleErrorServer(res, 500, e.message);
@@ -113,19 +154,56 @@ export async function deleteReservation(req, res) {
     const [deleted, err] = await deleteReservationService(id);
     if (err) return handleErrorClient(res, 404, err);
 
-    // Crear notificación para la cancelación
+    // Detectar si era un mantenimiento
+    const eraMantenimiento = deleted.carrera === 'MAINTENANCE';
+    
+    // Crear notificación apropiada
     try {
-      await crearNotificacion(
-        "cancelacion",
-        "Reserva Cancelada",
-        `Se ha cancelado una reserva para el ${deleted.fechaReserva} de ${deleted.horaInicio} a ${deleted.horaTermino}`,
-        {
-          reservaId: deleted.id,
-          usuario: deleted.user?.nombre || "Usuario desconocido",
-          laboratorio: deleted.laboratorio || "No especificado",
-          motivo: "Cancelación manual"
+      if (eraMantenimiento) {
+        // Notificación para quien desmarca el mantenimiento
+        await crearNotificacion(
+          "mantenimiento_finalizado",
+          "🔧 Mantenimiento Finalizado",
+          `Has finalizado el mantenimiento del equipo PC-${deleted.pcId}`,
+          {
+            pcId: deleted.pcId,
+            usuario: deleted.user?.nombre || "Sistema",
+            laboratorio: deleted.laboratorio || "No especificado",
+            motivo: "Mantenimiento completado",
+            accion: "finalizar"
+          },
+          req.user?.rut // Notificación para quien lo desmarca
+        );
+
+        // Notificación general para administradores (si no es admin quien lo desmarca)
+        if (req.userRole !== 'administrador') {
+          await crearNotificacion(
+            "mantenimiento_completado_general",
+            "🔧 Mantenimiento Completado",
+            `Se ha completado el mantenimiento del equipo PC-${deleted.pcId} por ${req.user?.nombreCompleto || 'Usuario'}`,
+            {
+              pcId: deleted.pcId,
+              usuario: deleted.user?.nombre || "Sistema",
+              laboratorio: deleted.laboratorio || "No especificado",
+              completadoPor: req.user?.nombreCompleto || 'Usuario'
+            }
+            // Sin targetRut = notificación para administradores
+          );
         }
-      );
+      } else {
+        await crearNotificacion(
+          "cancelacion",
+          "Reserva Cancelada",
+          `Se ha cancelado una reserva para el ${deleted.fechaReserva} de ${deleted.horaInicio} a ${deleted.horaTermino}`,
+          {
+            reservaId: deleted.id,
+            usuario: deleted.user?.nombre || "Usuario desconocido",
+            laboratorio: deleted.laboratorio || "No especificado",
+            motivo: "Cancelación manual"
+          }
+          // Notificación general para administradores
+        );
+      }
     } catch (notificationError) {
       console.error("Error al crear notificación:", notificationError);
       // No afectar la operación principal si falla la notificación
