@@ -43,6 +43,17 @@ export const notificationsService = {
       console.error('Error al marcar todas las notificaciones como leídas:', error);
       throw error;
     }
+  },
+
+  // Limpiar todas las notificaciones
+  async clearAll() {
+    try {
+      const response = await axios.delete('/notificaciones/limpiar');
+      return response.data;
+    } catch (error) {
+      console.error('Error al limpiar notificaciones:', error);
+      throw error;
+    }
   }
 };
 
