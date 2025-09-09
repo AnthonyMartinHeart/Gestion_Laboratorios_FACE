@@ -82,3 +82,41 @@ export async function deleteUser(rut) {
         }
     }
 }
+
+export async function updateFotoPerfil(email, fotoPerfil) {
+    try {
+        const response = await axios.patch(`/user/foto-perfil?email=${email}`, {
+            fotoPerfil
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            console.log('Error al actualizar foto de perfil:', error.response.status);
+            return error.response.data;
+        } else if (error.request) {
+            console.log('Error: No se recibió respuesta del servidor');
+            throw new Error('No se recibió respuesta del servidor. Verifique su conexión.');
+        } else {
+            console.log('Error de configuración:', error.message);
+            throw new Error(`Error al configurar la solicitud: ${error.message}`);
+        }
+    }
+}
+
+export async function getFotoPerfil(email) {
+    try {
+        const response = await axios.get(`/user/foto-perfil?email=${email}`);
+        return response.data.data.fotoPerfil;
+    } catch (error) {
+        if (error.response) {
+            console.log('Error al obtener foto de perfil:', error.response.status);
+            return null; // Si no tiene foto, retornar null
+        } else if (error.request) {
+            console.log('Error: No se recibió respuesta del servidor');
+            throw new Error('No se recibió respuesta del servidor. Verifique su conexión.');
+        } else {
+            console.log('Error de configuración:', error.message);
+            throw new Error(`Error al configurar la solicitud: ${error.message}`);
+        }
+    }
+}
