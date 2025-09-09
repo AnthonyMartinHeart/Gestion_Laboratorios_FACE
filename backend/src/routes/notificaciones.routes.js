@@ -3,7 +3,8 @@ import {
   obtenerNotificaciones, 
   obtenerConteoNoLeidas, 
   marcarComoLeida, 
-  marcarTodasComoLeidas
+  marcarTodasComoLeidas,
+  limpiarNotificaciones
 } from "../controllers/notificaciones.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 
@@ -23,5 +24,8 @@ router.patch("/:id/leida", marcarComoLeida);
 
 // Marcar todas las notificaciones como leídas
 router.patch("/marcar-todas-leidas", marcarTodasComoLeidas);
+
+// Limpiar todas las notificaciones
+router.delete("/limpiar", limpiarNotificaciones);
 
 export default router;
