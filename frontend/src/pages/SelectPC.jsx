@@ -95,12 +95,40 @@ const SelectPC = ({ onReservaCreada }) => {
     const minutoActual = ahora.getMinutes();
     const tiempoActualEnMinutos = horaActual * 60 + minutoActual;
 
-    // Mantener 15 minutos de anticipación antes de cada clase
-    const tiempoMinimoReserva = tiempoActualEnMinutos + 15;
+    // Mapeo de horarios de término a horarios de inicio siguiente
+    const terminoAInicio = {
+      "09:30": "09:40", // 9:30 → 9:40
+      "11:00": "11:10", // 11:00 → 11:10
+      "12:30": "12:40", // 12:30 → 12:40
+      "14:00": "14:10", // 14:00 → 14:10
+      "15:30": "15:40", // 15:30 → 15:40
+      "17:00": "17:10", // 17:00 → 17:10
+      "18:30": null     // 18:30 no tiene siguiente (antes de 20:00)
+      // 20:00 no está incluido porque es solo hora de término final
+    };
+
+    // Verificar si estamos exactamente en una hora de término que tiene siguiente clase
+    const horaActualString = `${horaActual.toString().padStart(2, '0')}:${minutoActual.toString().padStart(2, '0')}`;
+    const siguienteClase = terminoAInicio[horaActualString];
+    
+    // Mantener 15 minutos de anticipación antes de cada clase, EXCEPTO cuando estemos en hora de término exacta
+    let tiempoMinimoReserva = tiempoActualEnMinutos + 15;
+    
+    // Si estamos exactamente en una hora de término y hay una siguiente clase, permitir reserva inmediata
+    if (siguienteClase) {
+      console.log(`🕐 Hora de término detectada (${horaActualString}), activando siguiente clase: ${siguienteClase}`);
+      tiempoMinimoReserva = tiempoActualEnMinutos; // Sin margen de 15 minutos para la clase siguiente
+    }
 
     const horariosInicioValidos = horasInicio.filter(hora => {
       const [h, m] = hora.split(':').map(Number);
       const tiempoHora = h * 60 + m;
+      
+      // Si estamos exactamente en una hora de término y esta es la siguiente clase, permitir inmediatamente
+      if (siguienteClase && hora === siguienteClase) {
+        console.log(`✅ Activando clase siguiente inmediatamente: ${hora}`);
+        return true;
+      }
       
       // Si la clase ya comenzó, permitir reservas hasta 1 hora después del inicio
       if (tiempoHora < tiempoActualEnMinutos) {
@@ -108,7 +136,7 @@ const SelectPC = ({ onReservaCreada }) => {
         return tiempoActualEnMinutos <= tiempoLimite;
       }
       
-      // Si la clase no ha comenzado, usar el margen de 15 minutos
+      // Si la clase no ha comenzado, usar el margen de 15 minutos (o sin margen si es clase siguiente)
       return tiempoHora >= tiempoMinimoReserva;
     });
 
@@ -1043,7 +1071,7 @@ const SelectPC = ({ onReservaCreada }) => {
           minute: '2-digit',
           hour12: false,
           timeZone: 'America/Santiago'
-        })} | ⏰ Reservas hasta 15 min antes
+        })}
       </div>
       
       {/* Indicador de domingo (laboratorio cerrado) */}
@@ -1212,7 +1240,7 @@ const SelectPC = ({ onReservaCreada }) => {
                 })}
               </div>
               <div style={{ color: '#666', fontSize: '11px', marginTop: '3px' }}>
-                Sincronizado automáticamente con zona horaria de Chile | Puedes reservar hasta 15 min antes del inicio
+                Sincronizado automáticamente con zona horaria de Chile
               </div>
             </div>
 
