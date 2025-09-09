@@ -51,6 +51,10 @@ const UserSchema = new EntitySchema({
       length: 10,
       nullable: true, // Solo para alumnos
     },
+    fotoPerfil: {
+      type: "text",
+      nullable: true,
+    },
     activo: {
       type: "boolean",
       default: true,
