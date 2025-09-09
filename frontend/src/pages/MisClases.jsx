@@ -181,6 +181,11 @@ const MisClases = () => {
           result.value.trim() // motivoCancelacion
         );
         
+        // Refrescar notificaciones inmediatamente
+        if (window.refreshNotifications) {
+          window.refreshNotifications();
+        }
+        
         showSuccessAlert(
           'Clase cancelada', 
           `La clase del ${clase.fechaEspecifica.toLocaleDateString('es-CL')} ha sido cancelada exitosamente.`
