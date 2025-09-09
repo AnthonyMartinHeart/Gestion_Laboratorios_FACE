@@ -161,6 +161,10 @@ const GestionTareas = () => {
     try {
       if (modalMode === 'create') {
         await tareasService.createTarea(formData);
+        // Refrescar notificaciones inmediatamente
+        if (window.refreshNotifications) {
+          window.refreshNotifications();
+        }
         Swal.fire({
           title: '¡Éxito!',
           text: 'Tarea creada exitosamente',
@@ -168,6 +172,10 @@ const GestionTareas = () => {
         });
       } else {
         await tareasService.updateTarea(tareaSeleccionada.id, formData);
+        // Refrescar notificaciones inmediatamente
+        if (window.refreshNotifications) {
+          window.refreshNotifications();
+        }
         Swal.fire({
           title: '¡Éxito!',
           text: 'Tarea actualizada exitosamente',
@@ -265,6 +273,10 @@ const GestionTareas = () => {
 
     try {
       await tareasService.completarTarea(tarea.id, completada, observaciones);
+      // Refrescar notificaciones inmediatamente
+      if (window.refreshNotifications) {
+        window.refreshNotifications();
+      }
       Swal.fire({
         title: '¡Éxito!',
         text: `Tarea marcada como ${completada ? 'completada' : 'no completada'}`,
@@ -451,21 +463,28 @@ const GestionTareas = () => {
                 <div className="tarea-actions">
                   {user.rol === 'administrador' ? (
                     // Acciones para administradores
-                    <div className="admin-actions">
-                      <button 
-                        className="btn-editar"
-                        onClick={() => abrirModalEditar(tarea)}
-                        disabled={tarea.estado !== 'pendiente'}
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button 
-                        className="btn-eliminar"
-                        onClick={() => eliminarTarea(tarea)}
-                      >
-                        🗑️ Eliminar
-                      </button>
-                    </div>
+                    tarea.estado === 'pendiente' ? (
+                      <div className="admin-actions">
+                        <button 
+                          className="btn-editar"
+                          onClick={() => abrirModalEditar(tarea)}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button 
+                          className="btn-eliminar"
+                          onClick={() => eliminarTarea(tarea)}
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="tarea-completada-container">
+                        <div className="tarea-completada-info">
+                          {tarea.estado === 'completada' ? '✅ Tarea completada exitosamente' : '❌ Tarea marcada como no completada'}
+                        </div>
+                      </div>
+                    )
                   ) : (
                     // Acciones para consultores
                     tarea.estado === 'pendiente' && (
