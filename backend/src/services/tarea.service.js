@@ -46,7 +46,7 @@ export async function createTareaService(tareaData) {
 
     const tareaGuardada = await tareaRepository.save(nuevaTarea);
 
-    // Crear notificación para el consultor
+    // Crear notificación para el consultor (receptor de la tarea)
     try {
       await crearNotificacion(
         "tarea_asignada",
@@ -56,14 +56,34 @@ export async function createTareaService(tareaData) {
           tareaId: tareaGuardada.id,
           titulo: titulo,
           prioridad: prioridad,
-          fechaLimite: fechaLimite
+          fechaLimite: fechaLimite,
+          asignadoPor: asignadoPor.nombreCompleto
         },
         asignadoA.rut
       );
       console.log(`📧 Notificación de tarea enviada a ${asignadoA.nombreCompleto} (${asignadoA.rut})`);
     } catch (notifError) {
-      console.error("Error al crear notificación:", notifError);
-      // No fallar si la notificación no se puede crear
+      console.error("Error al crear notificación para consultor:", notifError);
+    }
+
+    // Crear notificación para el administrador que asignó la tarea
+    try {
+      await crearNotificacion(
+        "tarea_asignada_admin",
+        "Tarea asignada exitosamente",
+        `Se ha asignado una nueva tarea: ${titulo} a ${asignadoA.nombreCompleto}`,
+        {
+          tareaId: tareaGuardada.id,
+          titulo: titulo,
+          prioridad: prioridad,
+          fechaLimite: fechaLimite,
+          asignadoA: asignadoA.nombreCompleto
+        },
+        asignadoPor.rut
+      );
+      console.log(`📧 Notificación de confirmación enviada a admin ${asignadoPor.nombreCompleto} (${asignadoPor.rut})`);
+    } catch (notifError) {
+      console.error("Error al crear notificación para administrador:", notifError);
     }
 
     return [tareaGuardada, null];
