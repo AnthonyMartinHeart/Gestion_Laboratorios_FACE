@@ -9,6 +9,8 @@ import {
   updateUser,
   setUserActive,
   getConsultores,
+  updateFotoPerfil,
+  getFotoPerfil,
 } from "../controllers/user.controller.js";
 
 const router = Router();
@@ -21,6 +23,8 @@ router
   .get("/detail/", getUser) 
   .patch("/detail/", isAdmin, updateUser)
   .delete("/detail/", isAdmin, deleteUser)
-  .patch("/active", isAdmin, setUserActive); 
+  .patch("/active", isAdmin, setUserActive)
+  .patch("/foto-perfil", updateFotoPerfil)
+  .get("/foto-perfil", getFotoPerfil); 
 
 export default router;
