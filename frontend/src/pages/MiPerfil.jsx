@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { getAllReservations } from '@services/reservation.service.js';
-import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '@helpers/sweetAlert.js';
 import { formatearNombre } from '@helpers/formatText.js';
+import { updateFotoPerfil, getFotoPerfil } from '@services/user.service.js';
+import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
 import '@styles/miPerfil.css';
 
 const MiPerfil = () => {
   const [userData, setUserData] = useState(null);
   const [fotoPerfil, setFotoPerfil] = useState(null);
-  const [historialReservas, setHistorialReservas] = useState([]);
-  const [mostrarHistorial, setMostrarHistorial] = useState(false);
-  const [cargandoHistorial, setCargandoHistorial] = useState(false);
-  const [historialLimpiado, setHistorialLimpiado] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -22,132 +18,105 @@ const MiPerfil = () => {
     }
     setUserData(user);
 
+    // Cargar foto desde el backend
     if (user && user.email) {
-      const fotoGuardada = localStorage.getItem(`fotoPerfil_${user.email}`);
-      if (fotoGuardada) {
-        setFotoPerfil(fotoGuardada);
-      }
-      
-      // Verificar si el historial fue limpiado previamente
-      const historialLimpiadoLocal = localStorage.getItem(`historialLimpiado_${user.email}`);
-      if (historialLimpiadoLocal === 'true') {
-        setHistorialLimpiado(true);
-      }
+      cargarFotoPerfil(user.email);
     }
   }, []);
 
-  const manejarCambioFoto = (e) => {
-    const file = e.target.files[0];
-    if (file && userData && userData.email) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFotoPerfil(reader.result);
-        localStorage.setItem(`fotoPerfil_${userData.email}`, reader.result);
+  const cargarFotoPerfil = async (email) => {
+    try {
+      const foto = await getFotoPerfil(email);
+      if (foto) {
+        setFotoPerfil(foto);
+      }
+    } catch (error) {
+      console.error('Error al cargar foto de perfil:', error);
+    }
+  };
+
+  const comprimirImagen = (file, maxWidth = 400, calidad = 0.8) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Calcular nuevas dimensiones manteniendo la proporción
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+
+        // Dibujar imagen redimensionada
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Convertir a base64 comprimido
+        const fotoComprimida = canvas.toDataURL('image/jpeg', calidad);
+        resolve(fotoComprimida);
       };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const eliminarFoto = () => {
-    if (userData && userData.email) {
-      setFotoPerfil(null);
-      localStorage.removeItem(`fotoPerfil_${userData.email}`);
-    }
-  };
-
-  const cargarHistorialReservas = async () => {
-    if (!userData || !userData.rut) return;
-
-    // Si el historial fue limpiado, no cargar automáticamente
-    if (historialLimpiado) {
-      setHistorialReservas([]);
-      return;
-    }
-
-    try {
-      setCargandoHistorial(true);
-      const reservas = await getAllReservations();
-      
-      if (Array.isArray(reservas)) {
-        // Filtrar solo las reservas del usuario actual
-        const reservasUsuario = reservas.filter(reserva => 
-          reserva.rut === userData.rut && reserva.carrera !== 'MAINTENANCE' && reserva.carrera !== 'ADMIN'
-        );
-        
-        // Ordenar por fecha más reciente primero
-        const reservasOrdenadas = reservasUsuario.sort((a, b) => {
-          const fechaA = new Date(a.fechaReserva + 'T' + a.horaInicio);
-          const fechaB = new Date(b.fechaReserva + 'T' + b.horaInicio);
-          return fechaB - fechaA;
-        });
-
-        setHistorialReservas(reservasOrdenadas);
-      } else {
-        setHistorialReservas([]);
-      }
-    } catch (error) {
-      console.error('Error al cargar historial:', error);
-      showErrorAlert('Error', 'No se pudo cargar el historial de reservas');
-      setHistorialReservas([]);
-    } finally {
-      setCargandoHistorial(false);
-    }
-  };
-
-  const alternarHistorial = () => {
-    if (!mostrarHistorial) {
-      cargarHistorialReservas();
-    }
-    setMostrarHistorial(!mostrarHistorial);
-  };
-
-  const limpiarHistorial = async () => {
-    try {
-      const confirmar = await showConfirmAlert(
-        '¿Estás seguro?',
-        'Esto limpiará tu vista local del historial de reservas. Las reservas seguirán existiendo en el sistema.',
-        'Sí, limpiar',
-        'Cancelar'
-      );
-
-      if (confirmar) {
-        setHistorialReservas([]);
-        setHistorialLimpiado(true);
-        
-        // Guardar el estado en localStorage para persistir entre sesiones
-        if (userData && userData.email) {
-          localStorage.setItem(`historialLimpiado_${userData.email}`, 'true');
-        }
-        
-        showSuccessAlert('¡Listo!', 'Historial limpiado correctamente');
-      }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudo limpiar el historial');
-    }
-  };
-
-  const restaurarHistorial = () => {
-    setHistorialLimpiado(false);
-    if (userData && userData.email) {
-      localStorage.removeItem(`historialLimpiado_${userData.email}`);
-    }
-    cargarHistorialReservas();
-  };
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+      img.src = URL.createObjectURL(file);
     });
   };
 
-  const obtenerNombreLaboratorio = (pcId) => {
-    if (pcId >= 1 && pcId <= 40) return 'LAB 1';
-    if (pcId >= 41 && pcId <= 60) return 'LAB 2';
-    if (pcId >= 61 && pcId <= 80) return 'LAB 3';
-    return 'LABORATORIO';
+  const manejarCambioFoto = async (e) => {
+    const file = e.target.files[0];
+    if (file && userData && userData.email) {
+      // Validar tamaño del archivo original (máximo 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showErrorAlert('Error', 'La imagen es demasiado grande. Máximo 10MB.');
+        return;
+      }
+
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        showErrorAlert('Error', 'Solo se permiten archivos de imagen.');
+        return;
+      }
+
+      try {
+        // Comprimir imagen antes de subirla
+        const fotoComprimida = await comprimirImagen(file);
+        setFotoPerfil(fotoComprimida);
+        
+        // Guardar en el backend
+        const response = await updateFotoPerfil(userData.email, fotoComprimida);
+        
+        if (response.status === 'Success') {
+          showSuccessAlert('¡Éxito!', 'Foto de perfil actualizada correctamente');
+        } else {
+          showErrorAlert('Error', response.message || 'No se pudo actualizar la foto');
+          setFotoPerfil(null); // Revertir cambio visual
+        }
+      } catch (error) {
+        console.error('Error al subir foto:', error);
+        showErrorAlert('Error', 'No se pudo actualizar la foto de perfil');
+        setFotoPerfil(null); // Revertir cambio visual
+      }
+    }
   };
+
+  const eliminarFoto = async () => {
+    if (userData && userData.email) {
+      try {
+        setFotoPerfil(null);
+        
+        // Eliminar del backend enviando null o string vacío
+        const response = await updateFotoPerfil(userData.email, null);
+        
+        if (response.status === 'Success') {
+          showSuccessAlert('¡Éxito!', 'Foto de perfil eliminada correctamente');
+        } else {
+          showErrorAlert('Error', response.message || 'No se pudo eliminar la foto');
+        }
+      } catch (error) {
+        console.error('Error al eliminar foto:', error);
+        showErrorAlert('Error', 'No se pudo eliminar la foto de perfil');
+      }
+    }
+  };
+
+
 
   if (!userData) {
     return <div>Cargando...</div>;
@@ -195,84 +164,6 @@ const MiPerfil = () => {
           <p><strong>Carrera:</strong> {userData.carrera ? userData.carrera.toUpperCase() : 'No registrado'}</p>
         )}
         <p><strong>Rol:</strong> {userData.rol}</p>
-      </div>
-
-      {/* Sección de Historial de Reservas */}
-      <div className="historial-section">
-        <div className="historial-header">
-          <h2>Historial de Reservas</h2>
-          <button 
-            className="btn-historial" 
-            onClick={alternarHistorial}
-            disabled={cargandoHistorial}
-          >
-            {cargandoHistorial ? 'Cargando...' : mostrarHistorial ? 'Ocultar Historial' : 'Ver Historial'}
-          </button>
-        </div>
-
-        {mostrarHistorial && (
-          <div className="historial-content">
-            {historialLimpiado ? (
-              <div className="historial-limpiado">
-                <p className="mensaje-limpiado">
-                  📝 El historial de reservas ha sido limpiado localmente
-                </p>
-                <button 
-                  className="btn-restaurar-historial" 
-                  onClick={restaurarHistorial}
-                  disabled={cargandoHistorial}
-                >
-                  {cargandoHistorial ? 'Cargando...' : '🔄 Restaurar Historial'}
-                </button>
-              </div>
-            ) : (
-              <>
-                {historialReservas.length > 0 && (
-                  <div className="historial-actions">
-                    <button 
-                      className="btn-limpiar-historial" 
-                      onClick={limpiarHistorial}
-                    >
-                      🗑️ Limpiar Historial
-                    </button>
-                    <span className="total-reservas">
-                      Total: {historialReservas.length} reserva{historialReservas.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                )}
-
-                <div className="historial-lista">
-                  {historialReservas.length === 0 ? (
-                    <p className="sin-historial">No tienes reservas registradas</p>
-                  ) : (
-                    historialReservas.map((reserva, index) => (
-                      <div key={reserva.id || index} className="reserva-item">
-                        <div className="reserva-info">
-                          <div className="reserva-principal">
-                            <span className="laboratorio">{obtenerNombreLaboratorio(reserva.pcId)}</span>
-                            <span className="pc">PC {reserva.pcId}</span>
-                            <span className="fecha">{formatearFecha(reserva.fechaReserva)}</span>
-                          </div>
-                          <div className="reserva-detalle">
-                            <span className="horario">
-                              {reserva.horaInicio} - {reserva.horaTermino}
-                            </span>
-                            {reserva.status && (
-                              <span className={`estado estado-${reserva.status}`}>
-                                {reserva.status === 'finished' ? 'Finalizada' : 
-                                 reserva.status === 'active' ? 'Activa' : reserva.status}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
