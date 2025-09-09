@@ -95,7 +95,7 @@ const SelectPC = ({ onReservaCreada }) => {
     const minutoActual = ahora.getMinutes();
     const tiempoActualEnMinutos = horaActual * 60 + minutoActual;
 
-    // Agregar 15 minutos de margen para dar tiempo a completar la reserva
+    // Mantener 15 minutos de anticipación antes de cada clase
     const tiempoMinimoReserva = tiempoActualEnMinutos + 15;
 
     const horariosInicioValidos = horasInicio.filter(hora => {
@@ -108,7 +108,7 @@ const SelectPC = ({ onReservaCreada }) => {
         return tiempoActualEnMinutos <= tiempoLimite;
       }
       
-      // Si la clase no ha comenzado, usar el margen normal de 15 minutos
+      // Si la clase no ha comenzado, usar el margen de 15 minutos
       return tiempoHora >= tiempoMinimoReserva;
     });
 
@@ -320,10 +320,18 @@ const SelectPC = ({ onReservaCreada }) => {
             if (result && result.success) {
               console.log('✅ Reserva de mantenimiento creada exitosamente');
               refreshReservations();
+              // Refrescar notificaciones inmediatamente
+              if (window.refreshNotifications) {
+                window.refreshNotifications();
+              }
               Swal.fire('¡Listo!', `PC ${pc} ha sido marcado en mantenimiento y será visible para todos los usuarios`, 'success');
             } else if (result && !result.error) {
               console.log('✅ Reserva creada (sin campo success explícito)');
               refreshReservations();
+              // Refrescar notificaciones inmediatamente
+              if (window.refreshNotifications) {
+                window.refreshNotifications();
+              }
               Swal.fire('¡Listo!', `PC ${pc} ha sido marcado en mantenimiento y será visible para todos los usuarios`, 'success');
             } else {
               console.log('❌ Error en la creación:', result.error);
@@ -343,6 +351,10 @@ const SelectPC = ({ onReservaCreada }) => {
             if (!result.error) {
               // Actualizar la sincronización
               refreshReservations();
+              // Refrescar notificaciones inmediatamente
+              if (window.refreshNotifications) {
+                window.refreshNotifications();
+              }
               Swal.fire('¡Listo!', `PC ${pc} ha sido desmarcado de mantenimiento y volverá a estar disponible para todos los usuarios`, 'success');
             } else {
               throw new Error(result.error || 'Error al desmarcar de mantenimiento');
@@ -454,6 +466,10 @@ const SelectPC = ({ onReservaCreada }) => {
             if (!result.error) {
               // Actualizar la vista inmediatamente
               refreshReservations();
+              // Refrescar notificaciones inmediatamente
+              if (window.refreshNotifications) {
+                window.refreshNotifications();
+              }
               Swal.fire(
                 '¡Liberado!', 
                 `El PC ${pcNumber} ha sido liberado exitosamente y vuelve a estar disponible (azul). La reserva se mantiene en la bitácora.`, 
@@ -497,6 +513,10 @@ const SelectPC = ({ onReservaCreada }) => {
           if (!result.error) {
             // Actualizar la vista
             refreshReservations();
+            // Refrescar notificaciones inmediatamente
+            if (window.refreshNotifications) {
+              window.refreshNotifications();
+            }
             
             const count = result.data?.count || activeReservations.length;
             Swal.fire(
@@ -1023,7 +1043,7 @@ const SelectPC = ({ onReservaCreada }) => {
           minute: '2-digit',
           hour12: false,
           timeZone: 'America/Santiago'
-        })}
+        })} | ⏰ Reservas hasta 15 min antes
       </div>
       
       {/* Indicador de domingo (laboratorio cerrado) */}
@@ -1192,7 +1212,7 @@ const SelectPC = ({ onReservaCreada }) => {
                 })}
               </div>
               <div style={{ color: '#666', fontSize: '11px', marginTop: '3px' }}>
-                Sincronizado automáticamente con zona horaria de Chile
+                Sincronizado automáticamente con zona horaria de Chile | Puedes reservar hasta 15 min antes del inicio
               </div>
             </div>
 
