@@ -17,8 +17,15 @@ export async function obtenerNotificaciones(req, res) {
     let notificaciones;
 
     if (user.rol === 'administrador') {
-      // Los administradores ven todas las notificaciones (incluyendo las de tareas completadas)
+      // Los administradores ven:
+      // 1. Notificaciones dirigidas específicamente a ellos
+      // 2. Notificaciones generales (targetRut = null)
+      // PERO NO las notificaciones dirigidas a otros usuarios específicos
       notificaciones = await notificacionRepository.find({
+        where: [
+          { targetRut: user.rut }, // Notificaciones específicas para este admin
+          { targetRut: null }      // Notificaciones generales
+        ],
         order: { fechaCreacion: "DESC" },
         take: 50
       });
