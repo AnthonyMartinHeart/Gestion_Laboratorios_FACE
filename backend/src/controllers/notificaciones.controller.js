@@ -187,6 +187,40 @@ export async function marcarTodasComoLeidas(req, res) {
   }
 }
 
+export async function limpiarNotificaciones(req, res) {
+  try {
+    const { user } = req;
+    
+    // Permitir limpiar para administradores, consultores y profesores
+    if (!['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+      return handleErrorClient(res, 403, "No tienes permisos para limpiar notificaciones");
+    }
+
+    if (user.rol === 'administrador') {
+      // Los administradores pueden limpiar todas las notificaciones
+      await notificacionRepository.delete({});
+    } else if (user.rol === 'profesor') {
+      // Los profesores solo pueden limpiar sus notificaciones específicas
+      await notificacionRepository.delete({
+        targetRut: user.rut,
+        tipo: In(['solicitud_aprobada', 'solicitud_rechazada'])
+      });
+    } else if (user.rol === 'consultor') {
+      // Los consultores pueden limpiar sus notificaciones específicas
+      await notificacionRepository.delete([
+        { tipo: 'horario_actualizado' },
+        { tipo: 'turno_asignado', targetRut: user.rut },
+        { tipo: 'tarea_asignada', targetRut: user.rut }
+      ]);
+    }
+
+    handleSuccess(res, 200, "Notificaciones limpiadas exitosamente");
+  } catch (error) {
+    console.error("Error al limpiar notificaciones:", error);
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
 export async function crearNotificacion(tipo, titulo, mensaje, detalles = {}, targetRut = null) {
   try {
     console.log(`🔔 Creando notificación:`, { tipo, titulo, targetRut });
