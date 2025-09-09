@@ -278,19 +278,21 @@
 .no-notifications {
   padding: 40px 20px;
   text-align: center;
-  color: #999;
+  color: #666;
 }
 
 .no-notif-icon {
   font-size: 2.5rem;
   display: block;
   margin-bottom: 12px;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .no-notifications p {
   margin: 0;
   font-size: 0.9rem;
+  font-weight: 400;
+  text-shadow: none;
 }
 
 /* Footer del dropdown */
@@ -465,7 +467,8 @@ body[data-navbar-collapsed="false"] .notification-dropdown {
   }
 
   .mark-all-read,
-  .clear-all-notifications {
+  .clear-all-notifications,
+  .refresh-notifications {
     font-size: 0.65rem;
     padding: 4px 8px;
   }
@@ -516,7 +519,8 @@ body[data-navbar-collapsed="false"] .notification-dropdown {
   }
   
   .modal-mark-all-read,
-  .modal-clear-all {
+  .modal-clear-all,
+  .modal-refresh-notifications {
     font-size: 0.65rem;
     padding: 4px 8px;
   }
@@ -643,6 +647,31 @@ body[data-navbar-collapsed="false"] .notification-dropdown {
 .clear-all-notifications:hover {
   background: rgba(239, 68, 68, 0.9);
   transform: translateY(-1px);
+}
+
+/* Botón de actualizar notificaciones */
+.refresh-notifications {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  font-weight: 500;
+}
+
+.refresh-notifications:hover {
+  background: linear-gradient(135deg, #059669, #10b981);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.refresh-notifications:active {
+  transform: translateY(0);
 }
 
 /* ===== LAYOUT DE NOTIFICACIONES MEJORADO ===== */
@@ -905,6 +934,31 @@ body[data-navbar-collapsed="false"] .notification-dropdown {
   background: rgba(239, 68, 68, 0.9);
 }
 
+/* Botón de actualizar en modal */
+.modal-refresh-notifications {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  font-weight: 500;
+}
+
+.modal-refresh-notifications:hover {
+  background: linear-gradient(135deg, #059669, #10b981);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.modal-refresh-notifications:active {
+  transform: translateY(0);
+}
+
 .modal-close-btn {
   position: absolute;
   top: 16px;
@@ -945,25 +999,29 @@ body[data-navbar-collapsed="false"] .notification-dropdown {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  color: #8e8e93;
+  color: #666;
 }
 
 .no-notifications-modal .no-notif-icon {
   font-size: 3rem;
   margin-bottom: 16px;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .no-notifications-modal h3 {
   margin: 0 0 8px 0;
   font-size: 1.2rem;
-  color: #48484a;
+  color: #444;
+  font-weight: 500;
+  text-shadow: none;
 }
 
 .no-notifications-modal p {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.4;
+  font-weight: 400;
+  text-shadow: none;
 }
 
 .notification-modal-list {
