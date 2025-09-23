@@ -13,24 +13,25 @@
   }
   
   .navbar2 {
-	position: fixed;
-	top: 0;
-	left: 0;
-	height: 100vh;
-	width: var(--navbar-width);
-	background-color: var(--primary-color);
-	color: var(--text-color);
-	display: flex;
-	flex-direction: column;
-	transition: width var(--transition-speed);
-	z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--navbar-width);
+    background: linear-gradient(135deg, #2e3a59 0%, #3f4d6d 100%);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    transition: width var(--transition-speed);
+    z-index: 1000;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   }
   
   .navbar2.oculta {
-	width: var(--navbar-collapsed-width);
-  }
-
-  /* ===== SECCIÓN SUPERIOR DEL NAVBAR ===== */
+    width: var(--navbar-collapsed-width);
+    background: linear-gradient(135deg, #2e3a59 0%, #3f4d6d 100%);
+  }  /* ===== SECCIÓN SUPERIOR DEL NAVBAR ===== */
   .navbar-top-section {
 	display: flex;
 	justify-content: space-between;
@@ -370,4 +371,279 @@
 
   .navbar2.oculta .submenu {
     display: none;
+  }
+
+  /* ===== ESTILOS PARA MENÚ COLAPSADO ===== */
+  .collapsed-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    flex: 1;
+    overflow-y: auto;
+    gap: 4px;
+    position: relative;
+  }
+
+  .collapsed-main-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .collapsed-item {
+    position: relative;
+    margin: 2px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .submenu-collapsed {
+    position: relative;
+  }
+
+  .collapsed-item a,
+  .collapsed-logout-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .collapsed-item a:hover,
+  .collapsed-logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .collapsed-item a.active {
+    background-color: var(--highlight-color);
+    box-shadow: 0 4px 16px rgba(48, 133, 214, 0.3);
+  }
+
+
+  .collapsed-icon {
+    font-size: 1.3rem;
+    color: #ffffff;
+  }
+
+  /* Aumentar tamaño SOLO para el icono de logout en navbar colapsada */
+
+
+  .collapsed-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    transition: all var(--transition-speed);
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+  }
+
+  .collapsed-icon-wrapper:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Tooltips para iconos mejorados */
+  .collapsed-item[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 55px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 1002;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Flecha del tooltip mejorada */
+  .collapsed-item[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    left: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 7px solid rgba(0, 0, 0, 0.9);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    z-index: 1002;
+  }
+
+  /* ===== SUBMENÚS HOVER PARA MODO COLAPSADO ===== */
+  .hover-submenu {
+    position: fixed;
+    left: var(--navbar-collapsed-width);
+    background: linear-gradient(135deg, #2a3653 0%, #3d4a6b 100%);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    z-index: 9999;
+    padding: 4px;
+    animation: slideInRight 0.2s ease-out;
+    backdrop-filter: blur(16px);
+    width: auto;
+    margin-left: 8px;
+  }
+
+  .hover-submenu::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: -10px;
+    bottom: -10px;
+    width: 20px;
+    background: transparent;
+    z-index: -1;
+  }
+
+  .hover-submenu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    color: #ffffff;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border-radius: 6px;
+    margin: 1px 0;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    white-space: nowrap;
+    position: relative;
+    min-width: 140px;
+  }
+
+  .hover-submenu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .hover-submenu-item.active {
+    background: linear-gradient(135deg, #3085d6 0%, #4a9ef1 100%);
+    box-shadow: 0 6px 16px rgba(48, 133, 214, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .hover-submenu-icon {
+    font-size: 0.9rem;
+    margin-right: 8px;
+    min-width: 14px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0.9;
+  }
+
+  .hover-submenu span {
+    font-size: 0.85rem;
+    color: #ffffff;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+    display: inline-block;
+    visibility: visible;
+    opacity: 0.95;
+  }
+
+  /* Animación para el submenú hover */
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Logout específico para modo colapsado */
+  .logout-collapsed {
+    margin-top: 4px; /* Mismo gap que los otros items */
+    align-self: center;
+  }
+
+  .collapsed-logout-btn {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+    color: var(--text-color) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: none !important;
+    cursor: pointer !important;
+    backdrop-filter: blur(10px);
+    transition: all var(--transition-speed);
+  }
+
+  .collapsed-logout-btn .collapsed-icon {
+    font-size: 1.5rem !important;
+    color: #ffffff !important;
+    display: block !important;
+    line-height: 1 !important;
+    font-weight: bold !important;
+  }
+
+  .collapsed-logout-btn:hover {
+    background: rgba(255, 107, 107, 0.2) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .collapsed-logout-btn:hover .collapsed-icon {
+    color: #ff6b6b !important;
+  }
+
+  /* Ocultar logo cuando está colapsado */
+  .navbar2.oculta .navbar-bottom-logo {
+    display: none;
+  }
+
+  /* Asegurar que el menú expandido no se muestre cuando está colapsado */
+  .navbar2.oculta .nav-menu {
+    display: none;
+  }
+
+  /* Responsivo para submenús hover */
+  @media (max-width: 768px) {
+    .hover-submenu {
+      min-width: 160px;
+      left: 60px;
+    }
+    
+    .hover-submenu-item {
+      padding: 8px 12px;
+    }
+    
+    .hover-submenu span {
+      font-size: 0.85rem;
+    }
   }
