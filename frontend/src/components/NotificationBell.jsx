@@ -16,8 +16,8 @@ const NotificationBell = () => {
   const [showAllModal, setShowAllModal] = useState(false);
   const [notificationsCleared, setNotificationsCleared] = useState(false);
 
-  // Mostrar para administradores, profesores y consultores
-  if (!user || !['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+  // Mostrar para administradores, profesores, consultores y estudiantes
+  if (!user || !['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
     return null;
   }
 
@@ -79,17 +79,18 @@ const NotificationBell = () => {
 
     try {
       console.log('🔔 Cargando notificaciones para usuario:', user?.rut, 'rol:', user?.rol);
-      const data = await notificationsService.getNotifications();
+      let data = await notificationsService.getNotifications();
       console.log('📨 Notificaciones recibidas del backend:', data);
+      // Filtrar notificaciones para estudiantes
+      if (user.rol === 'estudiante') {
+        data = data.filter(n => n.tipo === 'reserva_equipo');
+      }
       setNotifications(data);
       setHasUnread(data.some(n => !n.leida));
       console.log('🔕 Notificaciones no leídas:', data.filter(n => !n.leida).length);
     } catch (error) {
       console.error('❌ Error al cargar notificaciones:', error);
-      // Si hay un error, mantener las notificaciones actuales en lugar de mostrar mock
-      // Solo usar mock si no hay notificaciones previas
       if (notifications.length === 0) {
-        console.log('� Sin notificaciones previas, usando estado vacío por defecto');
         setNotifications([]);
         setHasUnread(false);
       }
@@ -206,6 +207,8 @@ const NotificationBell = () => {
         return '✅';
       case 'tarea_no_completada':
         return '❌';
+      case 'reserva_equipo':
+        return '💻';
       default:
         return '📢';
     }
@@ -276,38 +279,66 @@ const NotificationBell = () => {
                   <div className="notification-icon">
                     {getIconoTipo(notification.tipo)}
                   </div>
-                  
                   <div className="notification-content" onClick={() => markAsRead(notification.id)}>
-                    <h4>{notification.titulo}</h4>
-                    <p>{notification.mensaje}</p>
-                    
-                    {notification.detalles && (() => {
-                      try {
-                        const detalles = JSON.parse(notification.detalles);
-                        return (
-                          <div className="notification-details">
-                            {detalles.usuario && (
-                              <span className="usuario">👤 {detalles.usuario}</span>
-                            )}
-                            {detalles.laboratorio && (
-                              <span className="laboratorio">🏢 {detalles.laboratorio}</span>
-                            )}
-                            {detalles.pcId && (
-                              <span className="pcId">💻 PC-{detalles.pcId}</span>
-                            )}
-                            {detalles.motivo && (
-                              <span className="motivo">💭 {detalles.motivo}</span>
-                            )}
-                          </div>
-                        );
-                      } catch (e) {
-                        return null;
-                      }
-                    })()}
-                    
+                    {/* Personalizar mensaje para estudiantes y reserva_equipo */}
+                    {user.rol === 'estudiante' && notification.tipo === 'reserva_equipo' ? (
+                      <>
+                        <h4>Reserva realizada</h4>
+                        <p>
+                          Has reservado el equipo #{(() => {
+                            try {
+                              const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                              return detalles && detalles.pcId ? detalles.pcId : 'N/A';
+                            } catch {
+                              return 'N/A';
+                            }
+                          })()} con fecha {(() => {
+                            try {
+                              const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                              if (detalles && detalles.fecha) return detalles.fecha;
+                              if (detalles && detalles.fechaReserva) return detalles.fechaReserva;
+                              if (notification.fechaCreacion) {
+                                const fecha = new Date(notification.fechaCreacion);
+                                return fecha.toLocaleDateString('es-CL');
+                              }
+                              return 'N/A';
+                            } catch {
+                              return 'N/A';
+                            }
+                          })()}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h4>{notification.titulo}</h4>
+                        <p>{notification.mensaje}</p>
+                        {notification.detalles && (() => {
+                          try {
+                            const detalles = JSON.parse(notification.detalles);
+                            return (
+                              <div className="notification-details">
+                                {detalles.usuario && (
+                                  <span className="usuario">👤 {detalles.usuario}</span>
+                                )}
+                                {detalles.laboratorio && (
+                                  <span className="laboratorio">🏢 {detalles.laboratorio}</span>
+                                )}
+                                {detalles.pcId && (
+                                  <span className="pcId">💻 PC-{detalles.pcId}</span>
+                                )}
+                                {detalles.motivo && (
+                                  <span className="motivo">💭 {detalles.motivo}</span>
+                                )}
+                              </div>
+                            );
+                          } catch (e) {
+                            return null;
+                          }
+                        })()}
+                      </>
+                    )}
                     <span className="notification-time">{formatFecha(notification.fechaCreacion)}</span>
                   </div>
-
                   <div className="notification-actions">
                     {!notification.leida && (
                       <button 
@@ -321,7 +352,6 @@ const NotificationBell = () => {
                       </button>
                     )}
                   </div>
-
                   {!notification.leida && <div className="unread-dot"></div>}
                 </div>
               ))
