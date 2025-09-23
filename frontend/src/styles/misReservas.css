@@ -1,3 +1,76 @@
+.reservas-header.mejorada {
+    background: rgba(255,255,255,0.85);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 2px 12px rgba(52,152,219,0.08), 0 1.5px 6px rgba(0,0,0,0.04);
+    padding: 18px 24px 18px 24px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #e3eafc;
+}
+.header-title-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f5faff;
+    border-radius: 12px;
+    padding: 8px 22px 8px 16px;
+    box-shadow: 0 2px 8px #b3c6ff22;
+}
+.header-icon {
+    font-size: 2.1rem;
+    color: #3498db;
+    filter: drop-shadow(0 2px 4px #b3c6ff44);
+    margin-right: 2px;
+}
+.header-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #2c3e50;
+    letter-spacing: 0.5px;
+}
+.btn-actualizar.mejorada {
+    box-shadow: 0 4px 16px #3498db22, 0 2px 8px #b3c6ff22;
+    font-size: 1.08rem;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sin-reservas.mejorada {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0 40px 0;
+    background: linear-gradient(135deg, #fafdff 0%, #f3f7fa 100%);
+    border-radius: 16px;
+    border: 2.5px dashed #b3c6ff55;
+    margin: 0 10px;
+    min-height: 180px;
+    box-shadow: 0 2px 12px #b3c6ff11;
+}
+.sin-reservas-icon {
+    font-size: 3.2rem;
+    color: #3498db;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 2px 4px #b3c6ff44);
+}
+.sin-reservas-text {
+    font-size: 1.18rem;
+    color: #7f8c8d;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.sin-reservas-tip {
+    font-size: 0.98rem;
+    color: #b3b6b8;
+    font-style: italic;
+    margin-top: 2px;
+}
 /* Contenedor principal con fondo */
 .mis-reservas-container::before {
     content: "";
