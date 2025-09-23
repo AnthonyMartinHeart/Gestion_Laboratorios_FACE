@@ -348,67 +348,71 @@ const MisReservas = () => {
           </div>
         ) : (
           <>
-            <div className="reservas-header">
-              <h2>Reservas Activas</h2>
+            <div className="reservas-header mejorada">
+              <div className="header-title-box">
+                <span className="header-title">Reservas Activas</span>
+              </div>
               <button 
-                className="btn-actualizar" 
+                className="btn-actualizar mejorada" 
                 onClick={cargarMisReservas}
                 disabled={cargandoReservas}
+                title="Actualizar lista"
               >
-                {cargandoReservas ? 'Actualizando...' : '🔄 Actualizar'}
+                <span style={{fontSize:18,marginRight:6,verticalAlign:'middle'}}>🔄</span>
+                <span style={{verticalAlign:'middle'}}>{cargandoReservas ? 'Actualizando...' : 'Actualizar'}</span>
               </button>
             </div>
 
             <div className="reservas-lista">
               {misReservas.length === 0 ? (
-                <p className="sin-reservas">No tienes reservas activas</p>
+                <div className="sin-reservas mejorada">
+                  <div className="sin-reservas-text" style={{fontWeight:600,fontSize:'1.18rem',color:'#7f8c8d',marginBottom:4,fontStyle:'normal'}}>No tienes reservas activas</div>
+                  <div className="sin-reservas-tip" style={{fontWeight:400,color:'#b3b6b8',fontSize:'0.98rem',fontStyle:'normal'}}>¡Reserva un equipo para verlo aquí!</div>
+                </div>
               ) : (
                 misReservas.map((reserva) => (
-                  <div key={reserva.id} className={`reserva-card ${esReservaPasada(reserva) ? 'reserva-pasada' : ''}`}>
-                    <div className="reserva-info">
-                      <div className="reserva-principal">
+                  <div key={reserva.id} className={`reserva-card ${esReservaPasada(reserva) ? 'reserva-pasada' : ''}`}
+                    style={{gap:24,padding:'28px 24px',boxShadow:'0 6px 24px #b3c6ff22, 0 2px 8px #b3c6ff11'}}>
+                    <div className="reserva-info" style={{flex:1}}>
+                      <div className="reserva-principal" style={{gap:18,marginBottom:10,alignItems:'center'}}>
+                        <span className="pc-icono" style={{fontSize:28,marginRight:8,verticalAlign:'middle',color:'#2980b9',filter:'drop-shadow(0 2px 4px #b3c6ff44)'}}>💻</span>
                         <span className="laboratorio">{obtenerNombreLaboratorio(reserva.pcId)}</span>
                         <span className="pc">PC {reserva.pcId}</span>
                         <span className="fecha">{formatearFecha(reserva.fechaReserva)}</span>
                       </div>
-                      <div className="reserva-detalle">
-                        <span className="horario">
-                          {reserva.horaInicio} - {reserva.horaTermino}
+                      <div className="reserva-detalle" style={{marginTop:2,display:'flex',gap:16,alignItems:'center',background:'none',boxShadow:'none',padding:0}}>
+                        <span className="horario" style={{fontSize:16}}>
+                          <span style={{fontWeight:700,color:'#2c3e50'}}>⏰</span> {reserva.horaInicio} - {reserva.horaTermino}
                         </span>
                         {reserva.status && (
-                          <span className={`estado estado-${reserva.status}`}>
+                          <span className={`estado estado-${reserva.status}`} style={{marginLeft:8,marginRight:0,letterSpacing:1.2,fontSize:13}}>
                             {reserva.status === 'finished' ? 'Finalizada' : 
                              reserva.status === 'active' ? 'Activa' : reserva.status}
                           </span>
                         )}
                       </div>
                     </div>
-                    
-                    <div className="reserva-acciones">
+                    <div className="reserva-acciones" style={{minWidth:120}}>
                       <button 
                         className="btn-editar"
-                        onClick={() => {
-                          console.log('Click en editar:', reserva);
-                          abrirModalEdicion(reserva);
-                        }}
+                        onClick={() => abrirModalEdicion(reserva)}
                         title="Editar horarios"
                         disabled={cargandoReservas}
+                        style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
                       >
-                        ✏️ Editar
+                        <span role="img" aria-label="Editar" style={{fontSize:20}}>✏️</span>
+                        <span style={{fontWeight:600}}>Editar</span>
                       </button>
-                      
-                      {/* Solo mostrar el botón eliminar si el usuario es administrador */}
                       {canDeleteReservations && (
                         <button 
                           className="btn-eliminar"
-                          onClick={() => {
-                            console.log('Click en eliminar:', reserva);
-                            eliminarReserva(reserva);
-                          }}
+                          onClick={() => eliminarReserva(reserva)}
                           title="Eliminar reserva"
                           disabled={cargandoReservas}
+                          style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
                         >
-                          🗑️ Eliminar
+                          <span role="img" aria-label="Eliminar" style={{fontSize:20}}>🗑️</span>
+                          <span style={{fontWeight:600}}>Eliminar</span>
                         </button>
                       )}
                     </div>
