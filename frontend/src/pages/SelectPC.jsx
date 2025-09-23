@@ -95,55 +95,76 @@ const SelectPC = ({ onReservaCreada }) => {
     const minutoActual = ahora.getMinutes();
     const tiempoActualEnMinutos = horaActual * 60 + minutoActual;
 
-    // Mapeo de horarios de término a horarios de inicio siguiente
+    // Margen de anticipación universal para todas las clases (30 minutos)
+    const margenAnticipacion = 30;
+
+    // Mapeo de horarios de término a horarios de inicio siguiente para transiciones automáticas
     const terminoAInicio = {
-      "09:30": "09:40", // 9:30 → 9:40
-      "11:00": "11:10", // 11:00 → 11:10
-      "12:30": "12:40", // 12:30 → 12:40
-      "14:00": "14:10", // 14:00 → 14:10
-      "15:30": "15:40", // 15:30 → 15:40
-      "17:00": "17:10", // 17:00 → 17:10
-      "18:30": null     // 18:30 no tiene siguiente (antes de 20:00)
-      // 20:00 no está incluido porque es solo hora de término final
+      "09:30": { siguiente: "09:40", ventanaInicio: 9 * 60 + 30, ventanaFin: 9 * 60 + 40 },   // 09:30 → 09:40
+      "11:00": { siguiente: "11:10", ventanaInicio: 11 * 60 + 0, ventanaFin: 11 * 60 + 10 },  // 11:00 → 11:10
+      "12:30": { siguiente: "12:40", ventanaInicio: 12 * 60 + 30, ventanaFin: 12 * 60 + 40 }, // 12:30 → 12:40
+      "14:00": { siguiente: "14:10", ventanaInicio: 14 * 60 + 0, ventanaFin: 14 * 60 + 10 },  // 14:00 → 14:10
+      "15:30": { siguiente: "15:40", ventanaInicio: 15 * 60 + 30, ventanaFin: 15 * 60 + 40 }, // 15:30 → 15:40
+      "17:00": { siguiente: "17:10", ventanaInicio: 17 * 60 + 0, ventanaFin: 17 * 60 + 10 }   // 17:00 → 17:10
     };
 
-    // Verificar si estamos exactamente en una hora de término que tiene siguiente clase
-    const horaActualString = `${horaActual.toString().padStart(2, '0')}:${minutoActual.toString().padStart(2, '0')}`;
-    const siguienteClase = terminoAInicio[horaActualString];
+    // Verificar si estamos en una ventana de tiempo de transición entre clases (activación inmediata)
+    let enVentanaTransicion = false;
+    let claseActivada = null;
     
-    // Mantener 15 minutos de anticipación antes de cada clase, EXCEPTO cuando estemos en hora de término exacta
-    let tiempoMinimoReserva = tiempoActualEnMinutos + 15;
-    
-    // Si estamos exactamente en una hora de término y hay una siguiente clase, permitir reserva inmediata
-    if (siguienteClase) {
-      console.log(`🕐 Hora de término detectada (${horaActualString}), activando siguiente clase: ${siguienteClase}`);
-      tiempoMinimoReserva = tiempoActualEnMinutos; // Sin margen de 15 minutos para la clase siguiente
+    for (const [horaTermino, config] of Object.entries(terminoAInicio)) {
+      const { siguiente, ventanaInicio, ventanaFin } = config;
+      
+      // Si estamos entre la hora de término y el inicio de la siguiente clase
+      if (tiempoActualEnMinutos >= ventanaInicio && tiempoActualEnMinutos <= ventanaFin) {
+        enVentanaTransicion = true;
+        claseActivada = siguiente;
+        console.log(`🕐 Ventana de transición detectada: ${horaTermino} → ${siguiente} (activación inmediata)`);
+        break;
+      }
     }
 
     const horariosInicioValidos = horasInicio.filter(hora => {
       const [h, m] = hora.split(':').map(Number);
       const tiempoHora = h * 60 + m;
       
-      // Si estamos exactamente en una hora de término y esta es la siguiente clase, permitir inmediatamente
-      if (siguienteClase && hora === siguienteClase) {
-        console.log(`✅ Activando clase siguiente inmediatamente: ${hora}`);
+      // CASO 1: Si estamos en ventana de transición y esta es la siguiente clase, activar inmediatamente
+      if (enVentanaTransicion && hora === claseActivada) {
+        console.log(`✅ Activando clase en ventana de transición: ${hora} (activación inmediata)`);
         return true;
       }
       
-      // Si la clase ya comenzó, permitir reservas hasta 1 hora después del inicio
-      if (tiempoHora < tiempoActualEnMinutos) {
+      // CASO 2: Si la clase ya comenzó, permitir reservas hasta 1 hora después del inicio
+      if (tiempoHora <= tiempoActualEnMinutos) {
         const tiempoLimite = tiempoHora + 60; // 1 hora después del inicio de la clase
-        return tiempoActualEnMinutos <= tiempoLimite;
+        const permiteReserva = tiempoActualEnMinutos <= tiempoLimite;
+        if (permiteReserva) {
+          console.log(`🔄 Clase ya iniciada pero aún disponible: ${hora} (iniciada hace ${tiempoActualEnMinutos - tiempoHora} min)`);
+        } else {
+          console.log(`❌ Clase ya terminó: ${hora} (terminó hace ${tiempoActualEnMinutos - tiempoLimite} min)`);
+        }
+        return permiteReserva;
       }
       
-      // Si la clase no ha comenzado, usar el margen de 15 minutos (o sin margen si es clase siguiente)
-      return tiempoHora >= tiempoMinimoReserva;
+      // CASO 3: Para TODAS las clases futuras, aplicar margen de anticipación uniforme de 30 minutos
+      const tiempoActivacion = tiempoHora - margenAnticipacion; // 30 minutos antes del inicio
+      const permiteReserva = tiempoActualEnMinutos >= tiempoActivacion;
+      
+      if (permiteReserva) {
+        console.log(`⏰ Clase futura DISPONIBLE: ${hora} (se activó hace ${tiempoActualEnMinutos - tiempoActivacion} min, inicia en ${tiempoHora - tiempoActualEnMinutos} min)`);
+      } else {
+        const minutosParaActivar = tiempoActivacion - tiempoActualEnMinutos;
+        console.log(`⏳ Clase futura NO disponible: ${hora} (se activa en ${minutosParaActivar} min a las ${Math.floor(tiempoActivacion/60)}:${(tiempoActivacion%60).toString().padStart(2,'0')})`);
+      }
+      
+      return permiteReserva;
     });
 
     const horariosTerminoValidos = horasTermino.filter(hora => {
       const [h, m] = hora.split(':').map(Number);
       const tiempoHora = h * 60 + m;
-      return tiempoHora > tiempoMinimoReserva;
+      // Para horarios de término, usar un margen mínimo desde la hora actual
+      return tiempoHora > tiempoActualEnMinutos + 15; // Al menos 15 minutos de duración mínima
     });
 
     return {
