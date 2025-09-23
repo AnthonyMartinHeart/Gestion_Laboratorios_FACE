@@ -4,8 +4,7 @@ import Swal from "sweetalert2";
 import "@styles/navbar.css";
 import { useState, useEffect } from "react";
 import { HiArrowSmLeft, HiArrowSmRight } from "react-icons/hi";
-import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt, FaChartBar, FaClipboardList, FaFileAlt, FaChalkboardTeacher, FaTasks, FaChevronDown, FaChevronRight, FaUserShield, FaGraduationCap, FaUserTie, FaFlask } from "react-icons/fa";
-import { ImExit } from "react-icons/im";
+import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt, FaChartBar, FaClipboardList, FaFileAlt, FaChalkboardTeacher, FaTasks, FaChevronDown, FaChevronRight, FaUserShield, FaGraduationCap, FaUserTie, FaFlask, FaSignOutAlt } from "react-icons/fa";
 import logoWhite from "../assets/GL-WHITE.png";
 import NotificationBell from "./NotificationBell";
 
@@ -17,6 +16,9 @@ const Navbar = () => {
   const [bitacorasSubmenuOpen, setBitacorasSubmenuOpen] = useState(false);
   const [horariosSubmenuOpen, setHorariosSubmenuOpen] = useState(false);
   const [estadisticasSubmenuOpen, setEstadisticasSubmenuOpen] = useState(false);
+  const [hoveredSubmenu, setHoveredSubmenu] = useState(null);
+  const [submenuPosition, setSubmenuPosition] = useState({ top: 0 });
+  const [hoverTimeout, setHoverTimeout] = useState(null);
 
   let user = null;
   try {
@@ -26,6 +28,34 @@ const Navbar = () => {
   }
 
   const userRole = user?.rol;
+
+  useEffect(() => {
+    document.body.setAttribute("data-navbar-collapsed", !menuOpen);
+  }, [menuOpen]);
+
+  const handleSubmenuHover = (e, submenuType) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerY = rect.top + (rect.height / 2);
+    setSubmenuPosition({ top: centerY });
+    setHoveredSubmenu(submenuType);
+  };
+
+  const handleSubmenuLeave = () => {
+    const timeout = setTimeout(() => {
+      setHoveredSubmenu(null);
+    }, 150); // Delay de 150ms antes de ocultar
+    setHoverTimeout(timeout);
+  };
+
+  const handleSubmenuMouseEnter = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+  };
 
   useEffect(() => {
     document.body.setAttribute("data-navbar-collapsed", !menuOpen);
@@ -114,6 +144,207 @@ const Navbar = () => {
           <NotificationBell />
         </div>
       </div>
+
+      {/* Iconos siempre visibles cuando está colapsada */}
+      {!menuOpen && (
+        <div className="collapsed-menu">
+          <div className="collapsed-main-items">
+            <div className="collapsed-item" data-tooltip="Inicio">
+              <NavLink to="/home">
+                <FaHome className="collapsed-icon" />
+              </NavLink>
+            </div>
+
+          {(userRole === "administrador" || userRole === "consultor") && (
+            <>
+              <div 
+                className="collapsed-item submenu-collapsed" 
+                data-tooltip="Bitácoras"
+                onMouseEnter={(e) => handleSubmenuHover(e, 'bitacoras')}
+                onMouseLeave={handleSubmenuLeave}
+              >
+                <div className="collapsed-icon-wrapper">
+                  <FaBook className="collapsed-icon" />
+                </div>
+                {hoveredSubmenu === 'bitacoras' && (
+                  <div 
+                    className="hover-submenu"
+                    style={{ top: submenuPosition.top, transform: 'translateY(-50%)' }}
+                    onMouseEnter={handleSubmenuMouseEnter}
+                    onMouseLeave={handleSubmenuLeave}
+                  >
+                    <NavLink to="/laboratorio-1" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 1</span>
+                    </NavLink>
+                    <NavLink to="/laboratorio-2" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 2</span>
+                    </NavLink>
+                    <NavLink to="/laboratorio-3" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 3</span>
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+
+              <div className="collapsed-item" data-tooltip="Turnos">
+                <NavLink to="/turnos">
+                  <FaClock className="collapsed-icon" />
+                </NavLink>
+              </div>
+
+              <div 
+                className="collapsed-item submenu-collapsed" 
+                data-tooltip="Horarios"
+                onMouseEnter={(e) => handleSubmenuHover(e, 'horarios')}
+                onMouseLeave={handleSubmenuLeave}
+              >
+                <div className="collapsed-icon-wrapper">
+                  <FaCalendarAlt className="collapsed-icon" />
+                </div>
+                {hoveredSubmenu === 'horarios' && (
+                  <div 
+                    className="hover-submenu"
+                    style={{ top: submenuPosition.top, transform: 'translateY(-50%)' }}
+                    onMouseEnter={handleSubmenuMouseEnter}
+                    onMouseLeave={handleSubmenuLeave}
+                  >
+                    <NavLink to="/horarios-laboratorio-1" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 1</span>
+                    </NavLink>
+                    <NavLink to="/horarios-laboratorio-2" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 2</span>
+                    </NavLink>
+                    <NavLink to="/horarios-laboratorio-3" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 3</span>
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+
+              <div className="collapsed-item" data-tooltip={userRole === "administrador" ? "Gestión de Tareas" : "Mis Tareas"}>
+                <NavLink to="/gestion-tareas">
+                  <FaTasks className="collapsed-icon" />
+                </NavLink>
+              </div>
+            </>
+          )}
+
+          {userRole === "administrador" && (
+            <>
+              <div 
+                className="collapsed-item submenu-collapsed" 
+                data-tooltip="Usuarios"
+                onMouseEnter={(e) => handleSubmenuHover(e, 'usuarios')}
+                onMouseLeave={handleSubmenuLeave}
+              >
+                <div className="collapsed-icon-wrapper">
+                  <FaUsers className="collapsed-icon" />
+                </div>
+                {hoveredSubmenu === 'usuarios' && (
+                  <div 
+                    className="hover-submenu"
+                    style={{ top: submenuPosition.top, transform: 'translateY(-50%)' }}
+                    onMouseEnter={handleSubmenuMouseEnter}
+                    onMouseLeave={handleSubmenuLeave}
+                  >
+                    <NavLink to="/administradores" className="hover-submenu-item">
+                      <FaUserShield className="hover-submenu-icon" />
+                      <span>Administradores</span>
+                    </NavLink>
+                    <NavLink to="/profesores" className="hover-submenu-item">
+                      <FaUserTie className="hover-submenu-icon" />
+                      <span>Profesores</span>
+                    </NavLink>
+                    <NavLink to="/alumnos" className="hover-submenu-item">
+                      <FaGraduationCap className="hover-submenu-icon" />
+                      <span>Alumnos</span>
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+
+              <div 
+                className="collapsed-item submenu-collapsed" 
+                data-tooltip="Estadísticas"
+                onMouseEnter={(e) => handleSubmenuHover(e, 'estadisticas')}
+                onMouseLeave={handleSubmenuLeave}
+              >
+                <div className="collapsed-icon-wrapper">
+                  <FaChartBar className="collapsed-icon" />
+                </div>
+                {hoveredSubmenu === 'estadisticas' && (
+                  <div 
+                    className="hover-submenu"
+                    style={{ top: submenuPosition.top, transform: 'translateY(-50%)' }}
+                    onMouseEnter={handleSubmenuMouseEnter}
+                    onMouseLeave={handleSubmenuLeave}
+                  >
+                    <NavLink to="/estadisticas-lab-1" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 1</span>
+                    </NavLink>
+                    <NavLink to="/estadisticas-lab-2" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 2</span>
+                    </NavLink>
+                    <NavLink to="/estadisticas-lab-3" className="hover-submenu-item">
+                      <FaFlask className="hover-submenu-icon" />
+                      <span>Laboratorio 3</span>
+                    </NavLink>
+                    <NavLink to="/estadisticas-asistencia" className="hover-submenu-item">
+                      <FaClock className="hover-submenu-icon" />
+                      <span>Asistencia</span>
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {(userRole === "estudiante" || userRole === "consultor") && (
+            <div className="collapsed-item" data-tooltip="Mis Reservas">
+              <NavLink to="/mis-reservas">
+                <FaClipboardList className="collapsed-icon" />
+              </NavLink>
+            </div>
+          )}
+
+          {(userRole === "administrador" || userRole === "profesor") && (
+            <div className="collapsed-item" data-tooltip="Mis Solicitudes">
+              <NavLink to="/mis-solicitudes">
+                <FaFileAlt className="collapsed-icon" />
+              </NavLink>
+            </div>
+          )}
+
+          {userRole === "profesor" && (
+            <div className="collapsed-item" data-tooltip="Mis Clases">
+              <NavLink to="/mis-clases">
+                <FaChalkboardTeacher className="collapsed-icon" />
+              </NavLink>
+            </div>
+          )}
+
+          <div className="collapsed-item" data-tooltip="Mi Perfil">
+            <NavLink to="/mi-perfil">
+              <FaUser className="collapsed-icon" />
+            </NavLink>
+          </div>
+
+          <div className="collapsed-item logout-collapsed" data-tooltip="Cerrar sesión">
+            <button onClick={handleLogoutClick} className="collapsed-logout-btn" style={{padding:0,background:"rgba(255,255,255,0.05)",border:"none",width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:10,cursor:"pointer"}}>
+              <FaSignOutAlt style={{fontSize:28, color:'#fff', display:'block'}} />
+            </button>
+          </div>
+          </div>
+        </div>
+      )}
 
       {menuOpen && (
         <div className={`nav-menu ${menuOpen ? "activado" : ""}`}>
@@ -277,7 +508,7 @@ const Navbar = () => {
                     <li>
                       <NavLink to="/estadisticas-asistencia" className={({ isActive }) => (isActive ? "active" : "")}>
                         <FaClock className="nav-icon submenu-icon" />
-                        <span>Asistencia Consultores</span>
+                        <span>Asistencia</span>
                       </NavLink>
                     </li>
                   </ul>
@@ -329,7 +560,7 @@ const Navbar = () => {
                 }}
                 className="logout-link"
               >
-                <ImExit className="nav-icon" />
+                <FaSignOutAlt className="nav-icon" />
                 <span>Cerrar sesión</span>
               </NavLink>
             </li>
