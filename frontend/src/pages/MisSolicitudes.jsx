@@ -4,6 +4,7 @@ import useSolicitudes from '@hooks/solicitudes/useSolicitudes';
 import useCrearSolicitud from '@hooks/solicitudes/useCrearSolicitud';
 import { actualizarEstadoSolicitud, eliminarSolicitud } from '@services/solicitud.service.js';
 import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
+import { formatearNombre } from '@helpers/formatText.js';
 import Swal from 'sweetalert2';
 import '@styles/solicitudes.css';
 
@@ -1052,7 +1053,7 @@ const MisSolicitudes = () => {
                 <div className="card-body">
                   <div className="info-row">
                     <span className="label">👨‍🏫 Profesor:</span>
-                    <span>{solicitud.profesorNombre}</span>
+                    <span>{formatearNombre(solicitud.profesorNombre)}</span>
                   </div>
                   
                   <div className="info-row">
