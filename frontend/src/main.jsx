@@ -147,7 +147,7 @@ const router = createBrowserRouter([
       {
         path: '/horarios',
         element: (
-          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'profesor']}>
             <Horarios />
           </ProtectedRoute>
         ),
@@ -155,7 +155,7 @@ const router = createBrowserRouter([
       {
         path: '/horarios-laboratorio-1',
         element: (
-          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'profesor']}>
             <Horarios laboratorio={1} />
           </ProtectedRoute>
         ),
@@ -163,7 +163,7 @@ const router = createBrowserRouter([
       {
         path: '/horarios-laboratorio-2',
         element: (
-          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'profesor']}>
             <Horarios laboratorio={2} />
           </ProtectedRoute>
         ),
@@ -171,7 +171,7 @@ const router = createBrowserRouter([
       {
         path: '/horarios-laboratorio-3',
         element: (
-          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+          <ProtectedRoute allowedRoles={['administrador', 'consultor', 'profesor']}>
             <Horarios laboratorio={3} />
           </ProtectedRoute>
         ),
