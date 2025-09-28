@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom"; 
 import { useAuth } from '@context/AuthContext';
+import { formatearNombre } from '@helpers/formatText.js';
+import { obtenerPrefijoBienvenida } from '@helpers/genderHelper.js';
 import '@styles/Home.css';
 
 const Home = () => {
   const { user } = useAuth();
   const esProfesor = user?.rol === 'profesor';
+  const esConsultor = user?.rol === 'consultor';
+  const esUsuarioEspecial = user?.rol === 'usuario';
+  const esEstudiante = user?.rol === 'estudiante';
+  const esAdministrador = user?.rol === 'administrador';
   
   // Estado para la clase del fondo
   const [bgClass, setBgClass] = useState("");
@@ -19,9 +25,19 @@ const Home = () => {
     setBgClass("");  // vuelve al fondo por defecto
   };
 
+  // Determinar si mostrar el nombre personalizado - incluye todos los roles
+  const mostrarNombrePersonalizado = esProfesor || esConsultor || esUsuarioEspecial || esEstudiante || esAdministrador;
+  const primerNombre = user?.nombreCompleto ? user.nombreCompleto.split(' ')[0] : '';
+  const nombreFormateado = primerNombre ? formatearNombre(primerNombre) : '';
+  const prefijoBienvenida = obtenerPrefijoBienvenida(primerNombre);
+
   return (
     <div className={`home-container ${bgClass}`}>
-      <h5 className={esProfesor ? 'titulo-profesor' : ''}>"Bienvenido al Gestor de Laboratorios FACE"</h5>
+      <h5 className={esProfesor ? 'titulo-profesor' : ''}>
+        {mostrarNombrePersonalizado && nombreFormateado
+          ? `"${prefijoBienvenida} ${nombreFormateado} al Gestor de Laboratorios FACE"`
+          : `"Bienvenido al Gestor de Laboratorios FACE"`}
+      </h5>
       
       {!esProfesor && (
         <>
