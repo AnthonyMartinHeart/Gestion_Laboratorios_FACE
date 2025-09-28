@@ -155,46 +155,51 @@ const Navbar = () => {
               </NavLink>
             </div>
 
-          {(userRole === "administrador" || userRole === "consultor") && (
+          {(userRole === "administrador" || userRole === "consultor" || userRole === "profesor") && (
             <>
-              <div 
-                className="collapsed-item submenu-collapsed" 
-                data-tooltip="Bitácoras"
-                onMouseEnter={(e) => handleSubmenuHover(e, 'bitacoras')}
-                onMouseLeave={handleSubmenuLeave}
-              >
-                <div className="collapsed-icon-wrapper">
-                  <FaBook className="collapsed-icon" />
-                </div>
-                {hoveredSubmenu === 'bitacoras' && (
+              {(userRole === "administrador" || userRole === "consultor") && (
+                <>
                   <div 
-                    className="hover-submenu"
-                    style={{ top: submenuPosition.top, transform: 'translateY(-50%)' }}
-                    onMouseEnter={handleSubmenuMouseEnter}
+                    className="collapsed-item submenu-collapsed" 
+                    data-tooltip="Bitácoras"
+                    onMouseEnter={(e) => handleSubmenuHover(e, 'bitacoras')}
                     onMouseLeave={handleSubmenuLeave}
                   >
-                    <NavLink to="/laboratorio-1" className="hover-submenu-item">
-                      <FaFlask className="hover-submenu-icon" />
-                      <span>Laboratorio 1</span>
-                    </NavLink>
-                    <NavLink to="/laboratorio-2" className="hover-submenu-item">
-                      <FaFlask className="hover-submenu-icon" />
-                      <span>Laboratorio 2</span>
-                    </NavLink>
-                    <NavLink to="/laboratorio-3" className="hover-submenu-item">
-                      <FaFlask className="hover-submenu-icon" />
-                      <span>Laboratorio 3</span>
+                    <div className="collapsed-icon-wrapper">
+                      <FaBook className="collapsed-icon" />
+                    </div>
+                    {hoveredSubmenu === 'bitacoras' && (
+                      <div 
+                        className="hover-submenu"
+                        style={{ top: submenuPosition.top, transform: 'translateY(-50%)' }}
+                        onMouseEnter={handleSubmenuMouseEnter}
+                        onMouseLeave={handleSubmenuLeave}
+                      >
+                        <NavLink to="/laboratorio-1" className="hover-submenu-item">
+                          <FaFlask className="hover-submenu-icon" />
+                          <span>Laboratorio 1</span>
+                        </NavLink>
+                        <NavLink to="/laboratorio-2" className="hover-submenu-item">
+                          <FaFlask className="hover-submenu-icon" />
+                          <span>Laboratorio 2</span>
+                        </NavLink>
+                        <NavLink to="/laboratorio-3" className="hover-submenu-item">
+                          <FaFlask className="hover-submenu-icon" />
+                          <span>Laboratorio 3</span>
+                        </NavLink>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="collapsed-item" data-tooltip="Turnos">
+                    <NavLink to="/turnos">
+                      <FaClock className="collapsed-icon" />
                     </NavLink>
                   </div>
-                )}
-              </div>
+                </>
+              )}
 
-              <div className="collapsed-item" data-tooltip="Turnos">
-                <NavLink to="/turnos">
-                  <FaClock className="collapsed-icon" />
-                </NavLink>
-              </div>
-
+              {/* Sección de Horarios - visible para admin, consultor y profesor */}
               <div 
                 className="collapsed-item submenu-collapsed" 
                 data-tooltip="Horarios"
@@ -227,11 +232,13 @@ const Navbar = () => {
                 )}
               </div>
 
-              <div className="collapsed-item" data-tooltip={userRole === "administrador" ? "Gestión de Tareas" : "Mis Tareas"}>
-                <NavLink to="/gestion-tareas">
-                  <FaTasks className="collapsed-icon" />
-                </NavLink>
-              </div>
+              {(userRole === "administrador" || userRole === "consultor") && (
+                <div className="collapsed-item" data-tooltip={userRole === "administrador" ? "Gestión de Tareas" : "Mis Tareas"}>
+                  <NavLink to="/gestion-tareas">
+                    <FaTasks className="collapsed-icon" />
+                  </NavLink>
+                </div>
+              )}
             </>
           )}
 
@@ -356,47 +363,54 @@ const Navbar = () => {
               </NavLink>
             </li>
 
-{(userRole === "administrador" || userRole === "consultor") && (
+{(userRole === "administrador" || userRole === "consultor" || userRole === "profesor") && (
   <>
-    <li className="submenu-item">
-      <div 
-        className={`submenu-toggle ${isBitacorasActive ? 'active' : ''}`}
-        onClick={toggleBitacorasSubmenu}
-      >
-        <FaBook className="nav-icon" />
-        <span>Bitácoras</span>
-        {bitacorasSubmenuOpen ? 
-          <FaChevronDown className="submenu-arrow" /> : 
-          <FaChevronRight className="submenu-arrow" />
-        }
-      </div>
-      <ul className={`submenu ${bitacorasSubmenuOpen ? 'submenu-open' : ''}`}>
-        <li>
-          <NavLink to="/laboratorio-1" className={({ isActive }) => (isActive ? "active" : "")}>
-            <FaFlask className="nav-icon submenu-icon" />
-            <span>Laboratorio 1</span>
-          </NavLink>
+    {/* Sección solo para administradores y consultores */}
+    {(userRole === "administrador" || userRole === "consultor") && (
+      <>
+        <li className="submenu-item">
+          <div 
+            className={`submenu-toggle ${isBitacorasActive ? 'active' : ''}`}
+            onClick={toggleBitacorasSubmenu}
+          >
+            <FaBook className="nav-icon" />
+            <span>Bitácoras</span>
+            {bitacorasSubmenuOpen ? 
+              <FaChevronDown className="submenu-arrow" /> : 
+              <FaChevronRight className="submenu-arrow" />
+            }
+          </div>
+          <ul className={`submenu ${bitacorasSubmenuOpen ? 'submenu-open' : ''}`}>
+            <li>
+              <NavLink to="/laboratorio-1" className={({ isActive }) => (isActive ? "active" : "")}>
+                <FaFlask className="nav-icon submenu-icon" />
+                <span>Laboratorio 1</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/laboratorio-2" className={({ isActive }) => (isActive ? "active" : "")}>
+                <FaFlask className="nav-icon submenu-icon" />
+                <span>Laboratorio 2</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/laboratorio-3" className={({ isActive }) => (isActive ? "active" : "")}>
+                <FaFlask className="nav-icon submenu-icon" />
+                <span>Laboratorio 3</span>
+              </NavLink>
+            </li>
+          </ul>
         </li>
         <li>
-          <NavLink to="/laboratorio-2" className={({ isActive }) => (isActive ? "active" : "")}>
-            <FaFlask className="nav-icon submenu-icon" />
-            <span>Laboratorio 2</span>
+          <NavLink to="/turnos" className={({ isActive }) => (isActive ? "active" : "")}>
+            <FaClock className="nav-icon" />
+            <span>Turnos</span>
           </NavLink>
         </li>
-        <li>
-          <NavLink to="/laboratorio-3" className={({ isActive }) => (isActive ? "active" : "")}>
-            <FaFlask className="nav-icon submenu-icon" />
-            <span>Laboratorio 3</span>
-          </NavLink>
-        </li>
-      </ul>
-    </li>
-    <li>
-      <NavLink to="/turnos" className={({ isActive }) => (isActive ? "active" : "")}>
-        <FaClock className="nav-icon" />
-        <span>Turnos</span>
-      </NavLink>
-    </li>
+      </>
+    )}
+
+    {/* Sección de Horarios - visible para admin, consultor y profesor */}
     <li className="submenu-item">
       <div 
         className={`submenu-toggle ${isHorariosActive ? 'active' : ''}`}
@@ -430,12 +444,15 @@ const Navbar = () => {
         </li>
       </ul>
     </li>
-    <li>
-      <NavLink to="/gestion-tareas" className={({ isActive }) => (isActive ? "active" : "")}>
-        <FaTasks className="nav-icon" />
-        <span>{userRole === "administrador" ? "Gestión de Tareas" : "Mis Tareas"}</span>
-      </NavLink>
-    </li>
+
+    {(userRole === "administrador" || userRole === "consultor") && (
+      <li>
+        <NavLink to="/gestion-tareas" className={({ isActive }) => (isActive ? "active" : "")}>
+          <FaTasks className="nav-icon" />
+          <span>{userRole === "administrador" ? "Gestión de Tareas" : "Mis Tareas"}</span>
+        </NavLink>
+      </li>
+    )}
   </>
 )}
 
