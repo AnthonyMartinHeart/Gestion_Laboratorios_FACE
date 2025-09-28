@@ -23,7 +23,7 @@ const NotificationBell = () => {
 
   // Cargar notificaciones al montar el componente
   useEffect(() => {
-    if (user && ['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    if (user && ['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
       setNotificationsCleared(false); // Reiniciar estado al cambiar usuario
       loadNotifications();
       
@@ -60,7 +60,7 @@ const NotificationBell = () => {
 
   // Actualizar notificaciones cuando cambie de página/ruta
   useEffect(() => {
-    if (user && ['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    if (user && ['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
       console.log('🔄 Cambio de ruta detectado - actualizando notificaciones');
       loadNotifications();
     }
@@ -101,7 +101,7 @@ const NotificationBell = () => {
 
   // Hacer la función disponible globalmente
   useEffect(() => {
-    if (user && ['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    if (user && ['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
       window.refreshNotifications = loadNotifications;
     }
     
