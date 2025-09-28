@@ -163,7 +163,7 @@ const MiPerfil = () => {
         {userData.email && userData.email.endsWith('@alumnos.ubiobio.cl') && (
           <p><strong>Carrera:</strong> {userData.carrera ? userData.carrera.toUpperCase() : 'No registrado'}</p>
         )}
-        <p><strong>Rol:</strong> {userData.rol}</p>
+        <p><strong>Rol:</strong> {userData.rol.charAt(0).toUpperCase() + userData.rol.slice(1)}</p>
       </div>
     </div>
   );
