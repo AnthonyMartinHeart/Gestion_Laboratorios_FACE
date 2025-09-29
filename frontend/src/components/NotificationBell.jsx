@@ -189,6 +189,8 @@ const NotificationBell = () => {
     switch (tipo) {
       case 'cancelacion':
         return '❌';
+      case 'cancelacion_clase_profesor':
+        return '❌';
       case 'mantenimiento':
         return '🔧';
       case 'solicitud':
@@ -311,10 +313,94 @@ const NotificationBell = () => {
                     ) : (
                       <>
                         <h4>{notification.titulo}</h4>
-                        <p>{notification.mensaje}</p>
+                        <p>{(() => {
+                          // Para mensaje de cancelacion_clase_profesor, reescribir nombre y fecha con formato correcto
+                          if (notification.tipo === 'cancelacion_clase_profesor' && notification.mensaje) {
+                            let mensaje = notification.mensaje;
+                            // Regex para encontrar el nombre después de 'la profesora' o 'el profesor'
+                            const nombreMatch = mensaje.match(/(?:la profesora|el profesor) ([a-záéíóúñ ]+)/i);
+                            if (nombreMatch && nombreMatch[1]) {
+                              const nombreOriginal = nombreMatch[1].trim();
+                              // Capitalizar solo la primera letra de cada palabra
+                              const nombreFormateado = nombreOriginal.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                              mensaje = mensaje.replace(nombreOriginal, nombreFormateado);
+                            }
+                            // Reemplazar la fecha en el mensaje por la local correcta
+                            try {
+                              const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                              let fechaMostrar = detalles && detalles.fecha;
+                              if (typeof fechaMostrar === 'string') {
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(fechaMostrar)) {
+                                  const [y, m, d] = fechaMostrar.split('-');
+                                  const fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
+                                  const day = String(fechaLocal.getDate()).padStart(2, '0');
+                                  const month = String(fechaLocal.getMonth() + 1).padStart(2, '0');
+                                  const year = fechaLocal.getFullYear();
+                                  fechaMostrar = `${day}-${month}-${year}`;
+                                } else if (/^\d{2}-\d{2}-\d{4}$/.test(fechaMostrar)) {
+                                  // ya está bien
+                                } else {
+                                  const d = new Date(fechaMostrar);
+                                  if (!isNaN(d)) {
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                    const year = d.getFullYear();
+                                    fechaMostrar = `${day}-${month}-${year}`;
+                                  }
+                                }
+                                // Reemplazar cualquier fecha en el mensaje por la correcta
+                                mensaje = mensaje.replace(/\d{2,4}-\d{2}-\d{2,4}/, fechaMostrar);
+                              }
+                            } catch {}
+                            return mensaje;
+                          }
+                          return notification.mensaje;
+                        })()}</p>
                         {notification.detalles && (() => {
                           try {
-                            const detalles = JSON.parse(notification.detalles);
+                            const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                            if (notification.tipo === 'cancelacion_clase_profesor') {
+                              // Siempre parsear la fecha como local y mostrar dd-mm-yyyy
+                              let fechaMostrar = detalles.fecha;
+                              if (typeof fechaMostrar === 'string') {
+                                // Si viene yyyy-mm-dd, parsear como local
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(fechaMostrar)) {
+                                  const [y, m, d] = fechaMostrar.split('-');
+                                  // Crear fecha local
+                                  const fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
+                                  const day = String(fechaLocal.getDate()).padStart(2, '0');
+                                  const month = String(fechaLocal.getMonth() + 1).padStart(2, '0');
+                                  const year = fechaLocal.getFullYear();
+                                  fechaMostrar = `${day}-${month}-${year}`;
+                                } else if (/^\d{2}-\d{2}-\d{4}$/.test(fechaMostrar)) {
+                                  // ya está bien
+                                } else {
+                                  // fallback: intentar formatear como fecha local
+                                  const d = new Date(fechaMostrar);
+                                  if (!isNaN(d)) {
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                    const year = d.getFullYear();
+                                    fechaMostrar = `${day}-${month}-${year}`;
+                                  }
+                                }
+                              }
+                              // Capitalizar nombre completo (solo primera letra de cada palabra)
+                              const capitalizarNombre = (nombre) => {
+                                if (!nombre) return '';
+                                return nombre.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+                              };
+                              return (
+                                <div className="notification-details">
+                                  <span className="usuario">👤 {capitalizarNombre(detalles.profesorNombre || detalles.usuario)}</span>
+                                  <span className="laboratorio">🏢 {detalles.laboratorio}</span>
+                                  <span className="fecha">📅 {fechaMostrar}</span>
+                                  <span className="hora">⏰ {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                  <span className="motivo">💭 {detalles.motivo}</span>
+                                </div>
+                              );
+                            }
+                            // Otros tipos
                             return (
                               <div className="notification-details">
                                 {detalles.usuario && (
