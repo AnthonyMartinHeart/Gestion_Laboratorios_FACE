@@ -51,11 +51,17 @@ const MisClases = () => {
     if (!clasesAprobadas || clasesAprobadas.length === 0) return [];
 
     return clasesAprobadas.map(solicitud => {
-      // Si es recurrente, crear una clase por cada fecha específica
+      // Si es recurrente, crear una clase por cada fecha específica (YYYY-MM-DD)
       if (solicitud.tipoSolicitud === 'recurrente') {
         const fechasEspecificas = solicitud.fechasEspecificas || [];
         return fechasEspecificas.map(fechaStr => {
-          const fechaActual = new Date(fechaStr);
+          let fechaLocal;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+            const [y, m, d] = fechaStr.split('-');
+            fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
+          } else {
+            fechaLocal = new Date(fechaStr);
+          }
           // Verificar si está cancelada
           const clasesCanceladas = solicitud.clasesCanceladas || [];
           const claseCancelada = clasesCanceladas.find(cc => 
@@ -65,7 +71,7 @@ const MisClases = () => {
           return {
             ...solicitud,
             id: `${solicitud.id}-${fechaStr}`,
-            fechaEspecifica: fechaActual,
+            fechaEspecifica: fechaLocal,
             tipoClase: 'recurrente',
             fechaOriginal: fechaStr,
             esCancelable: fechaActual >= new Date(), // Solo se pueden cancelar clases futuras
@@ -75,19 +81,23 @@ const MisClases = () => {
         });
       } else {
         // Para solicitudes únicas, usar la fecha de la solicitud
-        const fechaActual = new Date(solicitud.fecha);
-        
+        let fechaLocal;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(solicitud.fecha)) {
+          const [y, m, d] = solicitud.fecha.split('-');
+          fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
+        } else {
+          fechaLocal = new Date(solicitud.fecha);
+        }
         // Verificar si está cancelada (para solicitudes únicas)
         const clasesCanceladas = solicitud.clasesCanceladas || [];
         const claseCancelada = clasesCanceladas.find(cc => 
-          cc.fecha && new Date(cc.fecha).toDateString() === fechaActual.toDateString()
+          cc.fecha && new Date(cc.fecha).toDateString() === fechaLocal.toDateString()
         );
-
         return {
           ...solicitud,
-          fechaEspecifica: fechaActual,
+          fechaEspecifica: fechaLocal,
           tipoClase: 'unica',
-          esCancelable: fechaActual >= new Date(), // Solo se pueden cancelar clases futuras
+          esCancelable: fechaLocal >= new Date(), // Solo se pueden cancelar clases futuras
           cancelada: !!claseCancelada,
           motivoCancelacion: claseCancelada?.motivo || null
         };
@@ -175,9 +185,13 @@ const MisClases = () => {
           motivo: result.value.trim()
         });
         
+
+        // Enviar fecha local yyyy-mm-dd sin desfase de zona horaria
+        const fechaLocal = new Date(clase.fechaEspecifica.getTime() - clase.fechaEspecifica.getTimezoneOffset() * 60000)
+          .toISOString().split('T')[0];
         await clasesService.cancelarClase(
           solicitudId, // solicitudId limpio
-          clase.fechaEspecifica.toISOString().split('T')[0], // fechaEspecifica en formato YYYY-MM-DD
+          fechaLocal, // fechaEspecifica en formato YYYY-MM-DD local
           result.value.trim() // motivoCancelacion
         );
         
@@ -221,17 +235,33 @@ const MisClases = () => {
   }, [clasesFiltradas, vistaCalendario]);
 
   const formatearFecha = (fecha) => {
-    return fecha.toLocaleDateString('es-CL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Si recibimos un string YYYY-MM-DD, mostrarlo como DD-MM-YYYY
+    if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [y, m, d] = fecha.split('-');
+      return `${d}-${m}-${y}`;
+    }
+    // Si es Date, mostrar como DD-MM-YYYY
+    if (fecha instanceof Date && !isNaN(fecha)) {
+      const d = String(fecha.getDate()).padStart(2, '0');
+      const m = String(fecha.getMonth() + 1).padStart(2, '0');
+      const y = fecha.getFullYear();
+      return `${d}-${m}-${y}`;
+    }
+    return '';
   };
 
   const getDiaSemana = (fecha) => {
     const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    return dias[fecha.getDay()];
+    if (fecha instanceof Date && !isNaN(fecha)) {
+      return dias[fecha.getDay()];
+    }
+    // Si es string YYYY-MM-DD, calcular día
+    if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [y, m, d] = fecha.split('-');
+      const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+      return dias[dateObj.getDay()];
+    }
+    return '';
   };
 
   const getEstadoClase = (clase) => {
@@ -430,7 +460,7 @@ const MisClases = () => {
                 <div className="clase-card-body">
                   <div className="info-row">
                     <span className="label">📅 Fecha:</span>
-                    <span>{getDiaSemana(clase.fechaEspecifica)}, {clase.fechaEspecifica.toLocaleDateString('es-CL')}</span>
+                    <span>{getDiaSemana(clase.fechaEspecifica)}, {formatearFecha(clase.fechaEspecifica)}</span>
                   </div>
                   
                   <div className="info-row">
