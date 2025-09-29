@@ -9,15 +9,15 @@ class ClasesService {
 
   async obtenerClasesAprobadas(profesorRut) {
     try {
-      const clases = await this.solicitudRepository.find({
-        where: { 
-          profesorRut: profesorRut,
-          estado: "aprobada"
-        },
-        order: {
-          fecha: "ASC"
-        }
-      });
+ console.log('🔍 Buscando clases para profesor:', profesorRut);
+      const clases = await this.solicitudRepository
+        .createQueryBuilder("solicitud")
+        .where("solicitud.profesorRut = :profesorRut", { profesorRut })
+        .andWhere("solicitud.estado = :estado", { estado: "aprobada" })
+        .orderBy("solicitud.fecha", "ASC")
+        .getMany();
+      
+      console.log('📚 Clases encontradas:', clases.length);
 
       // Obtener todas las cancelaciones para estas solicitudes
       const solicitudIds = clases.map(clase => clase.id);
