@@ -16,14 +16,63 @@ const NotificationBell = () => {
   const [showAllModal, setShowAllModal] = useState(false);
   const [notificationsCleared, setNotificationsCleared] = useState(false);
 
-  // Mostrar para administradores, profesores, consultores y estudiantes
-  if (!user || !['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
+  // Función helper para formatear fechas correctamente sin problemas de zona horaria
+  const formatearFecha = (fechaStr) => {
+    if (!fechaStr) return 'N/A';
+    
+    // Si la fecha está en formato YYYY-MM-DD o similar, parsear como local
+    if (typeof fechaStr === 'string') {
+      // Formato YYYY-MM-DD (más común desde BD)
+      if (/^\d{4}-\d{2}-\d{2}/.test(fechaStr)) {
+        // Extraer componentes directamente sin conversión UTC
+        const [year, month, day] = fechaStr.split('T')[0].split('-');
+        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      }
+      // Formato DD-MM-YYYY (ya está correcto)
+      if (/^\d{2}-\d{2}-\d{4}$/.test(fechaStr)) {
+        return fechaStr;
+      }
+    }
+    
+    // Fallback: crear fecha local sin problemas de zona horaria
+    try {
+      // Si es un string ISO, parsearlo como fecha local
+      if (typeof fechaStr === 'string' && fechaStr.includes('-')) {
+        const [datePart] = fechaStr.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        // Crear fecha local (mes es 0-indexed en JS)
+        const fechaLocal = new Date(year, month - 1, day);
+        
+        const d = String(fechaLocal.getDate()).padStart(2, '0');
+        const m = String(fechaLocal.getMonth() + 1).padStart(2, '0');
+        const y = fechaLocal.getFullYear();
+        
+        return `${d}-${m}-${y}`;
+      }
+      
+      // Para otros casos, intentar conversión estándar
+      const fecha = new Date(fechaStr);
+      if (!isNaN(fecha.getTime())) {
+        const d = String(fecha.getDate()).padStart(2, '0');
+        const m = String(fecha.getMonth() + 1).padStart(2, '0');
+        const y = fecha.getFullYear();
+        return `${d}-${m}-${y}`;
+      }
+    } catch (e) {
+      console.error('Error al formatear fecha:', e);
+    }
+    
+    return 'N/A';
+  };
+
+  // Mostrar para administradores, profesores, consultores, estudiantes y usuarios
+  if (!user || !['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
     return null;
   }
 
   // Cargar notificaciones al montar el componente
   useEffect(() => {
-    if (user && ['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
+    if (user && ['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       setNotificationsCleared(false); // Reiniciar estado al cambiar usuario
       loadNotifications();
       
@@ -60,7 +109,7 @@ const NotificationBell = () => {
 
   // Actualizar notificaciones cuando cambie de página/ruta
   useEffect(() => {
-    if (user && ['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
+    if (user && ['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       console.log('🔄 Cambio de ruta detectado - actualizando notificaciones');
       loadNotifications();
     }
@@ -81,8 +130,9 @@ const NotificationBell = () => {
       console.log('🔔 Cargando notificaciones para usuario:', user?.rut, 'rol:', user?.rol);
       let data = await notificationsService.getNotifications();
       console.log('📨 Notificaciones recibidas del backend:', data);
-      // Filtrar notificaciones para estudiantes
-      if (user.rol === 'estudiante') {
+      // Filtrar notificaciones para estudiantes y usuarios (el backend ya debería filtrar correctamente)
+      // Este filtro es redundante pero por seguridad lo dejamos
+      if (user.rol === 'estudiante' || user.rol === 'usuario') {
         data = data.filter(n => n.tipo === 'reserva_equipo');
       }
       setNotifications(data);
@@ -101,7 +151,7 @@ const NotificationBell = () => {
 
   // Hacer la función disponible globalmente
   useEffect(() => {
-    if (user && ['administrador', 'consultor', 'profesor', 'estudiante'].includes(user.rol)) {
+    if (user && ['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       window.refreshNotifications = loadNotifications;
     }
     
@@ -282,33 +332,55 @@ const NotificationBell = () => {
                     {getIconoTipo(notification.tipo)}
                   </div>
                   <div className="notification-content" onClick={() => markAsRead(notification.id)}>
-                    {/* Personalizar mensaje para estudiantes y reserva_equipo */}
-                    {user.rol === 'estudiante' && notification.tipo === 'reserva_equipo' ? (
+                    {/* Personalizar mensaje para reserva_equipo (estudiantes y consultores) */}
+                    {['estudiante', 'consultor', 'usuario'].includes(user.rol) && notification.tipo === 'reserva_equipo' ? (
                       <>
-                        <h4>Reserva realizada</h4>
+                        <h4>💻 Reserva Confirmada</h4>
                         <p>
-                          Has reservado el equipo #{(() => {
+                          {notification.mensaje || `Has reservado el equipo PC-${(() => {
                             try {
                               const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
                               return detalles && detalles.pcId ? detalles.pcId : 'N/A';
                             } catch {
                               return 'N/A';
                             }
-                          })()} con fecha {(() => {
+                          })()} para el día ${(() => {
                             try {
                               const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                              // Prioridad: fecha > fechaReserva > fechaCreacion
                               if (detalles && detalles.fecha) return detalles.fecha;
                               if (detalles && detalles.fechaReserva) return detalles.fechaReserva;
-                              if (notification.fechaCreacion) {
-                                const fecha = new Date(notification.fechaCreacion);
-                                return fecha.toLocaleDateString('es-CL');
-                              }
-                              return 'N/A';
+                              // Solo si no hay otra opción, usar fechaCreacion
+                              return formatearFecha(notification.fechaCreacion);
                             } catch {
                               return 'N/A';
                             }
-                          })()}
+                          })()}`}
                         </p>
+                        {/* Mostrar detalles adicionales para reserva_equipo */}
+                        {notification.detalles && (() => {
+                          try {
+                            const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                            return (
+                              <div className="notification-details">
+                                {detalles.laboratorio && (
+                                  <span className="laboratorio">🏢 {detalles.laboratorio}</span>
+                                )}
+                                {detalles.pcId && (
+                                  <span className="pcId">💻 PC-{detalles.pcId}</span>
+                                )}
+                                {detalles.fecha && (
+                                  <span className="fecha">📅 {detalles.fecha}</span>
+                                )}
+                                {detalles.horaInicio && detalles.horaTermino && (
+                                  <span className="hora">⏰ {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                )}
+                              </div>
+                            );
+                          } catch (e) {
+                            return null;
+                          }
+                        })()}
                       </>
                     ) : (
                       <>
@@ -524,32 +596,87 @@ const NotificationBell = () => {
                       </div>
                       
                       <div className="notification-modal-content-item" onClick={() => markAsRead(notification.id)}>
-                        <h4>{notification.titulo}</h4>
-                        <p>{notification.mensaje}</p>
-                        
-                        {notification.detalles && (() => {
-                          try {
-                            const detalles = JSON.parse(notification.detalles);
-                            return (
-                              <div className="notification-modal-details">
-                                {detalles.usuario && (
-                                  <span className="usuario">👤 {detalles.usuario}</span>
-                                )}
-                                {detalles.laboratorio && (
-                                  <span className="laboratorio">🏢 {detalles.laboratorio}</span>
-                                )}
-                                {detalles.pcId && (
-                                  <span className="pcId">💻 PC-{detalles.pcId}</span>
-                                )}
-                                {detalles.motivo && (
-                                  <span className="motivo">💭 {detalles.motivo}</span>
-                                )}
-                              </div>
-                            );
-                          } catch (e) {
-                            return null;
-                          }
-                        })()}
+                        {/* Personalizar mensaje para reserva_equipo (estudiantes y consultores) */}
+                        {['estudiante', 'consultor', 'usuario'].includes(user.rol) && notification.tipo === 'reserva_equipo' ? (
+                          <>
+                            <h4>💻 Reserva Confirmada</h4>
+                            <p>
+                              {notification.mensaje || `Has reservado el equipo PC-${(() => {
+                                try {
+                                  const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                                  return detalles && detalles.pcId ? detalles.pcId : 'N/A';
+                                } catch {
+                                  return 'N/A';
+                                }
+                              })()} para el día ${(() => {
+                                try {
+                                  const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                                  // Prioridad: fecha > fechaReserva > fechaCreacion
+                                  if (detalles && detalles.fecha) return detalles.fecha;
+                                  if (detalles && detalles.fechaReserva) return detalles.fechaReserva;
+                                  // Solo si no hay otra opción, usar fechaCreacion
+                                  return formatearFecha(notification.fechaCreacion);
+                                } catch {
+                                  return 'N/A';
+                                }
+                              })()}`}
+                            </p>
+                            
+                            {/* Mostrar detalles adicionales */}
+                            {notification.detalles && (() => {
+                              try {
+                                const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
+                                return (
+                                  <div className="notification-modal-details">
+                                    {detalles.laboratorio && (
+                                      <span className="laboratorio">🏢 {detalles.laboratorio}</span>
+                                    )}
+                                    {detalles.pcId && (
+                                      <span className="pcId">💻 PC-{detalles.pcId}</span>
+                                    )}
+                                    {detalles.fecha && (
+                                      <span className="fecha">📅 {detalles.fecha}</span>
+                                    )}
+                                    {detalles.horaInicio && detalles.horaTermino && (
+                                      <span className="hora">⏰ {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                    )}
+                                  </div>
+                                );
+                              } catch (e) {
+                                return null;
+                              }
+                            })()}
+                          </>
+                        ) : (
+                          <>
+                            <h4>{notification.titulo}</h4>
+                            <p>{notification.mensaje}</p>
+                            
+                            {notification.detalles && (() => {
+                              try {
+                                const detalles = JSON.parse(notification.detalles);
+                                return (
+                                  <div className="notification-modal-details">
+                                    {detalles.usuario && (
+                                      <span className="usuario">👤 {detalles.usuario}</span>
+                                    )}
+                                    {detalles.laboratorio && (
+                                      <span className="laboratorio">🏢 {detalles.laboratorio}</span>
+                                    )}
+                                    {detalles.pcId && (
+                                      <span className="pcId">💻 PC-{detalles.pcId}</span>
+                                    )}
+                                    {detalles.motivo && (
+                                      <span className="motivo">💭 {detalles.motivo}</span>
+                                    )}
+                                  </div>
+                                );
+                              } catch (e) {
+                                return null;
+                              }
+                            })()}
+                          </>
+                        )}
                         
                         <span className="notification-modal-time">{formatFecha(notification.fechaCreacion)}</span>
                       </div>
