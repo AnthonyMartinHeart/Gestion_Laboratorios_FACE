@@ -67,6 +67,18 @@ const MisReservas = () => {
     }
   }, [userData, cargarMisReservas]);
 
+  // Hook para actualización automática del estado de las reservas cada minuto
+  useEffect(() => {
+    // Forzar re-renderizado cada minuto para actualizar estados automáticamente
+    const intervalo = setInterval(() => {
+      console.log('🔄 Verificando estados de reservas...');
+      // Forzar actualización del componente para re-evaluar esReservaPasada()
+      setMisReservas(prev => [...prev]);
+    }, 60000); // Cada 60 segundos
+
+    return () => clearInterval(intervalo);
+  }, []);
+
   const abrirModalEdicion = (reserva) => {
     console.log('Abriendo modal de edición para:', reserva);
     
@@ -311,6 +323,90 @@ const MisReservas = () => {
     }
   };
 
+  const borrarHistorialInactivas = async () => {
+    // Filtrar solo las reservas inactivas (pasadas)
+    const reservasInactivas = misReservas.filter(reserva => esReservaPasada(reserva));
+    
+    if (reservasInactivas.length === 0) {
+      Swal.fire({
+        title: 'Sin historial',
+        text: 'No tienes reservas inactivas para eliminar.',
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+
+    // Mostrar confirmación con detalles
+    const confirmar = await Swal.fire({
+      title: '¿Borrar historial de reservas inactivas?',
+      html: `
+        <div style="text-align: left;">
+          <p>Se eliminarán <strong>${reservasInactivas.length}</strong> reserva(s) que ya finalizaron:</p>
+          <div style="max-height: 200px; overflow-y: auto; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+            ${reservasInactivas.map(r => `
+              <div style="margin-bottom: 8px; padding: 8px; background: white; border-left: 3px solid #e74c3c; border-radius: 3px;">
+                <strong>PC ${r.pcId}</strong> - ${obtenerNombreLaboratorio(r.pcId)}<br>
+                <small>📅 ${formatearFecha(r.fechaReserva)} ⏰ ${r.horaInicio} - ${r.horaTermino}</small>
+              </div>
+            `).join('')}
+          </div>
+          <p style="color: #e74c3c; font-weight: bold; margin-top: 10px;">
+            ⚠️ Las reservas activas NO serán eliminadas
+          </p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '🗑️ Sí, borrar historial',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d'
+    });
+
+    if (confirmar.isConfirmed) {
+      try {
+        // Eliminar cada reserva inactiva
+        let eliminadas = 0;
+        let errores = 0;
+
+        for (const reserva of reservasInactivas) {
+          try {
+            await deleteReservation(reserva.id);
+            eliminadas++;
+          } catch (error) {
+            console.error(`Error al eliminar reserva ${reserva.id}:`, error);
+            errores++;
+          }
+        }
+
+        // Recargar las reservas
+        await cargarMisReservas();
+
+        // Mostrar resultado
+        if (errores === 0) {
+          showSuccessAlert(
+            '¡Historial limpiado!', 
+            `Se eliminaron ${eliminadas} reserva(s) inactiva(s) correctamente.`
+          );
+        } else {
+          Swal.fire({
+            title: 'Limpieza parcial',
+            html: `
+              <p>✅ Eliminadas: ${eliminadas}</p>
+              <p>❌ Errores: ${errores}</p>
+            `,
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+          });
+        }
+      } catch (error) {
+        console.error('Error al borrar historial:', error);
+        showErrorAlert('Error', 'No se pudo borrar el historial: ' + error.message);
+      }
+    }
+  };
+
   const formatearFecha = (fecha) => {
     // Crear fecha local para evitar problemas de zona horaria
     const fechaLocal = new Date(fecha + 'T00:00:00');
@@ -329,8 +425,20 @@ const MisReservas = () => {
   };
 
   const esReservaPasada = (reserva) => {
-    // Temporalmente devolver siempre false para mostrar todos los botones
-    return false;
+    // Obtener fecha y hora actual
+    const ahora = new Date();
+    
+    // Parsear la fecha de la reserva (formato YYYY-MM-DD)
+    const [year, month, day] = reserva.fechaReserva.split('-').map(Number);
+    
+    // Parsear la hora de término (formato HH:MM)
+    const [horaTermino, minutoTermino] = reserva.horaTermino.split(':').map(Number);
+    
+    // Crear fecha de término de la reserva (fecha + hora de término)
+    const fechaTerminoReserva = new Date(year, month - 1, day, horaTermino, minutoTermino);
+    
+    // La reserva está pasada si la hora de término ya ocurrió
+    return ahora > fechaTerminoReserva;
   };
 
   if (!userData) {
@@ -352,15 +460,94 @@ const MisReservas = () => {
               <div className="header-title-box">
                 <span className="header-title">Reservas Activas</span>
               </div>
-              <button 
-                className="btn-actualizar mejorada" 
-                onClick={cargarMisReservas}
-                disabled={cargandoReservas}
-                title="Actualizar lista"
-              >
-                <span style={{fontSize:18,marginRight:6,verticalAlign:'middle'}}>🔄</span>
-                <span style={{verticalAlign:'middle'}}>{cargandoReservas ? 'Actualizando...' : 'Actualizar'}</span>
-              </button>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <button 
+                  onClick={cargarMisReservas}
+                  disabled={cargandoReservas}
+                  title="Actualizar lista"
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: cargandoReservas ? '#93c5fd' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    outline: 'none',
+                    borderRadius: '12px',
+                    cursor: cargandoReservas ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: cargandoReservas ? 'none' : '0 4px 12px rgba(59, 130, 246, 0.3)',
+                    WebkitTapHighlightColor: 'transparent',
+                    userSelect: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!cargandoReservas) {
+                      e.currentTarget.style.backgroundColor = '#2563eb';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!cargandoReservas) {
+                      e.currentTarget.style.backgroundColor = '#3b82f6';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+                    }
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.outline = 'none';
+                  }}
+                >
+                  <span style={{fontSize:18,verticalAlign:'middle',pointerEvents:'none'}}>🔄</span>
+                  <span style={{verticalAlign:'middle',pointerEvents:'none'}}>{cargandoReservas ? 'Actualizando...' : 'Actualizar'}</span>
+                </button>
+                <button 
+                  onClick={borrarHistorialInactivas}
+                  disabled={cargandoReservas}
+                  title="Borrar reservas inactivas del historial"
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: cargandoReservas ? '#fca5a5' : '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    outline: 'none',
+                    borderRadius: '12px',
+                    cursor: cargandoReservas ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: cargandoReservas ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.3)',
+                    WebkitTapHighlightColor: 'transparent',
+                    userSelect: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!cargandoReservas) {
+                      e.currentTarget.style.backgroundColor = '#dc2626';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!cargandoReservas) {
+                      e.currentTarget.style.backgroundColor = '#ef4444';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                    }
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.outline = 'none';
+                  }}
+                >
+                  <span style={{fontSize:18,verticalAlign:'middle',pointerEvents:'none'}}>🗑️</span>
+                  <span style={{verticalAlign:'middle',pointerEvents:'none'}}>Borrar Historial</span>
+                </button>
+              </div>
             </div>
 
             <div className="reservas-lista">
@@ -372,7 +559,16 @@ const MisReservas = () => {
               ) : (
                 misReservas.map((reserva) => (
                   <div key={reserva.id} className={`reserva-card ${esReservaPasada(reserva) ? 'reserva-pasada' : ''}`}
-                    style={{gap:24,padding:'28px 24px',boxShadow:'0 6px 24px #b3c6ff22, 0 2px 8px #b3c6ff11'}}>
+                    style={{
+                      gap:24,
+                      padding:'28px 24px',
+                      boxShadow: esReservaPasada(reserva) 
+                        ? '0 2px 8px rgba(0,0,0,0.1)' 
+                        : '0 6px 24px #b3c6ff22, 0 2px 8px #b3c6ff11',
+                      opacity: esReservaPasada(reserva) ? 0.7 : 1,
+                      border: esReservaPasada(reserva) ? '2px solid #e74c3c20' : 'none',
+                      backgroundColor: esReservaPasada(reserva) ? '#fef5f5' : 'white'
+                    }}>
                     <div className="reserva-info" style={{flex:1}}>
                       <div className="reserva-principal" style={{gap:18,marginBottom:10,alignItems:'center'}}>
                         <span className="pc-icono" style={{fontSize:28,marginRight:8,verticalAlign:'middle',color:'#2980b9',filter:'drop-shadow(0 2px 4px #b3c6ff44)'}}>💻</span>
@@ -384,21 +580,43 @@ const MisReservas = () => {
                         <span className="horario" style={{fontSize:16}}>
                           <span style={{fontWeight:700,color:'#2c3e50'}}>⏰</span> {reserva.horaInicio} - {reserva.horaTermino}
                         </span>
-                        {reserva.status && (
-                          <span className={`estado estado-${reserva.status}`} style={{marginLeft:8,marginRight:0,letterSpacing:1.2,fontSize:13}}>
-                            {reserva.status === 'finished' ? 'Finalizada' : 
-                             reserva.status === 'active' ? 'Activa' : reserva.status}
-                          </span>
-                        )}
+                        {/* Mostrar estado basado en si la reserva está pasada o activa */}
+                        <span 
+                          className={`estado ${esReservaPasada(reserva) ? 'estado-inactivo' : 'estado-activa'}`} 
+                          style={{
+                            marginLeft:8,
+                            marginRight:0,
+                            letterSpacing:1.2,
+                            fontSize:13,
+                            padding: '6px 16px',
+                            borderRadius: '20px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            backgroundColor: esReservaPasada(reserva) ? '#e74c3c' : '#27ae60',
+                            color: 'white',
+                            boxShadow: esReservaPasada(reserva) 
+                              ? '0 2px 8px rgba(231, 76, 60, 0.3)' 
+                              : '0 2px 8px rgba(39, 174, 96, 0.3)'
+                          }}
+                        >
+                          {esReservaPasada(reserva) ? '🔴 INACTIVO' : '🟢 ACTIVA'}
+                        </span>
                       </div>
                     </div>
                     <div className="reserva-acciones" style={{minWidth:120}}>
                       <button 
                         className="btn-editar"
                         onClick={() => abrirModalEdicion(reserva)}
-                        title="Editar horarios"
-                        disabled={cargandoReservas}
-                        style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
+                        title={esReservaPasada(reserva) ? "No se puede editar una reserva pasada" : "Editar horarios"}
+                        disabled={cargandoReservas || esReservaPasada(reserva)}
+                        style={{
+                          display:'flex',
+                          alignItems:'center',
+                          gap:8,
+                          justifyContent:'center',
+                          opacity: esReservaPasada(reserva) ? 0.5 : 1,
+                          cursor: esReservaPasada(reserva) ? 'not-allowed' : 'pointer'
+                        }}
                       >
                         <span role="img" aria-label="Editar" style={{fontSize:20}}>✏️</span>
                         <span style={{fontWeight:600}}>Editar</span>
