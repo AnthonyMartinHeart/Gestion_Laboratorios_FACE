@@ -55,29 +55,24 @@ const SelectPC = ({ onReservaCreada }) => {
     "15:30", "17:00", "18:30", "20:00"
   ];
 
-  // Función para obtener la fecha/hora actual en la zona horaria de Chile
-  const getChileDateTime = () => {
-    try {
-      // Crear fecha en zona horaria de Chile
-      const now = new Date();
-      const chileTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Santiago"}));
-      
-      // Log para debugging
-      console.log('🕐 Hora del sistema:', now.toLocaleString());
-      console.log('🇨🇱 Hora de Chile:', chileTime.toLocaleString());
-      
-      return chileTime;
-    } catch (error) {
-      console.warn('❌ Error al obtener hora de Chile, usando hora local:', error);
-      // Fallback a hora local si hay error
-      return new Date();
-    }
+  // Función para obtener la fecha/hora actual (usa zona horaria local automáticamente)
+  const getLocalDateTime = () => {
+    // Simplemente retorna la fecha/hora local del sistema
+    // Esto se ajusta automáticamente a la zona horaria configurada en el servidor/navegador
+    const now = new Date();
+    
+    // Log para debugging
+    console.log('🕐 Hora local del sistema:', now.toLocaleString());
+    console.log('📅 Fecha:', now.toLocaleDateString());
+    console.log('⏰ Hora:', now.toLocaleTimeString());
+    
+    return now;
   };
 
   // Función para obtener horarios válidos según la hora actual
   const getHorariosValidos = () => {
-    // Usar hora de Chile en lugar de hora local
-    const ahora = getChileDateTime();
+    // Usar hora local del sistema (se ajusta automáticamente a la zona horaria)
+    const ahora = getLocalDateTime();
     
     // Verificar si es domingo (0 = domingo en JavaScript)
     const esDomingo = ahora.getDay() === 0;
@@ -236,8 +231,8 @@ const SelectPC = ({ onReservaCreada }) => {
   useEffect(() => {
     const syncInterval = setInterval(() => {
       // Forzar re-renderizado para actualizar horarios disponibles
-      const chileTime = getChileDateTime();
-      console.log('🔄 Sincronizando horarios automáticamente:', chileTime.toLocaleString());
+      const localTime = getLocalDateTime();
+      console.log('🔄 Sincronizando horarios automáticamente:', localTime.toLocaleString());
       
       // Si hay un formulario abierto, actualizar los horarios disponibles
       if (showForm) {
@@ -733,13 +728,12 @@ const SelectPC = ({ onReservaCreada }) => {
     }
     
     if (horariosValidos.inicioValidos.length === 0) {
-      // Usar hora de Chile para mostrar al usuario
-      const chileTime = getChileDateTime();
-      const horaActual = chileTime.toLocaleTimeString('es-CL', { 
+      // Usar hora local para mostrar al usuario
+      const localTime = getLocalDateTime();
+      const horaActual = localTime.toLocaleTimeString('es-CL', { 
         hour: '2-digit', 
         minute: '2-digit',
-        hour12: false,
-        timeZone: 'America/Santiago'
+        hour12: false
       });
       
       Swal.fire({
@@ -1080,18 +1074,16 @@ const SelectPC = ({ onReservaCreada }) => {
         fontSize: '12px',
         border: '1px solid #c3e6c3'
       }}>
-        🌍 Sincronizado con zona horaria de Chile (GMT-3/GMT-4) | 
-        🕐 {getChileDateTime().toLocaleDateString('es-CL', { 
+        🌍 Sincronizado con zona horaria local | 
+        🕐 {getLocalDateTime().toLocaleDateString('es-CL', { 
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
-          day: 'numeric',
-          timeZone: 'America/Santiago'
-        })} - {getChileDateTime().toLocaleTimeString('es-CL', { 
+          day: 'numeric'
+        })} - {getLocalDateTime().toLocaleTimeString('es-CL', { 
           hour: '2-digit', 
           minute: '2-digit',
-          hour12: false,
-          timeZone: 'America/Santiago'
+          hour12: false
         })}
       </div>
       
@@ -1253,15 +1245,14 @@ const SelectPC = ({ onReservaCreada }) => {
               textAlign: 'center'
             }}>
               <div style={{ color: '#2d5016', fontSize: '14px', fontWeight: 'bold' }}>
-                🕐 Hora actual (Chile): {getChileDateTime().toLocaleTimeString('es-CL', { 
+                🕐 Hora actual: {getLocalDateTime().toLocaleTimeString('es-CL', { 
                   hour: '2-digit', 
                   minute: '2-digit',
-                  hour12: false,
-                  timeZone: 'America/Santiago'
+                  hour12: false
                 })}
               </div>
               <div style={{ color: '#666', fontSize: '11px', marginTop: '3px' }}>
-                Sincronizado automáticamente con zona horaria de Chile
+                Sincronizado automáticamente con zona horaria local
               </div>
             </div>
 
