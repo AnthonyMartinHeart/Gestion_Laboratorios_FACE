@@ -28,6 +28,9 @@ export async function createReservation(req, res) {
     // Detectar si es un mantenimiento
     const esMantenimiento = req.body.carrera === 'MAINTENANCE';
     
+    // Detectar si es un bloque de clases (ADMIN)
+    const esBloqueCLASES = req.body.carrera === 'ADMIN';
+    
     if (esMantenimiento) {
       // Crear notificación para el usuario que marca el mantenimiento
       try {
@@ -63,6 +66,103 @@ export async function createReservation(req, res) {
         }
       } catch (notificationError) {
         console.error("Error al crear notificación de mantenimiento:", notificationError);
+      }
+    } else if (!esBloqueCLASES) {
+      // Si es una reserva individual (NO es mantenimiento NI bloque de clases)
+      // Crear notificación personalizada para el usuario que hizo la reserva
+      try {
+        console.log('📋 Datos de la reserva creada:', {
+          reserva,
+          userFromReq: req.user,
+          rutFromBody: req.body.rut,
+          rutFromUser: req.user?.rut,
+          fechaReservaOriginal: reserva.fechaReserva,
+          tipoFecha: typeof reserva.fechaReserva
+        });
+
+        // Formatear fecha en formato dd-mm-yyyy de forma robusta y automática
+        const fechaReserva = reserva.fechaReserva;
+        let fechaFormateada = '';
+        
+        if (fechaReserva) {
+          // Si la fecha viene como string en formato ISO (YYYY-MM-DD o con timestamp)
+          if (typeof fechaReserva === 'string') {
+            // Extraer solo la parte de la fecha (antes de 'T' si existe)
+            const fechaSoloStr = fechaReserva.split('T')[0];
+            
+            // Si coincide con formato YYYY-MM-DD, parsear directamente
+            const match = fechaSoloStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (match) {
+              const [, year, month, day] = match;
+              fechaFormateada = `${day}-${month}-${year}`;
+            } else {
+              // Si no coincide, intentar crear fecha local y formatear
+              const fecha = new Date(fechaReserva);
+              // Ajustar a zona horaria local del servidor
+              const dia = String(fecha.getDate()).padStart(2, '0');
+              const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+              const anio = fecha.getFullYear();
+              fechaFormateada = `${dia}-${mes}-${anio}`;
+            }
+          } else if (fechaReserva instanceof Date) {
+            // Si ya es un objeto Date, formatear directamente
+            const dia = String(fechaReserva.getDate()).padStart(2, '0');
+            const mes = String(fechaReserva.getMonth() + 1).padStart(2, '0');
+            const anio = fechaReserva.getFullYear();
+            fechaFormateada = `${dia}-${mes}-${anio}`;
+          } else {
+            // Último intento: convertir a string y procesar
+            const fechaStr = String(fechaReserva).split('T')[0];
+            const [year, month, day] = fechaStr.split('-');
+            fechaFormateada = `${day}-${month}-${year}`;
+          }
+        } else {
+          // Si no hay fecha en la reserva, usar fecha local actual del servidor
+          const hoy = new Date();
+          const dia = String(hoy.getDate()).padStart(2, '0');
+          const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+          const anio = hoy.getFullYear();
+          fechaFormateada = `${dia}-${mes}-${anio}`;
+        }
+
+        console.log(`📅 Fecha formateada: ${fechaFormateada} (original: ${fechaReserva})`);
+
+        // Obtener el laboratorio desde el pcId
+        let laboratorio = 'No especificado';
+        if (reserva.pcId >= 1 && reserva.pcId <= 40) {
+          laboratorio = 'LAB1';
+        } else if (reserva.pcId >= 41 && reserva.pcId <= 60) {
+          laboratorio = 'LAB2';
+        } else if (reserva.pcId >= 61 && reserva.pcId <= 80) {
+          laboratorio = 'LAB3';
+        }
+
+        // Determinar el RUT del destinatario (usar el RUT de la reserva que es el más confiable)
+        const targetRut = reserva.rut || req.body.rut || req.user?.rut;
+        
+        console.log(`🔔 Intentando crear notificación para RUT: ${targetRut}`);
+
+        await crearNotificacion(
+          "reserva_equipo",
+          "💻 Reserva de Equipo Confirmada",
+          `Has reservado exitosamente el equipo PC-${reserva.pcId} en ${laboratorio} para el día ${fechaFormateada} de ${reserva.horaInicio} a ${reserva.horaTermino}`,
+          {
+            pcId: reserva.pcId,
+            laboratorio: laboratorio,
+            fecha: fechaFormateada,
+            fechaReserva: fechaFormateada,
+            horaInicio: reserva.horaInicio,
+            horaTermino: reserva.horaTermino,
+            carrera: reserva.carrera || 'No especificada',
+            usuario: req.user?.nombreCompleto || req.user?.nombre || 'Usuario'
+          },
+          targetRut // Notificación para quien hizo la reserva
+        );
+
+        console.log(`✅ Notificación de reserva enviada a RUT: ${targetRut}`);
+      } catch (notificationError) {
+        console.error("❌ Error al crear notificación de reserva:", notificationError);
+        // No afectar la operación principal si falla la notificación
       }
     }
 
