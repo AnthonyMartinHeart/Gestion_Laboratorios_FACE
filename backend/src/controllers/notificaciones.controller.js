@@ -9,8 +9,8 @@ export async function obtenerNotificaciones(req, res) {
   try {
     const { user } = req;
     
-    // Permitir notificaciones para administradores, consultores y profesores
-    if (!['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    // Permitir notificaciones para administradores, consultores, profesores, estudiantes y usuarios
+    if (!['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       return handleErrorClient(res, 403, "No tienes permisos para ver notificaciones");
     }
 
@@ -40,12 +40,22 @@ export async function obtenerNotificaciones(req, res) {
         take: 50
       });
     } else if (user.rol === 'consultor') {
-      // Los consultores ven notificaciones de horarios, turnos y tareas
+      // Los consultores ven notificaciones de horarios, turnos, tareas y reservas
       notificaciones = await notificacionRepository.find({
         where: [
           { tipo: 'horario_actualizado' },
           { tipo: 'turno_asignado', targetRut: user.rut },
-          { tipo: 'tarea_asignada', targetRut: user.rut }
+          { tipo: 'tarea_asignada', targetRut: user.rut },
+          { tipo: 'reserva_equipo', targetRut: user.rut }
+        ],
+        order: { fechaCreacion: "DESC" },
+        take: 50
+      });
+    } else if (user.rol === 'estudiante' || user.rol === 'usuario') {
+      // Los estudiantes y usuarios solo ven sus notificaciones de reservas
+      notificaciones = await notificacionRepository.find({
+        where: [
+          { tipo: 'reserva_equipo', targetRut: user.rut }
         ],
         order: { fechaCreacion: "DESC" },
         take: 50
@@ -63,8 +73,8 @@ export async function obtenerConteoNoLeidas(req, res) {
   try {
     const { user } = req;
     
-    // Permitir conteo para administradores, consultores y profesores
-    if (!['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    // Permitir conteo para administradores, consultores, profesores, estudiantes y usuarios
+    if (!['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       return handleErrorClient(res, 403, "No tienes permisos para ver notificaciones");
     }
 
@@ -86,7 +96,14 @@ export async function obtenerConteoNoLeidas(req, res) {
         where: [
           { tipo: 'horario_actualizado', leida: false },
           { tipo: 'turno_asignado', targetRut: user.rut, leida: false },
-          { tipo: 'tarea_asignada', targetRut: user.rut, leida: false }
+          { tipo: 'tarea_asignada', targetRut: user.rut, leida: false },
+          { tipo: 'reserva_equipo', targetRut: user.rut, leida: false }
+        ]
+      });
+    } else if (user.rol === 'estudiante' || user.rol === 'usuario') {
+      count = await notificacionRepository.count({
+        where: [
+          { tipo: 'reserva_equipo', targetRut: user.rut, leida: false }
         ]
       });
     }
@@ -103,8 +120,8 @@ export async function marcarComoLeida(req, res) {
     const { user } = req;
     const { id } = req.params;
     
-    // Permitir marcar para administradores, consultores y profesores
-    if (!['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    // Permitir marcar para administradores, consultores, profesores, estudiantes y usuarios
+    if (!['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       return handleErrorClient(res, 403, "No tienes permisos para modificar notificaciones");
     }
 
@@ -139,8 +156,8 @@ export async function marcarTodasComoLeidas(req, res) {
   try {
     const { user } = req;
     
-    // Permitir marcar todas para administradores, consultores y profesores
-    if (!['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    // Permitir marcar todas para administradores, consultores, profesores, estudiantes y usuarios
+    if (!['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       return handleErrorClient(res, 403, "No tienes permisos para modificar notificaciones");
     }
 
@@ -171,7 +188,20 @@ export async function marcarTodasComoLeidas(req, res) {
       await notificacionRepository.update(
         { 
           leida: false,
-          tipo: In(['horario_actualizado', 'turno_asignado', 'tarea_asignada'])
+          tipo: In(['horario_actualizado', 'turno_asignado', 'tarea_asignada', 'reserva_equipo'])
+        },
+        { 
+          leida: true,
+          fechaLectura: new Date()
+        }
+      );
+    } else if (user.rol === 'estudiante' || user.rol === 'usuario') {
+      // Los estudiantes y usuarios marcan sus notificaciones de reservas como leídas
+      await notificacionRepository.update(
+        { 
+          leida: false,
+          targetRut: user.rut,
+          tipo: 'reserva_equipo'
         },
         { 
           leida: true,
@@ -191,8 +221,8 @@ export async function limpiarNotificaciones(req, res) {
   try {
     const { user } = req;
     
-    // Permitir limpiar para administradores, consultores y profesores
-    if (!['administrador', 'consultor', 'profesor'].includes(user.rol)) {
+    // Permitir limpiar para administradores, consultores, profesores, estudiantes y usuarios
+    if (!['administrador', 'consultor', 'profesor', 'estudiante', 'usuario'].includes(user.rol)) {
       return handleErrorClient(res, 403, "No tienes permisos para limpiar notificaciones");
     }
 
@@ -210,8 +240,15 @@ export async function limpiarNotificaciones(req, res) {
       await notificacionRepository.delete([
         { tipo: 'horario_actualizado' },
         { tipo: 'turno_asignado', targetRut: user.rut },
-        { tipo: 'tarea_asignada', targetRut: user.rut }
+        { tipo: 'tarea_asignada', targetRut: user.rut },
+        { tipo: 'reserva_equipo', targetRut: user.rut }
       ]);
+    } else if (user.rol === 'estudiante' || user.rol === 'usuario') {
+      // Los estudiantes y usuarios pueden limpiar sus notificaciones de reservas
+      await notificacionRepository.delete({
+        targetRut: user.rut,
+        tipo: 'reserva_equipo'
+      });
     }
 
     handleSuccess(res, 200, "Notificaciones limpiadas exitosamente");
