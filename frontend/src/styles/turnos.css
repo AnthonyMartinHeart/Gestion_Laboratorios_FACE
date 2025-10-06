@@ -1,77 +1,81 @@
-/* Contenedor principal con fondo moderno */
+/* FONDO */
 .turnos-container::before {
     content: "";
     position: fixed;
-    top: 0; 
-    left: 0;
+    top: 0; left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(135deg, rgba(0, 51, 102, 0.1), rgba(0, 85, 164, 0.1)), 
-                url('/image5.jpg') center center / cover no-repeat;
+    background: url('/image5.jpg') center center / cover no-repeat;
     z-index: -1;
-    backdrop-filter: blur(5px);
 }
 
+/* Turnos Container */
 .turnos-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    text-align: center;
-    padding: 40px 20px 20px 20px;
-    gap: 25px;
-    padding-top: 60px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  gap: 15px;
+  padding-top: 40px;
 }
 
-/* Contenedor del título y selector de fecha */
-.turnos-header {
-    width: 100%;
-    max-width: 1400px;
-    margin-bottom: 25px;
-    text-align: center;
-    position: relative;
+/* Vista específica para consultores - menos altura, sin scroll innecesario */
+.turnos-container.consultor-view {
+  min-height: auto;
+  height: auto;
+  max-height: 100vh;
+  overflow: hidden;
+  padding-bottom: 40px;
 }
 
-/* Título */
-h9 {
-    color: #ffffff;
-    font-size: 2.5rem;
-    font-weight: 800;
-    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
-    margin: 0 0 20px 0;
-    position: relative;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    animation: titleGlow 3s ease-in-out infinite alternate;
+/* Vista para administradores - altura completa para tablas grandes */
+.turnos-container.admin-view {
+  min-height: 100vh;
+  height: auto;
+}
+
+/* Título principal */
+.turnos-container h9 {
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
+  margin: 0 0 20px 0;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: titleGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes titleGlow {
-    from {
-        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.3);
-    }
-    to {
-        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 255, 255, 0.5);
-    }
+  from {
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+  to {
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 255, 255, 0.5);
+  }
 }
 
-h9::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #ffffff, transparent);
-    border-radius: 2px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+.turnos-container h9::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
 }
 
-/* Selector de fecha mejorado */
+/* Selector de fecha mejorado - igual que observaciones */
 .date-selector {
   text-align: center;
-  margin: 10px 0 5px 0;
+  margin: 0 auto 10px auto;
   position: relative;
 }
 
@@ -126,216 +130,446 @@ h9::after {
 
 
 
-/* Contenedor principal */
+/* Turnos Wrapper */
+.turnos-wrapper {
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Table Styles */
+.table-container {
+  overflow-x: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  scrollbar-width: thin;
+  scrollbar-color: #586192 rgba(255, 255, 255, 0.1);
+}
+
+.table-container::-webkit-scrollbar {
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background-color: #586192;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #39417a;
+}
+
+/* Evitar deformación de tabla */
 .turnos-table {
-    width: 95%;
-    max-width: 1500px;
-    margin: 0 auto;
-    position: relative;
-    border-radius: 20px;
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.98) 0%, 
-        rgba(248, 250, 252, 0.96) 50%, 
-        rgba(241, 245, 249, 0.94) 100%);
-    backdrop-filter: blur(20px);
-    box-shadow: 
-        0 25px 80px rgba(0, 51, 102, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    overflow: hidden;
-    animation: tableEntrance 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    transform: translateY(50px);
-    opacity: 0;
+  table-layout: fixed;
+  width: 100%;
 }
 
-@keyframes tableEntrance {
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.turnos-table::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.3), 
-        transparent);
-    animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-
-/* Tabla */
-.turnos-table table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 15px;
-    position: relative;
-    z-index: 2;
-}/* Encabezados */
+.turnos-table td,
 .turnos-table th {
-    background: linear-gradient(135deg, 
-        #003366 0%, 
-        #004d99 25%, 
-        #0055A4 50%, 
-        #004d99 75%, 
-        #003366 100%);
-    color: #ffffff;
-    border: none;
-    padding: 22px 18px;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    position: relative;
-    overflow: hidden;
-    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.turnos-table th::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.25), 
-        transparent);
-    transition: left 0.8s ease;
+.turnos-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+  min-width: 1000px;
 }
 
-.turnos-table th:hover::before {
-    left: 100%;
+.turnos-table thead {
+  background: linear-gradient(135deg, #033163 0%, #0a4a7d 100%);
 }
 
-.turnos-table th::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.6), 
-        transparent);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
+.turnos-table thead th {
+  padding: 18px 15px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #000000;
 }
 
-.turnos-table th:hover::after {
-    transform: scaleX(1);
+.turnos-table tbody tr {
+  border-bottom: 1px solid #000000;
 }
 
-/* Celdas */
+
+
+.turnos-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.turnos-table tbody tr td {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .turnos-table td {
-    padding: 18px 14px;
-    text-align: center;
-    vertical-align: middle;
-    border: none;
-    border-bottom: 1px solid rgba(0, 51, 102, 0.08);
-    background-color: rgba(255, 255, 255, 0.9);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    font-weight: 500;
+  padding: 15px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #000000;
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 15px;
+  background-color: rgba(255, 255, 255, 0.95) !important;
 }
 
-.turnos-table tr {
-    transition: all 0.3s ease;
-}
 
-.turnos-table tr:hover {
-    transform: translateY(-3px) scale(1.01);
-    z-index: 10;
-    position: relative;
-}
-
-.turnos-table tr:hover td {
-    background: linear-gradient(135deg, 
-        rgba(0, 51, 102, 0.08) 0%, 
-        rgba(0, 85, 164, 0.06) 50%, 
-        rgba(255, 255, 255, 0.95) 100%);
-    box-shadow: 
-        0 15px 35px rgba(0, 51, 102, 0.15),
-        0 5px 15px rgba(0, 0, 0, 0.08);
-    border-bottom-color: rgba(0, 51, 102, 0.2);
-}
-
-.turnos-table tr:hover td::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(0, 51, 102, 0.05), 
-        transparent);
-    pointer-events: none;
-}
 
 .nombre-cell {
-    background: linear-gradient(135deg, 
-        rgba(0, 51, 102, 0.12) 0%, 
-        rgba(0, 85, 164, 0.1) 50%, 
-        rgba(238, 242, 255, 0.8) 100%);
     font-weight: 700;
-    color: #1e293b;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-    border-left: 4px solid rgba(0, 51, 102, 0.3);
+    color: #2c3e50;
+    font-size: 1.05rem;
+    width: 25%;
+    min-width: 200px;
+    background-color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .turno-cell {
-    background: linear-gradient(135deg, 
-        rgba(255, 243, 178, 0.4) 0%, 
-        rgba(254, 252, 232, 0.6) 50%, 
-        rgba(255, 255, 255, 0.9) 100%);
-    border-left: 4px solid rgba(245, 158, 11, 0.3);
+  background: transparent !important;
+  padding: 8px !important;
 }
 
-.observacion-cell {
-    background: linear-gradient(135deg, 
-        rgba(243, 244, 246, 0.6) 0%, 
-        rgba(249, 250, 251, 0.8) 50%, 
-        rgba(255, 255, 255, 0.95) 100%);
-    border-left: 4px solid rgba(156, 163, 175, 0.3);
-}
-
-/* Select */
 .turno-cell select {
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 51, 102, 0.3);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
-    font-size: 14px;
-    width: 120px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2c3e50;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .turno-cell select:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.2);
-    border-color: #003366;
-    transform: translateY(-1px);
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
 }
 
-/* Observaciones */
+.turno-cell select option {
+  background: #ffffff;
+  color: #2c3e50;
+  padding: 8px;
+}
+
+/* Botones de acción */
+.actions-container {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 30px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.guardar-button {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.guardar-button:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+}
+
+.guardar-button:active {
+  transform: translateY(-1px);
+}
+
+
+
+/* Estilos para asignación de turnos inline */
+.editar-observacion-button {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  margin: 5px;
+}
+
+.editar-observacion-button:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.cancelar-button {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+  margin: 5px;
+}
+
+.cancelar-button:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}
+
+/* Selectores de horario en la tabla */
+.turnos-table td select {
+  background: rgba(255, 255, 255, 0.95);
+  color: #2c3e50;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2px;
+  min-width: 120px;
+}
+
+.turnos-table td select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+}
+
+/* Estilos específicos para celdas de horario asignado */
+.horario-cell {
+  padding: 12px !important;
+  min-width: 250px;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.horario-cell p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.horario-cell button {
+  margin: 2px;
+}
+
+.horario-cell strong {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-block;
+  margin: 8px 4px 4px 0;
+}
+
+/* Botones de entrada y salida */
+.entrada-button,
+.salida-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2px;
+  min-width: 60px;
+}
+
+.entrada-button:hover,
+.salida-button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+}
+
+.entrada-button:disabled,
+.salida-button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Estilos para modo de edición de horarios */
+.turnos-table td.editing-horario {
+  background: linear-gradient(145deg, rgba(240, 248, 255, 0.98) 0%, rgba(235, 245, 255, 0.95) 100%) !important;
+  border: 2px solid #3498db !important;
+  border-radius: 12px !important;
+  padding: 10px 15px !important;
+  vertical-align: middle !important;
+  width: 300px !important;
+  min-width: 300px !important;
+  max-width: 300px !important;
+  height: 170px !important;
+  max-height: 170px !important;
+  text-align: center !important;
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.15) !important;
+  overflow: hidden !important;
+}
+
+.turnos-table td.editing-horario strong {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  width: 85px;
+  text-align: right;
+  margin-right: 12px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.turnos-table td.editing-horario select {
+  width: 160px;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.turnos-table td.editing-horario select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  outline: none;
+}
+
+.turnos-table td.editing-horario .button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.turnos-table td.editing-horario .button-group button {
+  padding: 10px 18px !important;
+  font-size: 13px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.turnos-table td.editing-horario .guardar-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+}
+
+.turnos-table td.editing-horario .guardar-button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+.turnos-table td.editing-horario .cancelar-button {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+  color: white !important;
+}
+
+.turnos-table td.editing-horario .cancelar-button:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4) !important;
+}
+
+/* Hacer que los selectores estén en línea horizontal y centrados */
+.turnos-table td.editing-horario .horario-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+/* Evitar que las otras celdas se deformen */
+.marcado-cell {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  vertical-align: middle !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.button-cell {
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
+  vertical-align: middle !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.marcado-cell p {
+  margin: 6px 0;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+/* Mantener la fila estable con altura fija */
+.turnos-table tr {
+  height: 80px !important;
+  max-height: 80px !important;
+}
+
+.turnos-table tr.editing-row {
+  height: 180px !important;
+  max-height: 180px !important;
+}
+
+.turnos-table td {
+  vertical-align: middle !important;
+  overflow: hidden !important;
+  height: inherit !important;
+}/* Observaciones */
 .observacion-cell input {
     width: 90%;
     padding: 10px 12px;
@@ -463,12 +697,17 @@ h9::after {
 }
 
 .button-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 16px 12px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    padding: 10px !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    height: 80px !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
 }
 
 .button-cell > div {
@@ -675,14 +914,21 @@ h9::after {
         rgba(254, 254, 254, 0.98) 100%);
 }
 
-/* Efectos adicionales para mejorar la experiencia visual */
+/* Efectos hover removidos para evitar sobresaltos en la tabla */
+/* Desactivar TODAS las transiciones y efectos hover en la tabla */
+.turnos-table,
+.turnos-table *,
+.turnos-table tbody,
+.turnos-table tbody tr,
+.turnos-table tbody tr td {
+    transition: none !important;
+    transform: none !important;
+}
+
 .turnos-table:hover {
-    transform: translateY(-5px);
-    box-shadow: 
-        0 35px 90px rgba(0, 51, 102, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.7);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
 }
 
 /* Animaciones de entrada */
@@ -728,11 +974,17 @@ h9::after {
 
 /* Mejoras en los botones de acción */
 .button-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 8px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    height: 80px !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
 }
 
 .button-cell span {
@@ -983,17 +1235,196 @@ h9::after {
     }
 }
 
-@media (min-width: 1920px) {
-    .turnos-container {
-        padding-top: 80px;
-    }
-    
-    .turnos-table {
-        max-width: 1900px;
-    }
-    
-    h9 {
-        font-size: 3.2rem;
-    }
+/* Loading y mensajes */
+.loading {
+  color: #ffffff;
+  text-align: center;
+  font-size: 18px;
+  padding: 40px;
+  background: transparent;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.no-data {
+  color: #ffffff;
+  text-align: center;
+  font-size: 18px;
+  padding: 40px;
+  background: transparent;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .turnos-container {
+    padding: 100px 15px 15px 15px;
+  }
+
+  .turnos-container h9 {
+    font-size: 1.8rem;
+  }
+
+  .date-selector {
+    margin: 20px 0 40px 0;
+  }
+
+  .date-selector label {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+  }
+
+  .date-selector input[type="date"] {
+    max-width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    border-radius: 15px;
+  }
+
+  .turnos-table {
+    min-width: 800px;
+    font-size: 11px;
+  }
+
+  .turnos-table th {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+
+  .turnos-table td {
+    padding: 8px 5px;
+  }
+
+  .turno-cell select {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .actions-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .guardar-button {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .turnos-container {
+    padding: 80px 10px 10px 10px;
+  }
+
+  .turnos-container h9 {
+    font-size: 1.5rem;
+  }
+
+  .date-selector label {
+    font-size: 1.1rem;
+    padding: 8px 16px;
+  }
+
+  .date-selector input[type="date"] {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+
+  .table-container {
+    border-radius: 12px;
+  }
+
+  .turnos-table {
+    min-width: 600px;
+    font-size: 10px;
+  }
+
+  .turnos-table th {
+    padding: 10px 6px;
+    font-size: 11px;
+  }
+
+  .turnos-table td {
+    padding: 6px 4px;
+  }
+
+  .turno-cell select {
+    font-size: 10px;
+    padding: 5px 6px;
+  }
+
+  .guardar-button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* FORZAR FONDO BLANCO Y ALINEACIÓN PERFECTA EN TODAS LAS CELDAS */
+.turnos-table tbody tr td {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  vertical-align: middle !important;
+  border: 1px solid #000000 !important;
+  height: 80px !important;
+  box-sizing: border-box !important;
+}
+
+.turnos-table tbody tr td.button-cell,
+.turnos-table tbody tr td.marcado-cell,
+.turnos-table tbody tr td.nombre-cell,
+.turnos-table tbody tr td.turno-cell,
+.turnos-table tbody tr td.horario-cell {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  vertical-align: middle !important;
+  height: 80px !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+}
+
+/* Arreglar específicamente la columna de acciones */
+.turnos-table tbody tr td.button-cell {
+  display: table-cell !important;
+  vertical-align: middle !important;
+  text-align: center !important;
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
+  height: 80px !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  padding: 10px !important;
+}
+
+/* Arreglar la columna de horario marcado */
+.turnos-table tbody tr td.marcado-cell {
+  display: table-cell !important;
+  vertical-align: middle !important;
+  text-align: center !important;
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  height: 80px !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  padding: 15px !important;
+}
+
+/* Excepción para la celda en modo edición que debe tener fondo azul claro */
+.turnos-table tbody tr td.editing-horario {
+  background: linear-gradient(145deg, rgba(240, 248, 255, 0.98) 0%, rgba(235, 245, 255, 0.95) 100%) !important;
+  height: 180px !important;
+}
