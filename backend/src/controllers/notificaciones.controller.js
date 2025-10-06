@@ -20,11 +20,13 @@ export async function obtenerNotificaciones(req, res) {
       // Los administradores ven:
       // 1. Notificaciones dirigidas específicamente a ellos
       // 2. Notificaciones generales (targetRut = null)
+      // 3. Notificaciones de observaciones actualizadas
       // PERO NO las notificaciones dirigidas a otros usuarios específicos
       notificaciones = await notificacionRepository.find({
         where: [
           { targetRut: user.rut }, // Notificaciones específicas para este admin
-          { targetRut: null }      // Notificaciones generales
+          { targetRut: null },     // Notificaciones generales
+          { tipo: 'observacion_actualizada' } // Notificaciones de observaciones
         ],
         order: { fechaCreacion: "DESC" },
         take: 50
@@ -40,13 +42,14 @@ export async function obtenerNotificaciones(req, res) {
         take: 50
       });
     } else if (user.rol === 'consultor') {
-      // Los consultores ven notificaciones de horarios, turnos, tareas y reservas
+      // Los consultores ven notificaciones de horarios, turnos, tareas, reservas y observaciones
       notificaciones = await notificacionRepository.find({
         where: [
           { tipo: 'horario_actualizado' },
           { tipo: 'turno_asignado', targetRut: user.rut },
           { tipo: 'tarea_asignada', targetRut: user.rut },
-          { tipo: 'reserva_equipo', targetRut: user.rut }
+          { tipo: 'reserva_equipo', targetRut: user.rut },
+          { tipo: 'observacion_actualizada' }
         ],
         order: { fechaCreacion: "DESC" },
         take: 50
@@ -97,7 +100,8 @@ export async function obtenerConteoNoLeidas(req, res) {
           { tipo: 'horario_actualizado', leida: false },
           { tipo: 'turno_asignado', targetRut: user.rut, leida: false },
           { tipo: 'tarea_asignada', targetRut: user.rut, leida: false },
-          { tipo: 'reserva_equipo', targetRut: user.rut, leida: false }
+          { tipo: 'reserva_equipo', targetRut: user.rut, leida: false },
+          { tipo: 'observacion_actualizada', leida: false }
         ]
       });
     } else if (user.rol === 'estudiante' || user.rol === 'usuario') {
