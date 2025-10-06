@@ -1,7 +1,7 @@
 import { AppDataSource } from "../config/configDb.js";
 import Notificacion from "../entity/notificacion.entity.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
-import { In } from "typeorm";
+import { In, IsNull } from "typeorm";
 
 const notificacionRepository = AppDataSource.getRepository(Notificacion);
 
@@ -25,7 +25,7 @@ export async function obtenerNotificaciones(req, res) {
       notificaciones = await notificacionRepository.find({
         where: [
           { targetRut: user.rut }, // Notificaciones específicas para este admin
-          { targetRut: null },     // Notificaciones generales
+          { targetRut: IsNull() },     // Notificaciones generales
           { tipo: 'observacion_actualizada' } // Notificaciones de observaciones
         ],
         order: { fechaCreacion: "DESC" },
@@ -230,30 +230,40 @@ export async function limpiarNotificaciones(req, res) {
       return handleErrorClient(res, 403, "No tienes permisos para limpiar notificaciones");
     }
 
+    let deleteResult;
+
     if (user.rol === 'administrador') {
-      // Los administradores pueden limpiar todas las notificaciones
-      await notificacionRepository.delete({});
+      // Los administradores pueden limpiar:
+      // 1. Notificaciones dirigidas específicamente a ellos
+      // 2. Notificaciones generales (targetRut = null)
+      // 3. Notificaciones de observaciones actualizadas
+      // PERO NO las notificaciones dirigidas a otros usuarios específicos
+      await notificacionRepository.delete({ targetRut: user.rut }); // Notificaciones específicas para este admin
+      await notificacionRepository.delete({ targetRut: IsNull() });     // Notificaciones generales
+      await notificacionRepository.delete({ tipo: 'observacion_actualizada' }); // Notificaciones de observaciones
     } else if (user.rol === 'profesor') {
       // Los profesores solo pueden limpiar sus notificaciones específicas
-      await notificacionRepository.delete({
+      deleteResult = await notificacionRepository.delete({
         targetRut: user.rut,
         tipo: In(['solicitud_aprobada', 'solicitud_rechazada'])
       });
     } else if (user.rol === 'consultor') {
-      // Los consultores pueden limpiar sus notificaciones específicas
-      await notificacionRepository.delete([
-        { tipo: 'horario_actualizado' },
-        { tipo: 'turno_asignado', targetRut: user.rut },
-        { tipo: 'tarea_asignada', targetRut: user.rut },
-        { tipo: 'reserva_equipo', targetRut: user.rut }
-      ]);
+      // Los consultores limpian exactamente las mismas notificaciones que ven
+      // Necesitamos hacer múltiples deletes para coincidir con la consulta OR
+      await notificacionRepository.delete({ tipo: 'horario_actualizado' });
+      await notificacionRepository.delete({ tipo: 'turno_asignado', targetRut: user.rut });
+      await notificacionRepository.delete({ tipo: 'tarea_asignada', targetRut: user.rut });
+      await notificacionRepository.delete({ tipo: 'reserva_equipo', targetRut: user.rut });
+      await notificacionRepository.delete({ tipo: 'observacion_actualizada' });
     } else if (user.rol === 'estudiante' || user.rol === 'usuario') {
       // Los estudiantes y usuarios pueden limpiar sus notificaciones de reservas
-      await notificacionRepository.delete({
+      deleteResult = await notificacionRepository.delete({
         targetRut: user.rut,
         tipo: 'reserva_equipo'
       });
     }
+
+    console.log(`🗑️ Notificaciones limpiadas para usuario ${user.rut} (${user.rol})`);
 
     handleSuccess(res, 200, "Notificaciones limpiadas exitosamente");
   } catch (error) {
