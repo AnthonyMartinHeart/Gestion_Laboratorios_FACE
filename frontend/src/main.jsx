@@ -23,6 +23,7 @@ import EstadisticasLab2 from '@pages/EstadisticasLab2';
 import EstadisticasLab3 from '@pages/EstadisticasLab3';
 import EstadisticasAsistencia from '@pages/EstadisticasAsistencia';
 import GestionTareas from '@pages/GestionTareas';
+import Observaciones from '@pages/Observaciones';
 import '@styles/styles.css';
 
 const router = createBrowserRouter([
@@ -76,6 +77,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
             <Turnos />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/observaciones',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'consultor']}>
+            <Observaciones />
           </ProtectedRoute>
         ),
       },
