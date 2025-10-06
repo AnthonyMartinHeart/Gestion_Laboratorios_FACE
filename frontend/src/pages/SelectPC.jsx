@@ -47,12 +47,12 @@ const SelectPC = ({ onReservaCreada }) => {
 
   const horasInicio = [
     "08:10", "09:40", "11:10", "12:40",
-    "14:10", "15:40", "17:10"
+    "14:10", "15:40", "17:10", "18:40"
   ];
 
   const horasTermino = [
     "09:30", "11:00", "12:30", "14:00",
-    "15:30", "17:00", "18:30", "20:00"
+    "15:30", "17:00", "18:30", "19:20", "20:00"
   ];
 
   // Función para obtener la fecha/hora actual (usa zona horaria local automáticamente)
@@ -752,7 +752,8 @@ const SelectPC = ({ onReservaCreada }) => {
               <li>14:10 - 15:30</li>
               <li>15:40 - 17:00</li>
               <li>17:10 - 18:30</li>
-              <li>Hasta las 20:00</li>
+              <li>18:40 - 19:20</li>
+              <li>19:20 - 20:00</li>
             </ul>
           </div>
         `,
