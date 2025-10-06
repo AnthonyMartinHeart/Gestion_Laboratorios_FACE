@@ -23,6 +23,25 @@ export async function getUsers() {
     }
 }
 
+export async function getUsersForObservaciones() {
+    try {
+        const { data } = await axios.get('/user/observaciones');
+        const formattedData = data.data.map(formatUserData);
+        return formattedData;
+    } catch (error) {
+        if (error.response) {
+            console.log('Error al obtener usuarios para observaciones:', error.response.status);
+            throw new Error(`Error ${error.response.status}: ${error.response.data.message || 'No se pudieron cargar los usuarios'}`);
+        } else if (error.request) {
+            console.log('Error: No se recibió respuesta del servidor');
+            throw new Error('No se recibió respuesta del servidor. Verifique su conexión.');
+        } else {
+            console.log('Error de configuración:', error.message);
+            throw new Error(`Error al configurar la solicitud: ${error.message}`);
+        }
+    }
+}
+
 export async function getUserByRut(rut) {
     try {
         const { data } = await axios.get(`/user/detail/?rut=${rut}`);
