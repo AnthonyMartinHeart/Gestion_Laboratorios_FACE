@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { getUsers, getUserByRut } from "@services/user.service.js";
-import { getTurnosByFecha, saveOrUpdateTurno, debugObservaciones } from "@services/turnos.service.js";
+import { getTurnosByFecha, saveOrUpdateTurno } from "@services/turnos.service.js";
 import { useAuth } from "@context/AuthContext.jsx";
 
 const horarios = [
@@ -126,8 +126,6 @@ const TurnosTable = ({ selectedDate }) => {
   const { user } = useAuth();
   const [consultores, setConsultores] = useState([]);
   const [turnos, setTurnos] = useState([]);
-  const [observaciones, setObservaciones] = useState({});
-  const [isEditing, setIsEditing] = useState(null);
   const [activeHorarioIndex, setActiveHorarioIndex] = useState(null);
   const [guardandoTurno, setGuardandoTurno] = useState(false);
 
@@ -150,47 +148,30 @@ const TurnosTable = ({ selectedDate }) => {
     if (selectedDate && consultores.length > 0 && !guardandoTurno) {
       console.log('🔄 Cargando turnos para:', selectedDate);
       
-      // Hacer debug de observaciones antes de cargar
-      debugObservaciones(selectedDate);
-      
-      try {
-        const turnosData = await getTurnosByFecha(selectedDate);
-        console.log('📥 Turnos obtenidos:', turnosData);
-        
-        // Crear turnos para todos los consultores
-        const turnosCompletos = consultores.map(consultor => {
-          const turnoExistente = turnosData.find(t => t.rut === consultor.rut);
-          const turnoCompleto = turnoExistente || {
-            rut: consultor.rut,
-            nombre: consultor.nombreCompleto,
-            fecha: selectedDate,
-            horaEntradaAsignada: "",
-            horaSalidaAsignada: "",
-            horaEntradaMarcada: "",
-            horaSalidaMarcada: "",
-            observacion: ""
-          };
+        try {
+          const turnosData = await getTurnosByFecha(selectedDate);
+          console.log('📥 Turnos obtenidos:', turnosData);
           
-          console.log(`👤 Consultor ${consultor.nombreCompleto}:`, turnoCompleto);
-          console.log(`📝 Observación cargada: "${turnoCompleto.observacion}"`);
+          // Crear turnos para todos los consultores
+          const turnosCompletos = consultores.map(consultor => {
+            const turnoExistente = turnosData.find(t => t.rut === consultor.rut);
+            const turnoCompleto = turnoExistente || {
+              rut: consultor.rut,
+              nombre: consultor.nombreCompleto,
+              fecha: selectedDate,
+              horaEntradaAsignada: "",
+              horaSalidaAsignada: "",
+              horaEntradaMarcada: "",
+              horaSalidaMarcada: ""
+            };
+            
+            console.log(`👤 Consultor ${consultor.nombreCompleto}:`, turnoCompleto);
+            
+            return turnoCompleto;
+          });
           
-          return turnoCompleto;
-        });
-        
-        console.log('📝 Turnos finales:', turnosCompletos);
-        setTurnos(turnosCompletos);
-        
-        // Inicializar observaciones desde los turnos cargados
-        const nuevasObservaciones = {};
-        turnosCompletos.forEach((turno, index) => {
-          nuevasObservaciones[index] = turno.observacion || "";
-          console.log(`📋 Observación inicializada para índice ${index}: "${nuevasObservaciones[index]}"`);
-        });
-        setObservaciones(nuevasObservaciones);
-        
-        console.log('🗂️ Estado de observaciones inicializado:', nuevasObservaciones);
-        
-      } catch (error) {
+          console.log('📝 Turnos finales:', turnosCompletos);
+          setTurnos(turnosCompletos);      } catch (error) {
         console.error('❌ Error cargando turnos:', error);
       }
     }
@@ -203,14 +184,7 @@ const TurnosTable = ({ selectedDate }) => {
     }
   }, [selectedDate, consultores]); // Removido 'turnos' de dependencias para evitar loop
 
-  const handleObservacionChange = (index, value) => {
-    const nuevasObservaciones = { ...observaciones };
-    nuevasObservaciones[index] = value;
-    setObservaciones(nuevasObservaciones);
-    
-    // NO guardamos automáticamente, solo actualizamos el estado local
-    // El usuario debe presionar "Guardar" para persistir los cambios
-  };
+
 
   const handleTurnoChange = (index, tipo, value) => {
     const nuevosTurnos = { ...turnos };
@@ -294,7 +268,6 @@ const TurnosTable = ({ selectedDate }) => {
       setGuardandoTurno(true);
       
       const turnoActual = turnos.find(t => t.rut === consultor.rut) || {};
-      const observacionActual = observaciones[i] !== undefined ? observaciones[i] : turnoActual.observacion || "";
       
       const turnoData = {
         rut: consultor.rut,
@@ -304,7 +277,6 @@ const TurnosTable = ({ selectedDate }) => {
         horaSalidaAsignada: turnoActual.horaSalidaAsignada || "",
         horaEntradaMarcada: turnoActual.horaEntradaMarcada || "",
         horaSalidaMarcada: turnoActual.horaSalidaMarcada || "",
-        observacion: observacionActual,
         ...extra // Esto sobrescribe los valores anteriores si hay cambios
       };
       
@@ -337,21 +309,8 @@ const TurnosTable = ({ selectedDate }) => {
       }
       
       console.log('💾 Guardando:', turnoData);
-      console.log('📝 Observación a guardar:', turnoData.observacion);
       
       await saveOrUpdateTurno(selectedDate, turnoData);
-      
-      // Verificar que se guardó correctamente
-      setTimeout(async () => {
-        console.log('🔍 Verificando guardado de observación...');
-        debugObservaciones(selectedDate);
-        
-        // Recargar turnos para confirmar sincronización
-        const turnosVerificacion = await getTurnosByFecha(selectedDate);
-        const turnoVerificado = turnosVerificacion.find(t => t.rut === consultor.rut);
-        console.log('✅ Turno verificado después de guardar:', turnoVerificado);
-        console.log('📝 Observación verificada:', turnoVerificado?.observacion);
-      }, 500);
       
       // Actualizar SOLO el estado local sin recargar desde el backend
       const nuevosTurnos = [...turnos];
@@ -364,11 +323,6 @@ const TurnosTable = ({ selectedDate }) => {
       }
       
       setTurnos(nuevosTurnos);
-      
-      // Actualizar observaciones en el estado local
-      if (extra.observacion !== undefined || observacionActual) {
-        setObservaciones(prev => ({ ...prev, [i]: turnoData.observacion }));
-      }
       
       // NO recargar automáticamente para evitar sobrescribir los datos recién guardados
       console.log('✅ Estado local actualizado, no recargando para preservar datos');
@@ -390,7 +344,6 @@ const TurnosTable = ({ selectedDate }) => {
       });
       
       setActiveHorarioIndex(null);
-      setIsEditing(null);
       
     } catch (error) {
       console.error('❌ Error al guardar:', error);
@@ -422,61 +375,63 @@ const TurnosTable = ({ selectedDate }) => {
               <th>Turno Designado</th>
               <th>Horario Marcado</th>
               <th>Acciones</th>
-              <th>Observación</th>
             </tr>
           </thead>
           <tbody>
             {consultores.length === 0 ? (
-              <tr><td colSpan={5}>No hay consultores para mostrar.</td></tr>
+              <tr><td colSpan={4}>No hay consultores para mostrar.</td></tr>
             ) : (
               consultores.map((consultor, i) => {
                 const turno = turnos.find(t => t.rut === consultor.rut) || {};
                 console.log(`🔍 Renderizando consultor ${consultor.nombreCompleto} con turno:`, turno);
                 return (
-                  <tr key={`${consultor.rut}-${i}`}>
+                  <tr key={`${consultor.rut}-${i}`} className={activeHorarioIndex === i ? 'editing-row' : ''}>
                     <td className="nombre-cell">{consultor.nombreCompleto}</td>
-                    <td className="turno-cell">
+                    <td className={`turno-cell ${activeHorarioIndex === i ? 'editing-horario' : ''}`}>
                       {activeHorarioIndex === i && user.rol.toLowerCase() === 'administrador' ? (
                         // Solo el administrador puede ver los selects para asignar horario
                         <>
-                          <strong>Hora Entrada:</strong>
-                          <select
-                            data-consultor={i}
-                            data-tipo="entrada"
-                            value={turno.horaEntradaAsignada || ""}
-                            onChange={e => {
-                              const nuevos = [...turnos];
-                              const idx = nuevos.findIndex(t => t.rut === consultor.rut);
-                              const nuevaHora = e.target.value;
-                              
-                              // Validar conflicto antes de actualizar
-                              if (nuevaHora) {
-                                const salidaActual = idx >= 0 ? nuevos[idx]?.horaSalidaAsignada : "";
-                                const validacionConflicto = validarConflictoHorarios(consultor, nuevaHora, salidaActual);
-                                if (validacionConflicto.hayConflicto) {
-                                  Swal.fire({
-                                    icon: 'warning',
-                                    title: 'Conflicto de Horarios',
-                                    text: validacionConflicto.mensaje,
-                                    confirmButtonText: 'Entendido',
-                                    confirmButtonColor: '#f59e0b'
-                                  });
-                                  return; // No actualizar si hay conflicto
+                          <div className="horario-row">
+                            <strong>Entrada:</strong>
+                            <select
+                              data-consultor={i}
+                              data-tipo="entrada"
+                              value={turno.horaEntradaAsignada || ""}
+                              onChange={e => {
+                                const nuevos = [...turnos];
+                                const idx = nuevos.findIndex(t => t.rut === consultor.rut);
+                                const nuevaHora = e.target.value;
+                                
+                                // Validar conflicto antes de actualizar
+                                if (nuevaHora) {
+                                  const salidaActual = idx >= 0 ? nuevos[idx]?.horaSalidaAsignada : "";
+                                  const validacionConflicto = validarConflictoHorarios(consultor, nuevaHora, salidaActual);
+                                  if (validacionConflicto.hayConflicto) {
+                                    Swal.fire({
+                                      icon: 'warning',
+                                      title: 'Conflicto de Horarios',
+                                      text: validacionConflicto.mensaje,
+                                      confirmButtonText: 'Entendido',
+                                      confirmButtonColor: '#f59e0b'
+                                    });
+                                    return; // No actualizar si hay conflicto
+                                  }
                                 }
-                              }
-                              
-                              if (idx >= 0) nuevos[idx].horaEntradaAsignada = nuevaHora;
-                              else nuevos.push({ rut: consultor.rut, horaEntradaAsignada: nuevaHora });
-                              setTurnos(nuevos);
-                            }}
-                          >
-                            <option value="">Sin Turno</option>
-                            {horarios.map((hora, idx) => (
-                              <option key={idx} value={hora}>{hora}</option>
-                            ))}
-                          </select>
-                          <strong>Hora Salida:</strong>
-                          <select
+                                
+                                if (idx >= 0) nuevos[idx].horaEntradaAsignada = nuevaHora;
+                                else nuevos.push({ rut: consultor.rut, horaEntradaAsignada: nuevaHora });
+                                setTurnos(nuevos);
+                              }}
+                            >
+                              <option value="">Sin Turno</option>
+                              {horarios.map((hora, idx) => (
+                                <option key={idx} value={hora}>{hora}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="horario-row">
+                            <strong>Salida:</strong>
+                            <select
                             data-consultor={i}
                             data-tipo="salida"
                             value={turno.horaSalidaAsignada || ""}
@@ -511,12 +466,15 @@ const TurnosTable = ({ selectedDate }) => {
                               <option key={idx} value={hora}>{hora}</option>
                             ))}
                           </select>
-                          <button className="guardar-button" onClick={async () => await handleGuardar(i, consultor)}>
-                            GUARDAR
-                          </button>
-                          <button className="cancelar-button" onClick={() => setActiveHorarioIndex(null)}>
-                            Cancelar
-                          </button>
+                          </div>
+                          <div className="button-group">
+                            <button className="guardar-button" onClick={async () => await handleGuardar(i, consultor)}>
+                              GUARDAR
+                            </button>
+                            <button className="cancelar-button" onClick={() => setActiveHorarioIndex(null)}>
+                              Cancelar
+                            </button>
+                          </div>
                         </>
                       ) : (
                         <>
@@ -682,48 +640,6 @@ const TurnosTable = ({ selectedDate }) => {
                         </button>
                       </div>
                     </td>
-                    <td className="observacion-cell">
-                      {isEditing === i && puedeEditar(consultor) ? (
-                        <>
-                          <input
-                            type="text"
-                            value={observaciones[i] !== undefined ? observaciones[i] : (turno.observacion || "")}
-                            onChange={e => handleObservacionChange(i, e.target.value)}
-                            placeholder="Escribe observación..."
-                          />
-                          <button className="guardar-observacion-button" onClick={async () => {
-                            // Guardar específicamente la observación actualizada
-                            const observacionActual = observaciones[i] !== undefined ? observaciones[i] : (turno.observacion || "");
-                            await handleGuardar(i, consultor, { observacion: observacionActual });
-                          }}>
-                            Guardar
-                          </button>
-                          <button className="limpiar-observacion-button" onClick={async () => {
-                            // Limpiar la observación
-                            setObservaciones(prev => ({ ...prev, [i]: "" }));
-                            await handleGuardar(i, consultor, { observacion: "" });
-                          }}>
-                            Limpiar
-                          </button>
-                          <button className="cancelar-button" onClick={() => {
-                            // Restaurar observación original y cancelar edición
-                            setObservaciones(prev => ({ ...prev, [i]: turno.observacion || "" }));
-                            setIsEditing(null);
-                          }}>
-                            Cancelar
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span>{turno.observacion || "Ninguna   "}</span>
-                          {puedeEditar(consultor) && (
-                            <button className="editar-observacion-button" onClick={() => setIsEditing(i)}>
-                              Editar
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </td>
                   </tr>
                 );
               })
@@ -731,6 +647,7 @@ const TurnosTable = ({ selectedDate }) => {
           </tbody>
         </table>
       </div>
+
     </div>
   );
 };
