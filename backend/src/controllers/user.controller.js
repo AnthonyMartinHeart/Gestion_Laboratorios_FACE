@@ -162,6 +162,23 @@ export async function getConsultores(req, res) {
   }
 }
 
+export async function getUsersForObservaciones(req, res) {
+  try {
+    const [users, error] = await getUsersService();
+
+    if (error) return handleErrorClient(res, 400, error);
+
+    // Filtrar solo consultores y administradores para las observaciones
+    const usuariosFiltrados = users.filter(user => 
+      user.rol.toLowerCase() === "consultor" || user.rol.toLowerCase() === "administrador"
+    );
+
+    handleSuccess(res, 200, "Usuarios para observaciones obtenidos exitosamente", usuariosFiltrados);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
 export async function updateFotoPerfil(req, res) {
   try {
     const { email } = req.query;
