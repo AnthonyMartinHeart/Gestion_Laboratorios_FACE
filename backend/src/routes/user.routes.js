@@ -9,6 +9,7 @@ import {
   updateUser,
   setUserActive,
   getConsultores,
+  getUsersForObservaciones,
   updateFotoPerfil,
   getFotoPerfil,
 } from "../controllers/user.controller.js";
@@ -20,6 +21,7 @@ router.use(authenticateJwt);
 router
   .get("/", isAdmin, getUsers)
   .get("/consultores", isAdmin, getConsultores)
+  .get("/observaciones", getUsersForObservaciones) // Nueva ruta sin restricción de admin
   .get("/detail/", getUser) 
   .patch("/detail/", isAdmin, updateUser)
   .delete("/detail/", isAdmin, deleteUser)
