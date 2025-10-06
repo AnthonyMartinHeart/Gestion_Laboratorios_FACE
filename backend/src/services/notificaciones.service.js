@@ -180,6 +180,33 @@ class NotificacionesService {
       console.error("Error al crear notificación de cancelación:", error);
     }
   }
+
+  // Notificaciones para observaciones - cuando se actualizan o crean observaciones
+  async notificarObservacion(usuarioQueActualiza, fecha, esNuevaObservacion = false) {
+    try {
+      const titulo = esNuevaObservacion ? "📝 Nueva Observación" : "📝 Observación Actualizada";
+      const mensaje = `${usuarioQueActualiza} ha ${esNuevaObservacion ? 'creado' : 'actualizado'} una observación con fecha ${fecha}`;
+      const detalles = {
+        actualizadoPor: usuarioQueActualiza,
+        fecha: fecha,
+        fechaActualizacion: new Date().toISOString(),
+        tipoAccion: esNuevaObservacion ? 'crear' : 'actualizar'
+      };
+
+      // Esta notificación va para administradores y consultores
+      await crearNotificacion(
+        'observacion_actualizada',
+        titulo,
+        mensaje,
+        detalles,
+        null // null = para todos los usuarios autenticados
+      );
+
+      console.log(`📧 Notificación de observación enviada - ${usuarioQueActualiza} ${esNuevaObservacion ? 'creó' : 'actualizó'} observación del ${fecha}`);
+    } catch (error) {
+      console.error("Error al crear notificación de observación:", error);
+    }
+  }
 }
 
 export default new NotificacionesService();
