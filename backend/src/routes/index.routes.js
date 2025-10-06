@@ -10,6 +10,7 @@ import solicitudRoutes from "./solicitud.routes.js";
 import clasesRoutes from "./clases.routes.js";
 import notificacionesRoutes from "./notificaciones.routes.js";
 import tareaRoutes from "./tarea.routes.js";
+import observacionesRoutes from "./observaciones.routes.js";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router
     .use("/solicitudes", solicitudRoutes)
     .use("/clases", clasesRoutes)
     .use("/notificaciones", notificacionesRoutes)
-    .use("/tareas", tareaRoutes);
+    .use("/tareas", tareaRoutes)
+    .use("/observaciones", observacionesRoutes);
 
 export default router;
