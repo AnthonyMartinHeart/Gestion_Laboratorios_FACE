@@ -261,6 +261,8 @@ const NotificationBell = () => {
         return '❌';
       case 'reserva_equipo':
         return '💻';
+      case 'observacion_actualizada':
+        return '📝';
       default:
         return '📢';
     }
