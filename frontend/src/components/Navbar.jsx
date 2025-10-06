@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import "@styles/navbar.css";
 import { useState, useEffect } from "react";
 import { HiArrowSmLeft, HiArrowSmRight } from "react-icons/hi";
-import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt, FaChartBar, FaClipboardList, FaFileAlt, FaChalkboardTeacher, FaTasks, FaChevronDown, FaChevronRight, FaUserShield, FaGraduationCap, FaUserTie, FaFlask, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaBook, FaClock, FaUsers, FaUser, FaCalendarAlt, FaChartBar, FaClipboardList, FaFileAlt, FaChalkboardTeacher, FaTasks, FaChevronDown, FaChevronRight, FaUserShield, FaGraduationCap, FaUserTie, FaFlask, FaSignOutAlt, FaEye } from "react-icons/fa";
 import logoWhite from "../assets/GL-WHITE.png";
 import NotificationBell from "./NotificationBell";
 
@@ -194,6 +194,12 @@ const Navbar = () => {
                   <div className="collapsed-item" data-tooltip="Turnos">
                     <NavLink to="/turnos">
                       <FaClock className="collapsed-icon" />
+                    </NavLink>
+                  </div>
+
+                  <div className="collapsed-item" data-tooltip="Observaciones">
+                    <NavLink to="/observaciones">
+                      <FaEye className="collapsed-icon" />
                     </NavLink>
                   </div>
                 </>
@@ -405,6 +411,12 @@ const Navbar = () => {
           <NavLink to="/turnos" className={({ isActive }) => (isActive ? "active" : "")}>
             <FaClock className="nav-icon" />
             <span>Turnos</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/observaciones" className={({ isActive }) => (isActive ? "active" : "")}>
+            <FaEye className="nav-icon" />
+            <span>Observaciones</span>
           </NavLink>
         </li>
       </>
