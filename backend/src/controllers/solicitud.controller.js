@@ -64,8 +64,8 @@ const crearSolicitud = async (req, res) => {
     }
 
     // Validar horarios
-    const horasInicioValidas = ["08:10", "09:40", "11:10", "12:40", "14:10", "15:40", "17:10"];
-    const horasTerminoValidas = ["09:30", "11:00", "12:30", "14:00", "15:30", "17:00", "18:30", "20:00"];
+    const horasInicioValidas = ["08:10", "09:40", "11:10", "12:40", "14:10", "15:40", "17:10", "18:40"];
+    const horasTerminoValidas = ["09:30", "11:00", "12:30", "14:00", "15:30", "17:00", "18:30", "19:20", "20:00"];
     
     if (!horasInicioValidas.includes(horaInicio)) {
       return handleErrorClient(res, "Hora de inicio no válida", 400);
