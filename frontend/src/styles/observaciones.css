@@ -1,0 +1,470 @@
+/* FONDO */
+.observaciones-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/image5.jpg') center center / cover no-repeat;
+    z-index: -1;
+}
+
+/* Observaciones Container */
+.observaciones-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  gap: 15px;
+  padding-top: 40px;
+}
+
+/* Vista específica para consultores - menos altura, sin scroll innecesario */
+.observaciones-container.consultor-view {
+  min-height: 100vh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 60px;
+}
+
+/* Vista para administradores - altura completa para tablas grandes */
+.observaciones-container.admin-view {
+  min-height: 100vh;
+  height: auto;
+}
+
+/* Título principal */
+.observaciones-container h9 {
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
+  margin: 0 0 20px 0;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from {
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+  to {
+    text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.observaciones-container h9::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+/* Selector de fecha mejorado - igual que bitácoras */
+.date-selector {
+  text-align: center;
+  margin: 0 auto 25px auto;
+  position: relative;
+}
+
+.date-selector label {
+  display: inline-block;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  padding: 12px 24px;
+  border-radius: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.date-selector label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.date-selector input[type="date"] {
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  outline: none;
+  width: 100%;
+  max-width: 350px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.date-selector input[type="date"]:focus {
+  border-color: #3498db;
+  box-shadow: 0 12px 35px rgba(52, 152, 219, 0.3);
+  transform: translateY(-2px);
+}
+
+.date-selector input[type="date"]:hover {
+  border-color: rgba(52, 152, 219, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Export Buttons */
+.export-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.export-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.export-btn i {
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.excel-btn {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 50%, #58d68d 100%);
+}
+
+.excel-btn:hover {
+  background: linear-gradient(135deg, #229954 0%, #27ae60 50%, #2ecc71 100%);
+}
+
+.pdf-btn {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #a93226 100%);
+}
+
+.pdf-btn:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 50%, #922b21 100%);
+}
+
+/* Observaciones Wrapper */
+.observaciones-wrapper {
+  background: transparent;
+  padding: 0 0 80px 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Table Styles */
+.observaciones-table {
+  overflow-x: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  scrollbar-width: thin;
+  scrollbar-color: #586192 rgba(255, 255, 255, 0.1);
+}
+
+.observaciones-table::-webkit-scrollbar {
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.observaciones-table::-webkit-scrollbar-thumb {
+  background-color: #586192;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.observaciones-table::-webkit-scrollbar-thumb:hover {
+  background-color: #39417a;
+}
+
+.observaciones-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+  min-width: 800px;
+}
+
+.observaciones-table thead {
+  background: linear-gradient(135deg, #033163 0%, #0a4a7d 100%);
+}
+
+.observaciones-table thead th {
+  padding: 18px 15px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #000000;
+}
+
+.observaciones-table tbody tr {
+  border-bottom: 1px solid #000000;
+  transition: background-color 0.2s ease;
+}
+
+.observaciones-table tbody tr:hover {
+  background-color: #f0f4ff;
+}
+
+.observaciones-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.observaciones-table tbody tr:nth-child(even) td:not(:first-child) {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.observaciones-table tbody tr:nth-child(odd) td:not(:first-child) {
+  background-color: rgba(249, 249, 249, 0.9);
+}
+
+.observaciones-table td {
+  padding: 15px;
+  vertical-align: top;
+  border: 1px solid #000000;
+}
+
+.nombre-cell {
+  font-weight: 700;
+  color: #001f3f;
+  font-size: 1.05rem;
+  width: 25%;
+  min-width: 200px;
+  background-color: #a6b2bd;
+}
+
+.observacion-cell {
+  width: 75%;
+  position: relative;
+}
+
+.observacion-cell.editable {
+  background-color: rgba(230, 243, 255, 0.8) !important;
+}
+
+.observacion-cell.readonly {
+  background-color: rgba(245, 245, 245, 0.8) !important;
+}
+
+/* Observación Container */
+.observacion-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.observacion-input-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Estilos para el textarea de observaciones */
+.observacion-textarea {
+  flex: 1;
+  padding: 12px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  min-height: 100px;
+  width: 100%;
+  line-height: 1.5;
+}
+
+.observacion-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.observacion-textarea.readonly {
+  background-color: #f8f9fa;
+  color: #666;
+  cursor: default;
+  border-color: #e0e0e0;
+}
+
+.observacion-textarea:read-only {
+  background-color: #f8f9fa;
+  color: #666;
+  cursor: default;
+  border-color: #e0e0e0;
+}
+
+.save-observacion-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  height: fit-content;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.save-observacion-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.save-observacion-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Readonly Indicator */
+.readonly-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.readonly-icon {
+  font-size: 1rem;
+}
+
+.readonly-text {
+  font-style: italic;
+}
+
+
+
+/* Responsive Design */
+
+@media (max-width: 768px) {
+  .observaciones-container {
+    padding: 100px 15px 15px 15px;
+  }
+
+  .observaciones-container h9 {
+    font-size: 1.8rem;
+  }
+
+  .date-selector {
+    margin: 20px 0 40px 0;
+  }
+
+  .date-selector label {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+  }
+
+  .date-selector input[type="date"] {
+    max-width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .observaciones-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .nombre-cell {
+    border-bottom: 2px solid #033163;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  .observacion-input-wrapper {
+    flex-direction: column;
+  }
+
+  .save-observacion-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .observaciones-container {
+    padding: 80px 10px 10px 10px;
+  }
+
+  .observaciones-container h9 {
+    font-size: 1.5rem;
+  }
+
+  .date-selector label {
+    font-size: 1.1rem;
+    padding: 8px 16px;
+  }
+
+  .date-selector input[type="date"] {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+
+  .export-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
