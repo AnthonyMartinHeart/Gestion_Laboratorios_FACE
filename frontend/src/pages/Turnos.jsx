@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import TurnosTable from '@components/TurnosTable';
+import { useAuth } from '@context/AuthContext.jsx';
 import '@styles/turnos.css';
 
 const Turnos = () => {
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(() => {
    
     const today = new Date();
@@ -13,7 +15,7 @@ const Turnos = () => {
   });
 
   return (
-    <div className="turnos-container">
+    <div className={`turnos-container ${user?.rol?.toLowerCase() === 'consultor' ? 'consultor-view' : 'admin-view'}`}>
       <h9>Gestión de Turnos</h9>
       <div className="date-selector">
         <label htmlFor="fecha-turno">
