@@ -5,10 +5,14 @@ import HideIcon from '../assets/HideIcon.svg';
 import ViewIcon from '../assets/ViewIcon.svg';
 
 const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundColor, logo }) => {
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange'
+    });
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -17,8 +21,17 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
         setShowNewPassword(!showNewPassword);
     };
 
-    const onFormSubmit = (data) => {
-        onSubmit(data);
+    const onFormSubmit = async (data) => {
+        if (isSubmitting) return;
+        
+        try {
+            setIsSubmitting(true);
+            await onSubmit(data);
+        } catch (error) {
+            console.error('Error en el envío del formulario:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -35,23 +48,26 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                     {field.label && <label htmlFor={field.name}>{field.label}</label>}
                     {field.fieldType === 'input' && (
                         <input
-                            {...(field.value !== undefined ? {} : register(field.name, {
+                            {...register(field.name, {
                                 required: field.required ? 'Este campo es obligatorio' : false,
                                 minLength: field.minLength ? { value: field.minLength, message: `Debe tener al menos ${field.minLength} caracteres` } : false,
                                 maxLength: field.maxLength ? { value: field.maxLength, message: `Debe tener máximo ${field.maxLength} caracteres` } : false,
                                 pattern: field.pattern ? { value: field.pattern, message: field.patternMessage || 'Formato no válido' } : false,
                                 validate: field.validate || {},
-                            }))}
+                                onChange: (e) => {
+                                    if (field.onChange) {
+                                        field.onChange(e);
+                                    }
+                                }
+                            })}
                             name={field.name}
                             placeholder={field.placeholder}
                             type={field.type === 'password' && field.name === 'password' ? (showPassword ? 'text' : 'password') :
                                 field.type === 'password' && field.name === 'newPassword' ? (showNewPassword ? 'text' : 'password') :
                                 field.type}
-                            value={field.value}
-                            defaultValue={field.value === undefined ? (field.defaultValue || '') : undefined}
+                            defaultValue={field.defaultValue || ''}
                             disabled={field.disabled}
                             readOnly={field.readOnly}
-                            onChange={field.onChange}
                         />
                     )}
                     {field.fieldType === 'textarea' && (
@@ -110,7 +126,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                     </div>
                 </div>
             ))}
-            {buttonText && <button type="submit">{buttonText}</button>}
+            {buttonText && <button type="submit" disabled={isSubmitting}>{buttonText}</button>}
             {footerContent && <div className="footerContent">{footerContent}</div>}
         </form>
     );
