@@ -1,0 +1,180 @@
+.idle-timeout-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.idle-timeout-modal {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    width: 400px;
+    position: relative;
+    z-index: 1001;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    display: inline-block;
+    background-color: rgba(240, 247, 255, 0.5);
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.clock-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+    color: #4957a5;
+    animation: wiggle 1s ease-in-out infinite;
+}
+
+.clock-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.clock-face {
+    animation: pulse 2s infinite;
+}
+
+.clock-hand {
+    transform-origin: 12px 12px;
+    animation: rotate 2s infinite linear;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(-5deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.idle-timeout-modal p {
+    margin: 0.5rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.idle-timeout-timer {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4957a5;
+    margin: 1rem 0 1.5rem;
+    font-family: monospace;
+}
+
+@keyframes timerPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes timerPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.idle-timeout-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.idle-timeout-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.idle-timeout-button.close-session {
+    background-color: white;
+    border: 1px solid #4957a5;
+    color: #4957a5;
+}
+
+.idle-timeout-button.close-session:hover {
+    background-color: #4957a5;
+    color: white;
+}
+
+.idle-timeout-button.keep-session {
+    background-color: #4957a5;
+    color: white;
+    border: none;
+}
+
+.idle-timeout-button.keep-session:hover {
+    opacity: 0.9;
+}
