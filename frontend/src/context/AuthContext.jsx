@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -8,18 +8,35 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
     const navigate = useNavigate();
-    const user = JSON.parse(sessionStorage.getItem('usuario')) || '';
-    const isAuthenticated = user ? true : false;
+    const [user, setUser] = useState(() => {
+        const storedUser = sessionStorage.getItem('usuario');
+        if (storedUser) {
+            try {
+                return JSON.parse(storedUser);
+            } catch {
+                return null;
+            }
+        }
+        return null;
+    });
+    const isAuthenticated = Boolean(user);
 
-useEffect(() => {
-    if (!isAuthenticated) {
-        navigate('/auth');
-    }
-}, [isAuthenticated, navigate]);
+    const logout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('usuario');
+        setUser('');
+        navigate('/auth', { replace: true });
+    };
 
-return (
-    <AuthContext.Provider value={{ isAuthenticated, user }}>
-        {children}
-    </AuthContext.Provider>
-);
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/auth');
+        }
+    }, [isAuthenticated, navigate]);
+
+    return (
+        <AuthContext.Provider value={{ isAuthenticated, user, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
