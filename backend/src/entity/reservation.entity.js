@@ -31,7 +31,7 @@ const ReservationSchema = new EntitySchema({
     fechaReserva: {
       type: "date",
       default: () => "CURRENT_DATE",
-      nullable: false,
+      nullable: true, // Permitir NULL temporalmente para migración
     },
     labId: {
       type: "int",
