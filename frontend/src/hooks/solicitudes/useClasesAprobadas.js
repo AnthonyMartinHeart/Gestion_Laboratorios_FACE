@@ -12,6 +12,9 @@ export default function useClasesAprobadas() {
       if (Array.isArray(solicitudes)) {
         solicitudes.forEach((s, idx) => {
           console.log(`Solicitud[${idx}]:`, JSON.stringify(s, null, 2));
+          if (s.clasesCanceladas && s.clasesCanceladas.length > 0) {
+            console.log(`  ⚠️ Esta solicitud tiene ${s.clasesCanceladas.length} clases canceladas:`, s.clasesCanceladas);
+          }
         });
       }
       // Filtrar solicitudes de tipoSolicitud 'unica' o 'recurrente' y estado 'aprobada'
