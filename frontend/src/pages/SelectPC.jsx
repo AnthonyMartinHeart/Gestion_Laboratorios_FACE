@@ -90,8 +90,8 @@ const SelectPC = ({ onReservaCreada }) => {
     const minutoActual = ahora.getMinutes();
     const tiempoActualEnMinutos = horaActual * 60 + minutoActual;
 
-    // Margen de anticipación universal para todas las clases (30 minutos)
-    const margenAnticipacion = 30;
+    // Margen de anticipación universal para todas las clases (50 minutos)
+    const margenAnticipacion = 50;
 
     // Mapeo de horarios de término a horarios de inicio siguiente para transiciones automáticas
     const terminoAInicio = {
