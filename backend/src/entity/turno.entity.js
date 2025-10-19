@@ -21,7 +21,7 @@ const Turno = new EntitySchema({
     },
     fecha: {
       type: "date",
-      nullable: false,
+      nullable: true, // Permitir NULL para evitar error de migración
     },
     horaEntradaAsignada: {
       type: "varchar",
