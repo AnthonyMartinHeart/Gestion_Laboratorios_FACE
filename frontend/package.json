@@ -13,6 +13,7 @@
     "@formkit/tempo": "^0.1.2",
     "@tanstack/react-query": "^5.80.7",
     "axios": "^1.7.5",
+    "chart.js": "^4.5.1",
     "font-awesome": "^4.7.0",
     "framer-motion": "^12.6.3",
     "js-cookie": "^3.0.5",
