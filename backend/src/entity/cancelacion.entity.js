@@ -14,8 +14,9 @@ const CancelacionEntity = new EntitySchema({
       nullable: false
     },
     fechaEspecifica: {
-      type: "date",
-      nullable: false // Fecha específica de la clase cancelada
+      type: "varchar", // Cambiado de "date" a "varchar" para evitar conversiones de timezone
+      length: 10,
+      nullable: true // Formato: YYYY-MM-DD
     },
     profesorRut: {
       type: "varchar",
