@@ -55,18 +55,27 @@ const MisClases = () => {
       if (solicitud.tipoSolicitud === 'recurrente') {
         const fechasEspecificas = solicitud.fechasEspecificas || [];
         return fechasEspecificas.map(fechaStr => {
-          let fechaLocal;
-          if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-            const [y, m, d] = fechaStr.split('-');
-            fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
-          } else {
-            fechaLocal = new Date(fechaStr);
+          // Validar que fechaStr exista
+          if (!fechaStr) {
+            console.warn('Fecha específica vacía en solicitud recurrente:', solicitud);
+            return null;
           }
+          
+          // Crear fecha local sin desfase de zona horaria
+          const [y, m, d] = fechaStr.split('-').map(Number);
+          const fechaLocal = new Date(y, m - 1, d);
+          
+          const fechaActual = new Date();
+          fechaActual.setHours(0, 0, 0, 0);
+          
           // Verificar si está cancelada
           const clasesCanceladas = solicitud.clasesCanceladas || [];
-          const claseCancelada = clasesCanceladas.find(cc => 
-            cc.fecha && new Date(cc.fecha).toDateString() === fechaActual.toDateString()
-          );
+          const claseCancelada = clasesCanceladas.find(cc => {
+            if (!cc.fecha) return false;
+            const [yc, mc, dc] = cc.fecha.split('-').map(Number);
+            const fechaCancel = new Date(yc, mc - 1, dc);
+            return fechaCancel.toDateString() === fechaLocal.toDateString();
+          });
           
           return {
             ...solicitud,
@@ -74,35 +83,44 @@ const MisClases = () => {
             fechaEspecifica: fechaLocal,
             tipoClase: 'recurrente',
             fechaOriginal: fechaStr,
-            esCancelable: fechaActual >= new Date(), // Solo se pueden cancelar clases futuras
+            esCancelable: fechaLocal >= fechaActual,
             cancelada: !!claseCancelada,
             motivoCancelacion: claseCancelada?.motivo || null
           };
-        });
+        }).filter(Boolean); // Filtrar nulls dentro del array recurrente
       } else {
         // Para solicitudes únicas, usar la fecha de la solicitud
-        let fechaLocal;
-        if (/^\d{4}-\d{2}-\d{2}$/.test(solicitud.fecha)) {
-          const [y, m, d] = solicitud.fecha.split('-');
-          fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
-        } else {
-          fechaLocal = new Date(solicitud.fecha);
+        // Validar que la fecha exista
+        if (!solicitud.fecha) {
+          console.warn('Solicitud única sin fecha:', solicitud);
+          return null;
         }
+        
+        const [y, m, d] = solicitud.fecha.split('-').map(Number);
+        const fechaLocal = new Date(y, m - 1, d);
+        
+        const fechaActual = new Date();
+        fechaActual.setHours(0, 0, 0, 0);
+        
         // Verificar si está cancelada (para solicitudes únicas)
         const clasesCanceladas = solicitud.clasesCanceladas || [];
-        const claseCancelada = clasesCanceladas.find(cc => 
-          cc.fecha && new Date(cc.fecha).toDateString() === fechaLocal.toDateString()
-        );
+        const claseCancelada = clasesCanceladas.find(cc => {
+          if (!cc.fecha) return false;
+          const [yc, mc, dc] = cc.fecha.split('-').map(Number);
+          const fechaCancel = new Date(yc, mc - 1, dc);
+          return fechaCancel.toDateString() === fechaLocal.toDateString();
+        });
+        
         return {
           ...solicitud,
           fechaEspecifica: fechaLocal,
           tipoClase: 'unica',
-          esCancelable: fechaLocal >= new Date(), // Solo se pueden cancelar clases futuras
+          esCancelable: fechaLocal >= fechaActual,
           cancelada: !!claseCancelada,
           motivoCancelacion: claseCancelada?.motivo || null
         };
       }
-    }).flat();
+    }).flat().filter(Boolean); // Filtrar valores null/undefined
   }, [clasesAprobadas]);
 
   // Filtrar clases según el filtro seleccionado
@@ -181,19 +199,28 @@ const MisClases = () => {
         console.log('🔧 Cancelando clase:', {
           claseId: clase.id,
           solicitudId: solicitudId,
-          fecha: clase.fechaEspecifica.toISOString().split('T')[0],
+          fecha: clase.fechaEspecifica,
+          fechaOriginal: clase.fechaOriginal,
           motivo: result.value.trim()
         });
         
+        // Usar la fecha original si existe, sino construirla desde fechaEspecifica
+        const fechaEnviar = clase.fechaOriginal || 
+          `${clase.fechaEspecifica.getFullYear()}-${String(clase.fechaEspecifica.getMonth() + 1).padStart(2, '0')}-${String(clase.fechaEspecifica.getDate()).padStart(2, '0')}`;
+        
+        console.log('📅 Fecha a enviar:', fechaEnviar);
 
-        // Enviar fecha local yyyy-mm-dd sin desfase de zona horaria
-        const fechaLocal = new Date(clase.fechaEspecifica.getTime() - clase.fechaEspecifica.getTimezoneOffset() * 60000)
-          .toISOString().split('T')[0];
         await clasesService.cancelarClase(
-          solicitudId, // solicitudId limpio
-          fechaLocal, // fechaEspecifica en formato YYYY-MM-DD local
-          result.value.trim() // motivoCancelacion
+          solicitudId,
+          fechaEnviar,
+          result.value.trim()
         );
+        
+        // Marcar la clase como cancelada en los horarios (sin borrarla)
+        if (window.marcarClaseCancelada) {
+          window.marcarClaseCancelada(solicitudId, fechaEnviar);
+          console.log('� Clase marcada como CANCELADA en horarios');
+        }
         
         // Refrescar notificaciones inmediatamente
         if (window.refreshNotifications) {
