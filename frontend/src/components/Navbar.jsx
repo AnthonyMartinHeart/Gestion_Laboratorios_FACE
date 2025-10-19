@@ -284,7 +284,7 @@ const Navbar = () => {
 
               <div 
                 className="collapsed-item submenu-collapsed" 
-                data-tooltip="Estadísticas"
+                data-tooltip="Reportes"
                 onMouseEnter={(e) => handleSubmenuHover(e, 'estadisticas')}
                 onMouseLeave={handleSubmenuLeave}
               >
@@ -509,7 +509,7 @@ const Navbar = () => {
                     onClick={toggleEstadisticasSubmenu}
                   >
                     <FaChartBar className="nav-icon" />
-                    <span>Estadísticas</span>
+                    <span>Reportes</span>
                     {estadisticasSubmenuOpen ? 
                       <FaChevronDown className="submenu-arrow" /> : 
                       <FaChevronRight className="submenu-arrow" />
