@@ -30,6 +30,21 @@ const useReservationSync = (labId) => {
     }
 
     const now = new Date();
+    
+    // Convertir la hora de término a minutos desde medianoche
+    const [horaTermino, minutoTermino] = reservation.horaTermino.split(':').map(Number);
+    const tiempoTerminoEnMinutos = horaTermino * 60 + minutoTermino;
+    
+    // Convertir la hora actual a minutos desde medianoche
+    const tiempoActualEnMinutos = now.getHours() * 60 + now.getMinutes();
+    
+    // Si faltan 35 minutos o menos para que termine la reserva, no mostrarla como ocupada
+    const minutosHastaTermino = tiempoTerminoEnMinutos - tiempoActualEnMinutos;
+    if (minutosHastaTermino <= 35) {
+      console.log(`PC ${reservation.pcId} - Reserva por terminar en ${minutosHastaTermino} minutos, mostrando como disponible`);
+      return false;
+    }
+
     // Usar fecha local en lugar de UTC
     const today = now.getFullYear() + '-' + 
                   String(now.getMonth() + 1).padStart(2, '0') + '-' + 
