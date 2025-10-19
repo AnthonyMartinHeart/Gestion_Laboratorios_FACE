@@ -5,11 +5,12 @@ import useLogin from '@hooks/auth/useLogin.jsx';
 import logoImage from '@assets/GL-BLUE.png'; 
 import '@styles/form.css';
 import { showErrorAlert } from '@helpers/sweetAlert.js';
+import { formatRut } from '@helpers/formatRut.js';
 
 const Login = () => {
     const navigate = useNavigate();
     const {
-        errorEmail,
+        errorRut,
         errorPassword,
         errorData,
         handleInputChange
@@ -44,23 +45,23 @@ const Login = () => {
                 title="Iniciar sesión"
                 fields={[
                     {
-                        label: "Correo electrónico",
-                        name: "email",
-                        placeholder: "example@gmail.cl",
+                        label: "RUT",
+                        name: "rut",
+                        placeholder: "12.345.678-9",
                         fieldType: 'input',
-                        type: "email",
+                        type: "text",
                         required: true,
-                        minLength: 15,
-                        maxLength: 50,
-                        errorMessageData: errorEmail,
-                        validate: {
-                            emailDomain: (value) =>
-                                value.endsWith('@gmail.cl') || 
-                                value.endsWith('@alumnos.ubiobio.cl') || 
-                                value.endsWith('@ubiobio.cl') || 
-                                'El correo debe terminar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl'
+                        minLength: 9,
+                        maxLength: 12,
+                        errorMessageData: errorRut,
+                        pattern: /^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/,
+                        patternMessage: "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x",
+                        onChange: (e) => {
+                            const formattedRut = formatRut(e.target.value);
+                            handleInputChange('rut', formattedRut);
+                            // Actualizar el valor del input directamente
+                            e.target.value = formattedRut;
                         },
-                        onChange: (e) => handleInputChange('email', e.target.value),
                     },
                     {
                         label: "Contraseña",
