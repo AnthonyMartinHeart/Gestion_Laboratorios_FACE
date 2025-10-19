@@ -8,20 +8,20 @@ import { ACCESS_TOKEN_SECRET } from "../config/configEnv.js";
 export async function loginService(user) {
   try {
     const userRepository = AppDataSource.getRepository(User);
-    const { email, password } = user;
+    const { rut, password } = user;
 
     const createErrorMessage = (dataInfo, message) => ({
       dataInfo,
       message
     });
 
-    // Buscamos al usuario por su correo electrónico (en minúsculas)
+    // Buscamos al usuario por su RUT
     const userFound = await userRepository.findOne({
-      where: { email: email.toLowerCase() },  // Comparamos el correo en minúsculas
+      where: { rut },  // Buscamos por RUT
     });
 
     if (!userFound) {
-      return [null, createErrorMessage("email", "El correo electrónico es incorrecto")];
+      return [null, createErrorMessage("rut", "El RUT es incorrecto")];
     }
 
     // Comparamos la contraseña ingresada (convertida a minúsculas) con la almacenada (que ya está en minúsculas)
@@ -81,7 +81,7 @@ export async function registerService(user) {
 
     if (existingRutUser) return [null, createErrorMessage("rut", "Rut ya asociado a una cuenta")];
 
-    // Modificado: Acepta @alumnos.ubiobio.cl, @ubiobio.cl y @gmail.cl
+        // Solo acepta correos institucionales (@alumnos.ubiobio.cl y @ubiobio.cl)
     const isAlumno = email.endsWith('@alumnos.ubiobio.cl');
     const isProfesor = email.endsWith('@ubiobio.cl');
 
@@ -90,11 +90,9 @@ export async function registerService(user) {
     if (email.endsWith('@alumnos.ubiobio.cl')) {
       rolAsignado = "estudiante";
     } else if (email.endsWith('@ubiobio.cl')) {
-      rolAsignado = "profesor"; // Cambio: ahora @ubiobio.cl = profesor
-    } else if (email.endsWith('@gmail.cl')) {
-      rolAsignado = "usuario";
+      rolAsignado = "profesor";
     } else {
-      rolAsignado = "usuario"; // Por defecto si no coincide con ningún dominio
+      return [null, createErrorMessage("email", "El correo debe ser institucional (@alumnos.ubiobio.cl o @ubiobio.cl)")];
     }
 
     // Convertimos la contraseña a minúsculas antes de guardarla
