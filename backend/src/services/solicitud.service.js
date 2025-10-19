@@ -47,8 +47,14 @@ class SolicitudService {
       }
       
       // Solicitud única (comportamiento original)
+      console.log('📅 DATOS QUE SE VAN A GUARDAR:', solicitudData);
+      console.log('📅 FECHA EN solicitudData:', solicitudData.fecha);
+      
       const nuevaSolicitud = this.solicitudRepository.create(solicitudData);
+      console.log('📅 FECHA DESPUÉS DE CREATE:', nuevaSolicitud.fecha);
+      
       const solicitudGuardada = await this.solicitudRepository.save(nuevaSolicitud);
+      console.log('📅 FECHA DESPUÉS DE SAVE (guardada en DB):', solicitudGuardada.fecha);
       
       return [solicitudGuardada, null];
     } catch (error) {
@@ -104,6 +110,9 @@ class SolicitudService {
     try {
       const queryBuilder = this.solicitudRepository.createQueryBuilder("solicitud");
       
+      // Incluir la relación de clases canceladas
+      queryBuilder.leftJoinAndSelect("solicitud.clasesCanceladas", "cancelacion");
+      
       // Filtros opcionales
       if (filtros.profesorRut) {
         queryBuilder.andWhere("solicitud.profesorRut = :profesorRut", { profesorRut: filtros.profesorRut });
@@ -121,6 +130,18 @@ class SolicitudService {
       queryBuilder.orderBy("solicitud.createdAt", "DESC");
       
       const solicitudes = await queryBuilder.getMany();
+      
+      // LOG: Ver qué fechas se leen de la DB
+      if (solicitudes.length > 0) {
+        console.log('📅 PRIMERA SOLICITUD LEÍDA DE DB:', {
+          id: solicitudes[0].id,
+          titulo: solicitudes[0].titulo,
+          fecha: solicitudes[0].fecha,
+          tipoFecha: typeof solicitudes[0].fecha,
+          cancelaciones: solicitudes[0].clasesCanceladas?.length || 0
+        });
+      }
+      
       return [solicitudes, null];
     } catch (error) {
       console.error("Error al obtener solicitudes:", error);
@@ -204,7 +225,8 @@ class SolicitudService {
   async eliminarSolicitud(id, userRut, userRol) {
     try {
       const solicitud = await this.solicitudRepository.findOne({
-        where: { id: parseInt(id) }
+        where: { id: parseInt(id) },
+        relations: ['clasesCanceladas']
       });
       
       if (!solicitud) {
@@ -228,10 +250,20 @@ class SolicitudService {
         return [null, "No tienes permisos para realizar esta acción"];
       }
       
+      // Primero eliminar las cancelaciones relacionadas manualmente
+      if (solicitud.clasesCanceladas && solicitud.clasesCanceladas.length > 0) {
+        const cancelacionRepository = this.solicitudRepository.manager.getRepository('Cancelacion');
+        await cancelacionRepository.delete({ solicitudId: parseInt(id) });
+        console.log(`🗑️ Eliminadas ${solicitud.clasesCanceladas.length} cancelaciones de la solicitud ${id}`);
+      }
+      
+      // Luego eliminar la solicitud
       await this.solicitudRepository.remove(solicitud);
+      console.log(`✅ Solicitud ${id} eliminada exitosamente`);
+      
       return [{ message: "Solicitud eliminada exitosamente" }, null];
     } catch (error) {
-      console.error("Error al eliminar solicitud:", error);
+      console.error("❌ Error al eliminar solicitud:", error);
       return [null, "Error interno del servidor"];
     }
   }
