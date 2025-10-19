@@ -6,7 +6,7 @@ import { convertirMinusculas } from '@helpers/formatData.js';
 export async function login(dataUser) {
     try {
         const response = await axios.post('/auth/login', {
-            email: dataUser.email, 
+            rut: dataUser.rut, 
             password: dataUser.password
         });
         const { status, data } = response;
