@@ -212,19 +212,65 @@ h9::after {
   margin-bottom: 0;
 }
 
+.filtros-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-limpiar-filtros,
+.btn-limpiar-procesadas,
 .btn-crear-tarea {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: #ffffff;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-  height: fit-content;
+  height: 44px;
   white-space: nowrap;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-limpiar-filtros {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-limpiar-filtros:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.btn-limpiar-procesadas {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-limpiar-procesadas:hover {
+  background: linear-gradient(135deg, #ee5a6f 0%, #c92a2a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.btn-limpiar-procesadas:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-crear-tarea {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
 .btn-crear-tarea:hover {
