@@ -293,6 +293,127 @@ const GestionTareas = () => {
     }
   };
 
+  const limpiarTareasProcesadas = async () => {
+    console.log('🧹 Iniciando limpieza de tareas procesadas...');
+    
+    // Obtener tareas completadas y no completadas (procesadas)
+    const tareasProcesadas = tareas.filter(
+      tarea => tarea.estado === 'completada' || tarea.estado === 'no_completada'
+    );
+
+    console.log('📊 Tareas encontradas:', {
+      total: tareas.length,
+      procesadas: tareasProcesadas.length,
+      completadas: tareasProcesadas.filter(t => t.estado === 'completada').length,
+      noCompletadas: tareasProcesadas.filter(t => t.estado === 'no_completada').length
+    });
+
+    if (tareasProcesadas.length === 0) {
+      Swal.fire({
+        title: 'Sin tareas',
+        text: 'No hay tareas completadas o no completadas para eliminar',
+        icon: 'info'
+      });
+      return;
+    }
+
+    const confirmResult = await Swal.fire({
+      title: '¿Limpiar todas las tareas procesadas?',
+      html: `
+        <div style="text-align: left;">
+          <p>Se eliminarán <strong>${tareasProcesadas.length}</strong> tareas procesadas:</p>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>✅ <strong>${tareasProcesadas.filter(t => t.estado === 'completada').length}</strong> tareas completadas</li>
+            <li>❌ <strong>${tareasProcesadas.filter(t => t.estado === 'no_completada').length}</strong> tareas no completadas</li>
+          </ul>
+          <p style="color: #28a745; font-weight: bold;">✋ Las tareas PENDIENTES NO se eliminarán</p>
+          <p style="color: #dc3545; font-weight: bold; margin-top: 10px;">⚠️ Esta acción no se puede deshacer</p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '🗑️ Eliminar Procesadas',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      customClass: {
+        popup: 'swal-wide'
+      }
+    });
+
+    if (confirmResult.isConfirmed) {
+      let eliminadas = 0;
+      let errores = 0;
+
+      // Mostrar progreso
+      Swal.fire({
+        title: 'Eliminando tareas...',
+        html: `Progreso: <b>0</b> de <b>${tareasProcesadas.length}</b>`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Eliminar una por una
+      for (let i = 0; i < tareasProcesadas.length; i++) {
+        const tarea = tareasProcesadas[i];
+        
+        console.log(`🗑️ Eliminando tarea ${i + 1}/${tareasProcesadas.length}:`, {
+          id: tarea.id,
+          titulo: tarea.titulo,
+          estado: tarea.estado
+        });
+        
+        // Actualizar progreso
+        Swal.update({
+          html: `Eliminando: <b>${tarea.titulo}</b><br>Progreso: <b>${i + 1}</b> de <b>${tareasProcesadas.length}</b>`
+        });
+
+        try {
+          await tareasService.deleteTarea(tarea.id);
+          eliminadas++;
+          console.log(`✅ Tarea ${tarea.id} eliminada exitosamente`);
+        } catch (error) {
+          errores++;
+          console.error(`❌ Error eliminando tarea ${tarea.id}:`, error);
+        }
+        
+        // Pequeña pausa para no saturar el servidor
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      // Cerrar modal de progreso
+      Swal.close();
+
+      // Mostrar resultado final
+      if (errores === 0) {
+        Swal.fire({
+          title: 'Limpieza completada',
+          text: `Se eliminaron exitosamente ${eliminadas} tareas procesadas`,
+          icon: 'success'
+        });
+      } else {
+        Swal.fire({
+          title: 'Limpieza completada con errores',
+          html: `
+            <div style="text-align: left;">
+              <p>✅ <strong>${eliminadas}</strong> tareas eliminadas correctamente</p>
+              <p>❌ <strong>${errores}</strong> tareas no se pudieron eliminar</p>
+              <p style="color: #6c757d; font-size: 14px;">Revisa la consola para más detalles sobre los errores</p>
+            </div>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'Entendido'
+        });
+      }
+
+      // Actualizar la lista
+      await cargarTareas();
+    }
+  };
+
   const formatearFecha = (fechaStr) => {
     const fecha = new Date(fechaStr);
     return fecha.toLocaleDateString('es-ES', {
@@ -378,6 +499,15 @@ const GestionTareas = () => {
           <div className="filtros-right">
             <button className="btn-limpiar-filtros" onClick={limpiarFiltros}>
               🗑️ Limpiar filtros
+            </button>
+            
+            {/* Botón limpiar tareas procesadas (administradores y consultores) */}
+            <button 
+              className="btn-limpiar-procesadas"
+              onClick={limpiarTareasProcesadas}
+              title="Eliminar todas las tareas completadas y no completadas"
+            >
+              🧹 Limpiar Procesadas
             </button>
             
             {/* Botón crear tarea (solo administradores) */}
