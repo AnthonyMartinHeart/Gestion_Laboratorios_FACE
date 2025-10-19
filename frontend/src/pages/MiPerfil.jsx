@@ -123,7 +123,7 @@ const MiPerfil = () => {
   }
 
   // Validar si el correo es uno de los dominios permitidos
-  const esCorreoValido = userData.email.endsWith('@gmail.cl') || 
+  const esCorreoValido = 
                          userData.email.endsWith('@alumnos.ubiobio.cl') ||
                          userData.email.endsWith('@ubiobio.cl');
 
