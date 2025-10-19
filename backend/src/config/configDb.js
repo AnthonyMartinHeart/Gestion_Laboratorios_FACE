@@ -12,6 +12,9 @@ export const AppDataSource = new DataSource({
   entities: ["src/entity/**/*.js"],
   synchronize: true,
   logging: false,
+  extra: {
+    timezone: 'America/Santiago' // Zona horaria de Chile
+  }
 });
 
 export async function connectDB() {
