@@ -19,6 +19,10 @@ const crearSolicitud = async (req, res) => {
     } = req.body;
     const { rut, nombreCompleto, email } = req.user;
 
+    // LOG: Ver qué fecha llega del frontend
+    console.log('📅 FECHA RECIBIDA DEL FRONTEND:', fecha);
+    console.log('📅 TIPO DE FECHA:', typeof fecha);
+
     // Validaciones básicas comunes
     if (!titulo || !laboratorio || !horaInicio || !horaTermino) {
       return handleErrorClient(res, "Todos los campos obligatorios deben ser completados", 400);
