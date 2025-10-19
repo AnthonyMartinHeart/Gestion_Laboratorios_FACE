@@ -3,12 +3,12 @@ import Joi from "joi";
 
 const domainEmailValidator = (value, helper) => {
   if (
-    !value.endsWith("@gmail.cl") &&
+
     !value.endsWith("@alumnos.ubiobio.cl") &&
     !value.endsWith("@ubiobio.cl")
   ) {
     return helper.message(
-       "El correo electrónico debe ser del dominio @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl."
+       "El correo electrónico debe ser del dominio @alumnos.ubiobio.cl o @ubiobio.cl."
     );
   }
   return value;
