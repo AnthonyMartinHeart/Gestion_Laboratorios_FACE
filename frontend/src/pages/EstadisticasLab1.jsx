@@ -1,18 +1,50 @@
 import { useState, useEffect } from 'react';
 import { getAllReservations } from '@services/reservation.service.js';
+import EstadisticasDetalladas from '../components/EstadisticasDetalladas';
 import '@styles/estadisticas.css';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import Swal from 'sweetalert2';
+
+// Estilos en línea para los botones
+const buttonStyles = {
+  exportButtons: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginLeft: 'auto'
+  },
+  button: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    border: 'none',
+    borderRadius: '4px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    minWidth: '100px',
+    color: 'white',
+  },
+  excelButton: {
+    backgroundColor: '#217346'
+  },
+  pdfButton: {
+    backgroundColor: '#dc3545'
+  }
+};
 
 const EstadisticasLab1 = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({
-    fechaInicio: '',
-    fechaFin: ''
+    fechaInicio: new Date().toISOString().split('T')[0],
+    fechaFin: new Date().toISOString().split('T')[0]
   });
   const [estadisticas, setEstadisticas] = useState({
     usoEquipos: {},
     horariosActivos: {},
     diasActivos: {},
+    fechasActivas: {},
     totalReservas: 0,
     equiposUtilizados: 0,
     equiposTotales: 40,
@@ -50,10 +82,20 @@ const EstadisticasLab1 = () => {
     let filtradas = [...reservas];
 
     if (filtros.fechaInicio) {
-      filtradas = filtradas.filter(r => r.fechaReserva >= filtros.fechaInicio);
+      const fechaInicio = new Date(filtros.fechaInicio);
+      fechaInicio.setHours(0, 0, 0, 0);
+      filtradas = filtradas.filter(r => {
+        const fechaReserva = new Date(r.fechaReserva);
+        return fechaReserva >= fechaInicio;
+      });
     }
     if (filtros.fechaFin) {
-      filtradas = filtradas.filter(r => r.fechaReserva <= filtros.fechaFin);
+      const fechaFin = new Date(filtros.fechaFin);
+      fechaFin.setHours(23, 59, 59, 999);
+      filtradas = filtradas.filter(r => {
+        const fechaReserva = new Date(r.fechaReserva);
+        return fechaReserva <= fechaFin;
+      });
     }
 
     return filtradas;
@@ -65,33 +107,285 @@ const EstadisticasLab1 = () => {
     const usoEquipos = {};
     const horariosActivos = {};
     const diasActivos = {};
+    const fechasActivas = {};
     
     reservasFiltradas.forEach(reserva => {
-      if (reserva.carrera === 'MAINTENANCE') return;
+      // Contar equipos
+      const pcKey = `PC ${reserva.pcId}`;
+      usoEquipos[pcKey] = (usoEquipos[pcKey] || 0) + 1;
 
-      const equipoKey = `PC ${reserva.pcId}`;
-      usoEquipos[equipoKey] = (usoEquipos[equipoKey] || 0) + 1;
+      // Contar horarios
+      horariosActivos[reserva.horaInicio] = (horariosActivos[reserva.horaInicio] || 0) + 1;
 
-      const horario = reserva.horaInicio.substring(0, 5);
-      horariosActivos[horario] = (horariosActivos[horario] || 0) + 1;
+      // Contar fechas específicas
+      fechasActivas[reserva.fechaReserva] = (fechasActivas[reserva.fechaReserva] || 0) + 1;
 
+      // Contar días de la semana
       const fecha = new Date(reserva.fechaReserva);
-      const nombreDia = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
-      diasActivos[nombreDia] = (diasActivos[nombreDia] || 0) + 1;
-    });
-
-    const equiposUtilizados = Object.keys(usoEquipos).length;
+      const dia = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
+      diasActivos[dia] = (diasActivos[dia] || 0) + 1;
+    });    const equiposUtilizados = Object.keys(usoEquipos).length;
 
     setEstadisticas({
       usoEquipos,
       horariosActivos,
       diasActivos,
+      fechasActivas,
       totalReservas: reservasFiltradas.length,
       equiposUtilizados,
       equiposTotales: 40,
       bloquesPorDia: 17,
       capacidadDiaria: 680
     });
+  };
+
+  const exportarPDF = async () => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        putOnlyUsedFonts: true,
+        floatPrecision: 16,
+        compress: false,
+        font: 'courier'
+      });
+
+      let yPos = 15;
+
+      // Configuración del título principal
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.setTextColor(0, 0, 0);
+      doc.setLanguage("es");
+      // Escribir título en negrita
+      doc.text('Resumen Laboratorio 1', doc.internal.pageSize.width / 2, yPos, {
+        align: 'center',
+        baseline: 'middle',
+        renderingMode: 'fill',
+        charSpace: 0
+      });
+      yPos += 15;
+
+      // Resumen Principal
+      doc.setFontSize(14);
+      yPos += 10;
+
+      const resumenPrincipal = [
+        ['Total Reservas', estadisticas.totalReservas],
+        ['Equipos Utilizados', `${estadisticas.equiposUtilizados}/${estadisticas.equiposTotales}`],
+        ['% Equipos Utilizados', `${((estadisticas.equiposUtilizados / estadisticas.equiposTotales) * 100).toFixed(1)}%`],
+        ['% Uso Diario', `${((estadisticas.totalReservas / estadisticas.capacidadDiaria) * 100).toFixed(1)}%`]
+      ];
+
+    // No necesitamos esta primera tabla, ya que usaremos resumenPrincipal directamente
+
+    // Resumen Principal
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Metrica', 'Valor']],
+      body: resumenPrincipal,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [3, 49, 99],
+        textColor: [255, 255, 255],
+        halign: 'center'
+      },
+      styles: { 
+        fontSize: 10,
+        font: 'courier',
+        halign: 'left'
+      },
+      margin: { left: 14 },
+      willDrawCell: function(data) {
+        const td = data.cell.raw;
+        if (td && typeof td === 'string') {
+          data.cell.text = td.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+      }
+    });
+    yPos = doc.lastAutoTable.finalY + 15;
+
+    // Tablas de Frecuencia
+    const tablasPrincipales = [
+      {
+        titulo: 'PC Equipos Más Utilizados',
+        data: Object.entries(estadisticas.usoEquipos).map(([pc, freq]) => {
+          const total = Object.values(estadisticas.usoEquipos).reduce((sum, val) => sum + val, 0);
+          const porcentaje = total > 0 ? ((freq / total) * 100).toFixed(1) : '0.0';
+          return [
+            `PC ${pc}`,
+            freq,
+            `${porcentaje}%`
+          ];
+        })
+      },
+      {
+        titulo: 'Hora Horarios Más Activos',
+        data: Object.entries(estadisticas.horariosActivos).map(([hora, freq]) => {
+          const total = Object.values(estadisticas.horariosActivos).reduce((sum, val) => sum + val, 0);
+          const porcentaje = total > 0 ? ((freq / total) * 100).toFixed(1) : '0.0';
+          return [
+            hora,
+            freq,
+            `${porcentaje}%`
+          ];
+        })
+      },
+      {
+        titulo: 'Día Días Más Activos',
+        data: Object.entries(estadisticas.diasActivos).map(([dia, freq]) => {
+          const total = Object.values(estadisticas.diasActivos).reduce((sum, val) => sum + val, 0);
+          const porcentaje = total > 0 ? ((freq / total) * 100).toFixed(1) : '0.0';
+          return [
+            dia,
+            freq,
+            `${porcentaje}%`
+          ];
+        })
+      }
+    ];
+
+    // Imprimir tablas principales
+    doc.setFontSize(12);
+    tablasPrincipales.forEach(tabla => {
+      doc.text(tabla.titulo, 14, yPos);
+      autoTable(doc, {
+        startY: yPos + 5,
+        head: [['Item', 'Frecuencia', 'Porcentaje']],
+        body: tabla.data,
+        theme: 'grid',
+        headStyles: { fillColor: [3, 49, 99] },
+        styles: { fontSize: 10 },
+        margin: { left: 14 }
+      });
+      yPos = doc.lastAutoTable.finalY + 15;
+    });
+
+    // Estadísticas Detalladas
+    doc.addPage();
+    yPos = 15;
+    
+    // Configuración del título de estadísticas detalladas
+    doc.setFontSize(20);
+    doc.setTextColor(0, 0, 0);
+    const tituloDetalladas = 'Estadisticas Detalladas';
+    doc.text(tituloDetalladas, doc.internal.pageSize.width / 2, yPos, {
+      align: 'center',
+      baseline: 'middle'
+    });
+    yPos += 20;
+
+      const tablasDetalladas = [
+      {
+        titulo: 'Carreras mas Frecuentes',
+        columnas: [['Carrera', 'Total de Reservas', 'Proporción de Uso']],
+        data: getEstadisticasAvanzadas().carreraStats
+      },
+      {
+        titulo: 'Meses mas Activos',
+        columnas: [['Mes', 'Reservas Realizadas', 'Nivel de Actividad']],
+        data: getEstadisticasAvanzadas().mesStats
+      },
+      {
+        titulo: 'Usuarios mas Frecuentes',
+        columnas: [['RUT Usuario', 'N° de Reservas', 'Frecuencia de Uso']],
+        data: getEstadisticasAvanzadas().usuarioStats
+      },
+      {
+        titulo: 'Laboratorios mas Utilizados',
+        columnas: [['Laboratorio', 'Total de Sesiones', 'Tasa de Ocupación']],
+        data: getEstadisticasAvanzadas().labStats
+      },
+      {
+        titulo: 'Horarios mas Solicitados',
+        columnas: [['Bloque Horario', 'N° de Reservas', 'Demanda del Horario']],
+        data: getEstadisticasAvanzadas().horarioStats
+      }
+    ];    // Imprimir tablas detalladas
+    doc.setFontSize(12);
+    tablasDetalladas.forEach(tabla => {
+      doc.text(tabla.titulo, 14, yPos);
+        const tableData = Object.entries(tabla.data).map(([item, { cantidad, porcentaje }]) => [
+        item,
+        cantidad,
+        `${porcentaje.toFixed(1)}%`
+      ]);
+      autoTable(doc, {
+        startY: yPos + 5,
+        head: tabla.columnas,
+        body: tableData.map(([item, cantidad, porcentaje]) => {
+          const valor = parseFloat(porcentaje);
+          let descripcion;
+          
+          if (valor === 100) {
+            descripcion = "Uso Exclusivo";
+          } else if (valor >= 75) {
+            descripcion = "Uso Muy Alto";
+          } else if (valor >= 50) {
+            descripcion = "Uso Alto";
+          } else if (valor >= 25) {
+            descripcion = "Uso Moderado";
+          } else {
+            descripcion = "Uso Bajo";
+          }
+
+          return [
+            item,
+            `${cantidad} ${cantidad === 1 ? 'vez' : 'veces'}`,
+            `${descripcion} (${porcentaje})`
+          ];
+        }),
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [3, 49, 99],
+          textColor: [255, 255, 255],
+          halign: 'center',
+          fontSize: 11,
+          font: 'helvetica',
+          fontStyle: 'bold'
+        },
+        styles: { 
+          fontSize: 10,
+          font: 'helvetica',
+          halign: 'left'
+        },
+        columnStyles: {
+          0: { cellWidth: 60 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 60 }
+        },
+        margin: { left: 14 },
+        willDrawCell: function(data) {
+          const td = data.cell.raw;
+          if (td && typeof td === 'string') {
+            data.cell.text = td.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          }
+        }
+      });
+      yPos = doc.lastAutoTable.finalY + 15;
+    });
+
+    // Guardar el PDF
+    doc.save(`estadisticas_laboratorio_1_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'PDF Generado',
+      text: 'El archivo PDF se ha descargado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al generar el PDF',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
   };
 
   const exportarExcel = () => {
@@ -146,38 +440,108 @@ const EstadisticasLab1 = () => {
     document.body.removeChild(link);
   };
 
-  const renderResumenGeneral = () => (
-    <div className="estadisticas-resumen">
-      <h3>📊 Resumen Laboratorio 1</h3>
-      <div className="resumen-cards">
-        <div className="stat-card">
-          <div className="stat-number">{estadisticas.totalReservas}</div>
-          <div className="stat-label">Total Reservas</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{estadisticas.equiposUtilizados}/40</div>
-          <div className="stat-label">Equipos Utilizados</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{Math.round((estadisticas.equiposUtilizados / 40) * 100)}%</div>
-          <div className="stat-label">% Equipos Utilizados</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{Math.round((estadisticas.totalReservas / estadisticas.capacidadDiaria) * 100)}%</div>
-          <div className="stat-label">% Uso Diario</div>
+    const renderResumenGeneral = () => (
+      <div className="estadisticas-resumen">
+        <h3>Resumen General</h3>
+        <div className="resumen-cards">
+          <div className="stat-card">
+            <div className="stat-number">{estadisticas.totalReservas}</div>
+            <div className="stat-label">Total Reservas</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">{estadisticas.equiposUtilizados}/40</div>
+            <div className="stat-label">Equipos Utilizados</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">{Math.round((estadisticas.equiposUtilizados / 40) * 100)}%</div>
+            <div className="stat-label">% Equipos Utilizados</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">{Math.round((estadisticas.totalReservas / estadisticas.capacidadDiaria) * 100)}%</div>
+            <div className="stat-label">% Uso Diario</div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );  const getEstadisticasAvanzadas = () => {
+    const reservasFiltradas = filtrarReservas(reservations);
+    
+    const stats = {
+      carreraStats: {},
+      mesStats: {},
+      usuarioStats: {},
+      labStats: {},
+      horarioStats: {},
+      fechasStats: {}
+    };
 
-  const renderTablaFrecuencia = (titulo, datos, icono) => {
-    const sortedData = Object.entries(datos)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 10);
+    reservasFiltradas.forEach(reserva => {
+      // Carreras
+      stats.carreraStats[reserva.carrera] = stats.carreraStats[reserva.carrera] || { cantidad: 0 };
+      stats.carreraStats[reserva.carrera].cantidad++;
+
+      // Meses
+      const mes = new Date(reserva.fechaReserva).toLocaleString('es-ES', { month: 'long' });
+      stats.mesStats[mes] = stats.mesStats[mes] || { cantidad: 0 };
+      stats.mesStats[mes].cantidad++;
+
+      // Usuarios
+      stats.usuarioStats[reserva.rut] = stats.usuarioStats[reserva.rut] || { cantidad: 0 };
+      stats.usuarioStats[reserva.rut].cantidad++;
+
+      // Laboratorios
+      const lab = `Laboratorio ${Math.floor((reserva.pcId - 1) / 20) + 1}`;
+      stats.labStats[lab] = stats.labStats[lab] || { cantidad: 0 };
+      stats.labStats[lab].cantidad++;
+
+      // Horarios
+      stats.horarioStats[reserva.horaInicio] = stats.horarioStats[reserva.horaInicio] || { cantidad: 0 };
+      stats.horarioStats[reserva.horaInicio].cantidad++;
+
+      // Fechas específicas
+      const fecha = new Date(reserva.fechaReserva).toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      stats.fechasStats[fecha] = stats.fechasStats[fecha] || { cantidad: 0 };
+      stats.fechasStats[fecha].cantidad++;
+    });
+
+    // Calcular porcentajes
+    const calcularPorcentajes = (obj) => {
+      const total = Object.values(obj).reduce((sum, { cantidad }) => sum + cantidad, 0);
+      if (total === 0) return;
+      
+      Object.keys(obj).forEach(key => {
+        obj[key].porcentaje = (obj[key].cantidad / total) * 100;
+      });
+    };
+
+    calcularPorcentajes(stats.carreraStats);
+    calcularPorcentajes(stats.mesStats);
+    calcularPorcentajes(stats.usuarioStats);
+    calcularPorcentajes(stats.labStats);
+    calcularPorcentajes(stats.horarioStats);
+    calcularPorcentajes(stats.fechasStats);
+
+    return stats;
+  };
+
+  const renderTablaFrecuencia = (titulo, datos, tipo) => {
+    const datosOrdenados = Object.entries(datos)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    
+    // Definir iconos para cada tipo de datos
+    const iconos = {
+      'PC': '💻',
+      'Hora': '⏰',
+      'Día': '📅'
+    };
 
     return (
       <div className="estadisticas-tabla">
-        <h4>{icono} {titulo}</h4>
+        <h4>{iconos[tipo]} {titulo}</h4>
         <div className="tabla-container">
           <table>
             <thead>
@@ -188,7 +552,7 @@ const EstadisticasLab1 = () => {
               </tr>
             </thead>
             <tbody>
-              {sortedData.map(([item, count], index) => {
+              {datosOrdenados.map(([item, count], index) => {
                 const porcentaje = estadisticas.totalReservas > 0 
                   ? ((count / estadisticas.totalReservas) * 100).toFixed(1)
                   : 0;
@@ -290,15 +654,15 @@ const EstadisticasLab1 = () => {
   return (
     <div className="estadisticas-container">
       <div className="estadisticas-header">
-        <h2>🧪 Estadísticas Laboratorio 1</h2>
+        <h2>Reportes Laboratorio 1</h2>
         <p className="estadisticas-subtitle">
           Análisis específico del uso de equipos en el Laboratorio 1 (PCs 1-40)
         </p>
       </div>
 
       <div className="filtros-container">
-        <h3>🔍 Filtros de Análisis</h3>
-        <div className="filtros-form">
+        <h3>Filtros de Análisis</h3>
+        <div className="filtros-form shadow-sm">
           <div className="filtro-item">
             <label>Fecha Inicio:</label>
             <input
@@ -315,33 +679,248 @@ const EstadisticasLab1 = () => {
               onChange={(e) => setFiltros(prev => ({ ...prev, fechaFin: e.target.value }))}
             />
           </div>
-          <button className="export-button" onClick={exportarExcel}>
-            <i className="fas fa-file-excel"></i> Exportar a Excel
-          </button>
+          <div style={buttonStyles.exportButtons}>
+            <button 
+              onClick={exportarExcel}
+              style={{...buttonStyles.button, ...buttonStyles.excelButton}}
+            >
+              <i className="fas fa-file-excel"></i> Excel
+            </button>
+            <button 
+              onClick={exportarPDF}
+              style={{...buttonStyles.button, ...buttonStyles.pdfButton}}
+            >
+              <i className="fas fa-file-pdf"></i> PDF
+            </button>
+          </div>
         </div>
       </div>
 
       {renderResumenGeneral()}
 
-      <div className="estadisticas-grid">
-        {renderTablaFrecuencia('Equipos Más Utilizados', estadisticas.usoEquipos, '💻')}
-        {renderTablaFrecuencia('Horarios Más Activos', estadisticas.horariosActivos, '⏰')}
-        {renderTablaFrecuencia('Días Más Activos', estadisticas.diasActivos, '📅')}
-      </div>
+      <div className="estadisticas-seccion">
+        <h3 className="seccion-titulo">📈 Reporte Detallado</h3>
+        <div className="estadisticas-grid">
+          <div className="estadistica-card">
+            <h4 className="tabla-titulo">💻 Equipos Más Utilizados</h4>
+            <div className="tabla-container">
+              <table className="tabla-nueva">
+                <thead>
+                  <tr>
+                    <th>Equipo</th>
+                    <th>Frecuencia</th>
+                    <th>Porcentaje de Uso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(estadisticas.usoEquipos).length > 0 ? (
+                    Object.entries(estadisticas.usoEquipos)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([pc, cantidad]) => {
+                        const porcentaje = (cantidad / estadisticas.totalReservas) * 100;
+                        return (
+                          <tr key={pc}>
+                            <td>{pc}</td>
+                            <td>{cantidad} {cantidad === 1 ? 'vez' : 'veces'}</td>
+                            <td>
+                              <div className="nivel-uso">
+                                <div 
+                                  className="nivel-barra"
+                                  style={{ width: `${porcentaje}%` }}
+                                ></div>
+                                <span>{porcentaje.toFixed(1)}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="no-data-message">
+                        No figura información
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      <div className="info-adicional">
-        <div className="info-card">
-          <h4>ℹ️ Información del Laboratorio 1</h4>
-          <ul>
-            <li><strong>Equipos disponibles:</strong> 40 PCs (PC 1-40)</li>
-            <li><strong>Bloques horarios:</strong> 17 por día</li>
-            <li><strong>Capacidad diaria:</strong> 680 reservas máximas</li>
-            <li><strong>Datos excluidos:</strong> Reservas de mantenimiento</li>
-          </ul>
+          <div className="estadistica-card">
+            <h4 className="tabla-titulo">⏰ Horarios Más Activos</h4>
+            <div className="tabla-container">
+              <table className="tabla-nueva">
+                <thead>
+                  <tr>
+                    <th>Horario</th>
+                    <th>Frecuencia</th>
+                    <th>Porcentaje de Uso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(estadisticas.horariosActivos).length > 0 ? (
+                    Object.entries(estadisticas.horariosActivos)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([hora, cantidad]) => {
+                        const porcentaje = (cantidad / estadisticas.totalReservas) * 100;
+                        return (
+                          <tr key={hora}>
+                            <td>{hora}</td>
+                            <td>{cantidad} {cantidad === 1 ? 'reserva' : 'reservas'}</td>
+                            <td>
+                              <div className="nivel-uso">
+                                <div 
+                                  className="nivel-barra"
+                                  style={{ width: `${porcentaje}%` }}
+                                ></div>
+                                <span>{porcentaje.toFixed(1)}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="no-data-message">
+                        No figura información
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="estadistica-card">
+            <h4 className="tabla-titulo">📅 Días Más Activos</h4>
+            <div className="tabla-container">
+              <table className="tabla-nueva">
+                <thead>
+                  <tr>
+                    <th>Día</th>
+                    <th>Frecuencia</th>
+                    <th>Porcentaje de Uso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(estadisticas.diasActivos).length > 0 ? (
+                    Object.entries(estadisticas.diasActivos)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([dia, cantidad]) => {
+                        const porcentaje = (cantidad / estadisticas.totalReservas) * 100;
+                        return (
+                          <tr key={dia}>
+                            <td>{dia}</td>
+                            <td>{cantidad} {cantidad === 1 ? 'reserva' : 'reservas'}</td>
+                            <td>
+                              <div className="nivel-uso">
+                                <div 
+                                  className="nivel-barra"
+                                  style={{ width: `${porcentaje}%` }}
+                                ></div>
+                                <span>{porcentaje.toFixed(1)}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="no-data-message">
+                        No figura información
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div className="info-card">
-          <h4>� Distribución de Uso por Equipos</h4>
-          {renderGraficoBarras()}
+        <div className="estadisticas-grid">
+          {Object.entries(getEstadisticasAvanzadas()).map(([key, data]) => {
+            const titulo = {
+              carreraStats: '🎓 Carreras Más Activas',
+              mesStats: '📅 Meses con Mayor Actividad',
+              usuarioStats: '👥 Usuarios Más Frecuentes',
+              labStats: '🖥️ Uso por Laboratorio',
+              horarioStats: '⏰ Horarios de Alta Demanda',
+              fechasStats: '📆 Fechas Más Ocupadas'
+            }[key];
+
+            const columnas = {
+              carreraStats: ['Carrera', 'Total de Reservas', 'Nivel de Uso'],
+              mesStats: ['Mes', 'Reservas Realizadas', 'Nivel de Actividad'],
+              usuarioStats: ['RUT Usuario', 'N° de Reservas', 'Frecuencia de Uso'],
+              labStats: ['Laboratorio', 'Total de Sesiones', 'Tasa de Ocupación'],
+              horarioStats: ['Bloque Horario', 'N° de Reservas', 'Demanda del Horario'],
+              fechasStats: ['Fecha', 'N° de Reservas', 'Nivel de Ocupación']
+            }[key];
+
+            return (
+              <div key={key} className="estadistica-card">
+                <h4 className="tabla-titulo">{titulo}</h4>
+                <div className="tabla-container">
+                  <table className="tabla-nueva">
+                    <thead>
+                      <tr>
+                        {columnas.map((col, index) => (
+                          <th key={index}>{col}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+      {Object.entries(data).length > 0 ? (
+                        Object.entries(data).map(([item, { cantidad, porcentaje }]) => {
+                          let nivelClase = '';
+                          let nivelTexto = '';
+
+                          if (porcentaje >= 0.8) {
+                            nivelClase = 'alto';
+                            nivelTexto = 'Uso Muy Alto';
+                          } else if (porcentaje >= 0.6) {
+                            nivelClase = 'medio';
+                            nivelTexto = 'Uso Alto';
+                          } else if (porcentaje >= 0.4) {
+                            nivelClase = 'medio';
+                            nivelTexto = 'Uso Medio';
+                          } else {
+                            nivelClase = 'bajo';
+                            nivelTexto = 'Uso Bajo';
+                          }
+
+                          return (
+                            <tr key={item}>
+                              <td>{item}</td>
+                              <td>{cantidad} {cantidad === 1 ? 'reserva' : 'reservas'}</td>
+                              <td>
+                                <div className="nivel-uso">
+                                  <div 
+                                    className={`nivel-barra ${nivelClase}`}
+                                    style={{ width: `${porcentaje}%` }}
+                                    title={nivelTexto}
+                                  ></div>
+                                  <span>{porcentaje.toFixed(1)}%</span>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan="3" className="no-data-message">
+                            No figura información
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
