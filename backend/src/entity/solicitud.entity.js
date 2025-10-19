@@ -39,12 +39,14 @@ const SolicitudEntity = new EntitySchema({
       nullable: false // lab1, lab2, lab3
     },
     fecha: {
-      type: "date",
-      nullable: false // Para únicas: la fecha. Para recurrentes: fecha de inicio
+      type: "varchar", // Cambiado de "date" a "varchar" para evitar conversiones de timezone
+      length: 10,
+      nullable: true // Formato: YYYY-MM-DD
     },
     fechaTermino: {
-      type: "date",
-      nullable: true // Solo para solicitudes recurrentes
+      type: "varchar", // Cambiado de "date" a "varchar" para evitar conversiones de timezone
+      length: 10,
+      nullable: true // Formato: YYYY-MM-DD
     },
     tipoSolicitud: {
       type: "enum",
@@ -90,6 +92,13 @@ const SolicitudEntity = new EntitySchema({
     updatedAt: {
       type: "timestamp",
       updateDate: true
+    }
+  },
+  relations: {
+    clasesCanceladas: {
+      type: "one-to-many",
+      target: "Cancelacion",
+      inverseSide: "solicitud"
     }
   }
 });
