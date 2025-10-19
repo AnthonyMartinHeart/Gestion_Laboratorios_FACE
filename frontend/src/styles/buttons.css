@@ -1,0 +1,64 @@
+.export-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.export-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.export-button i {
+  font-size: 1rem;
+}
+
+.export-button.excel {
+  background-color: #217346;
+  color: white;
+}
+
+.export-button.pdf {
+  background-color: #dc3545;
+  color: white;
+}
+
+.export-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.export-button:active {
+  transform: translateY(0);
+}
+
+.filtros-form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.filtro-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filtro-item label {
+  font-weight: 500;
+  color: #495057;
+  min-width: 85px;
+}
