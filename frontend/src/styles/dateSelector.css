@@ -1,0 +1,82 @@
+.search-bar-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 0 20px;
+}
+
+.search-bar {
+    width: 100%;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    padding: 10px 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-label {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 5px;
+    padding-left: 15px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.search-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 1.1rem;
+    color: #333;
+    padding: 5px 35px 5px 10px;
+    cursor: pointer;
+}
+
+.search-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.calendar-icon {
+    position: absolute;
+    right: 20px;
+    color: #666;
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.search-input-wrapper:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos específicos para hacer que se vea más como una barra de búsqueda moderna */
+.search-bar {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-bar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
