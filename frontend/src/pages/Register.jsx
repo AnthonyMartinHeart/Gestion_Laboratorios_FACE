@@ -3,6 +3,7 @@ import { register } from '@services/auth.service.js';
 import Form from "@components/Form";
 import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
+import { formatRut } from '@helpers/formatRut.js';
 import '@styles/form.css';
 import { useState } from 'react';
 
@@ -34,30 +35,7 @@ const Register = () => {
         { value: 'otro', label: 'Otro' }
     ];
 
-    // Función para formatear RUT automáticamente
-    const formatRut = (rut) => {
-        // Remover todo lo que no sea dígito o K/k
-        const cleanRut = rut.replace(/[^0-9kK]/g, '');
-        
-        if (cleanRut.length === 0) return '';
-        
-        // Si solo hay un carácter, devolverlo tal como está
-        if (cleanRut.length === 1) return cleanRut;
-        
-        // Separar cuerpo y dígito verificador
-        const body = cleanRut.slice(0, -1);
-        const dv = cleanRut.slice(-1).toUpperCase();
-        
-        if (body.length === 0) return dv;
-        
-        // Formatear el cuerpo con puntos (de atrás hacia adelante)
-        let formattedBody = body;
-        if (body.length > 3) {
-            formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        }
-        
-        return `${formattedBody}-${dv}`;
-    };
+
 
     // Función para validar RUT chileno
     const validateRut = (rut) => {
@@ -223,14 +201,14 @@ const Register = () => {
                     {
                         label: "Correo electrónico",
                         name: "email",
-                        placeholder: "@gmail.cl / @alumnos.ubiobio.cl / @ubiobio.cl",
+                        placeholder: "@alumnos.ubiobio.cl / @ubiobio.cl",
                         fieldType: 'input',
                         type: "email",
                         required: true,
                         minLength: 15,
                         maxLength: 50,
-                        pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/,
-                        patternMessage: "Correo inválido. Solo se permiten dominios @gmail.cl, @alumnos.ubiobio.cl y @ubiobio.cl",
+                        pattern: /^[a-zA-Z0-9._%+-]+@(alumnos\.ubiobio\.cl|ubiobio\.cl)$/,
+                        patternMessage: "Correo inválido. Solo se permiten dominios institucionales (@alumnos.ubiobio.cl y @ubiobio.cl)",
                         errorMessageData: errorEmail,
                         onChange: handleEmailChange,
                     },
@@ -246,7 +224,12 @@ const Register = () => {
                         required: true,
                         value: rut,
                         errorMessageData: rutError || errorRut,
-                        onChange: handleRutChange,
+                        onChange: (e) => {
+                            const formattedRut = formatRut(e.target.value);
+                            handleRutChange({ target: { value: formattedRut } });
+                            // Actualizar el valor del input directamente
+                            e.target.value = formattedRut;
+                        },
                     },
                     {
                         label: "Contraseña",
