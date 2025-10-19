@@ -100,7 +100,7 @@ export default function Popup({ show, setShow, data, action }) {
                               label: "Correo electrónico",
                               name: "email",
                               defaultValue: userData.email || "",
-                              placeholder: 'example@gmail.cl',
+                              placeholder: 'example@alumnos.ubiobio.cl',
                               fieldType: 'input',
                               type: "email",
                               required: true,
@@ -109,7 +109,7 @@ export default function Popup({ show, setShow, data, action }) {
                               minLength: 15,
                               maxLength: 50,
                               pattern: /^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/,
-                              patternMessage: "El correo debe ser @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl",
+                              patternMessage: "El correo debe ser @alumnos.ubiobio.cl o @ubiobio.cl",
                              },
                             {
                                 label: "Rut",
