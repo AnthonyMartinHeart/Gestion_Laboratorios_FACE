@@ -6,12 +6,11 @@ const domainEmailValidator = (value, helper) => {
   const domain = value.toLowerCase(); // Solo para comparar
 
   if (
-    !domain.endsWith("@gmail.cl") &&
     !domain.endsWith("@alumnos.ubiobio.cl") &&
     !domain.endsWith("@ubiobio.cl") 
   ) {
     return helper.message(
-      "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl."
+      "El correo electrónico debe finalizar en @alumnos.ubiobio.cl o @ubiobio.cl"
     );
   }
 
@@ -20,21 +19,18 @@ const domainEmailValidator = (value, helper) => {
 
 // Esquema de validación para autenticación (login)
 export const authValidation = Joi.object({
-  email: Joi.string()
-    .min(15)
-    .max(50)
-    .email()
-    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/)
+  rut: Joi.string()
+    .min(9)
+    .max(12)
     .required()
+    .pattern(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
     .messages({
-      "string.empty": "El correo electrónico no puede estar vacío.",
-      "any.required": "El correo electrónico es obligatorio.",
-      "string.base": "El correo electrónico debe ser de tipo texto.",
-      "string.email": "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl.",
-      "string.min": "El correo electrónico debe tener al menos 15 caracteres.",
-      "string.max": "El correo electrónico debe tener como máximo 50 caracteres.",
-    })
-    .custom(domainEmailValidator, "Validación dominio email"),
+      "string.empty": "El rut no puede estar vacío.",
+      "string.base": "El rut debe ser de tipo string.",
+      "string.min": "El rut debe tener como mínimo 9 caracteres.",
+      "string.max": "El rut debe tener como máximo 12 caracteres.",
+      "string.pattern.base": "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
+    }),
   password: Joi.string()
     .min(8)
     .max(26)
@@ -83,13 +79,13 @@ export const registerValidation = Joi.object({
     .min(15)
     .max(50)
     .email()
-    .pattern(/^[\w.-]+@(gmail\.cl|alumnos\.ubiobio\.cl|ubiobio\.cl)$/)
+    .pattern(/^[\w.-]+@(alumnos\.ubiobio\.cl|ubiobio\.cl)$/)
     .required()
     .messages({
       "string.empty": "El correo electrónico no puede estar vacío.",
       "any.required": "El correo electrónico es obligatorio.",
       "string.base": "El correo electrónico debe ser de tipo texto.",
-      "string.email": "El correo electrónico debe finalizar en @gmail.cl, @alumnos.ubiobio.cl o @ubiobio.cl.",
+      "string.email": "El correo electrónico debe finalizar en @alumnos.ubiobio.cl o @ubiobio.cl",
       "string.min": "El correo electrónico debe tener al menos 15 caracteres.",
       "string.max": "El correo electrónico debe tener como máximo 50 caracteres.",
     })
