@@ -14,6 +14,10 @@ const MisSolicitudes = () => {
   
   const onSolicitudCreated = useCallback(() => {
     fetchSolicitudes();
+    // Refrescar horarios cuando se crea una solicitud aprobada
+    if (window.refreshClases) {
+      window.refreshClases();
+    }
   }, [fetchSolicitudes]);
   
   const { crear: crearSolicitud, loading: creandoSolicitud } = useCrearSolicitud(onSolicitudCreated);
@@ -405,6 +409,10 @@ const MisSolicitudes = () => {
         if (result.success) {
           showSuccessAlert('Solicitud aprobada', 'La solicitud ha sido aprobada exitosamente');
           fetchSolicitudes();
+          // Refrescar horarios cuando se aprueba una solicitud
+          if (window.refreshClases) {
+            window.refreshClases();
+          }
         } else {
           showErrorAlert('Error', result.error);
         }
@@ -436,10 +444,19 @@ const MisSolicitudes = () => {
   };
 
   const handleLimpiarSolicitudesProcesadas = async () => {
-    // Obtener solicitudes aprobadas y rechazadas
-    const solicitudesProcesadas = solicitudesConFiltros.filter(
+    console.log('🧹 Iniciando limpieza de solicitudes procesadas...');
+    
+    // Obtener solicitudes aprobadas y rechazadas de TODAS las solicitudes, no solo las filtradas
+    const solicitudesProcesadas = solicitudesFiltradas.filter(
       solicitud => solicitud.estado === 'aprobada' || solicitud.estado === 'rechazada'
     );
+
+    console.log('📊 Solicitudes encontradas:', {
+      total: solicitudesFiltradas.length,
+      procesadas: solicitudesProcesadas.length,
+      aprobadas: solicitudesProcesadas.filter(s => s.estado === 'aprobada').length,
+      rechazadas: solicitudesProcesadas.filter(s => s.estado === 'rechazada').length
+    });
 
     if (solicitudesProcesadas.length === 0) {
       showErrorAlert('Sin solicitudes', 'No hay solicitudes aprobadas o rechazadas para eliminar');
@@ -450,17 +467,18 @@ const MisSolicitudes = () => {
       title: '¿Limpiar todas las solicitudes procesadas?',
       html: `
         <div style="text-align: left;">
-          <p>Se eliminarán <strong>${solicitudesProcesadas.length}</strong> solicitudes:</p>
+          <p>Se eliminarán <strong>${solicitudesProcesadas.length}</strong> solicitudes procesadas:</p>
           <ul style="margin: 10px 0; padding-left: 20px;">
-            <li><strong>${solicitudesProcesadas.filter(s => s.estado === 'aprobada').length}</strong> solicitudes aprobadas</li>
-            <li><strong>${solicitudesProcesadas.filter(s => s.estado === 'rechazada').length}</strong> solicitudes rechazadas</li>
+            <li>✅ <strong>${solicitudesProcesadas.filter(s => s.estado === 'aprobada').length}</strong> solicitudes aprobadas</li>
+            <li>❌ <strong>${solicitudesProcesadas.filter(s => s.estado === 'rechazada').length}</strong> solicitudes rechazadas</li>
           </ul>
-          <p style="color: #dc3545; font-weight: bold;">⚠️ Esta acción no se puede deshacer</p>
+          <p style="color: #28a745; font-weight: bold;">✋ Las solicitudes PENDIENTES NO se eliminarán</p>
+          <p style="color: #dc3545; font-weight: bold; margin-top: 10px;">⚠️ Esta acción no se puede deshacer</p>
         </div>
       `,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: '🗑️ Eliminar Todas',
+      confirmButtonText: '🗑️ Eliminar Procesadas',
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#dc3545',
       customClass: {
@@ -488,6 +506,12 @@ const MisSolicitudes = () => {
       for (let i = 0; i < solicitudesProcesadas.length; i++) {
         const solicitud = solicitudesProcesadas[i];
         
+        console.log(`🗑️ Eliminando solicitud ${i + 1}/${solicitudesProcesadas.length}:`, {
+          id: solicitud.id,
+          titulo: solicitud.titulo,
+          estado: solicitud.estado
+        });
+        
         // Actualizar progreso
         Swal.update({
           html: `Eliminando: <b>${solicitud.titulo}</b><br>Progreso: <b>${i + 1}</b> de <b>${solicitudesProcesadas.length}</b>`
@@ -495,11 +519,14 @@ const MisSolicitudes = () => {
 
         const result = await eliminarSolicitud(solicitud.id);
         
+        console.log(`📋 Resultado de eliminación:`, result);
+        
         if (result.success) {
           eliminadas++;
+          console.log(`✅ Solicitud ${solicitud.id} eliminada exitosamente`);
         } else {
           errores++;
-          console.error(`Error eliminando solicitud ${solicitud.id}:`, result.error);
+          console.error(`❌ Error eliminando solicitud ${solicitud.id}:`, result.error);
         }
         
         // Pequeña pausa para no saturar el servidor
@@ -548,12 +575,30 @@ const MisSolicitudes = () => {
 
   const formatearFechaSolicitud = (solicitud) => {
     if (solicitud.tipoSolicitud === 'recurrente') {
-      const fechaInicio = new Date(solicitud.fecha).toLocaleDateString('es-CL');
-      const fechaTermino = new Date(solicitud.fechaTermino).toLocaleDateString('es-CL');
+      // Validar que las fechas existan
+      if (!solicitud.fecha || !solicitud.fechaTermino) {
+        return 'Fechas no disponibles';
+      }
+      
+      // Parsear fechas sin conversión de timezone
+      const [yearI, monthI, dayI] = solicitud.fecha.split('-').map(Number);
+      const fechaInicio = new Date(yearI, monthI - 1, dayI).toLocaleDateString('es-CL');
+      
+      const [yearT, monthT, dayT] = solicitud.fechaTermino.split('-').map(Number);
+      const fechaTermino = new Date(yearT, monthT - 1, dayT).toLocaleDateString('es-CL');
+      
       const diasTexto = solicitud.diasSemana?.join(', ') || 'Días no especificados';
       return `${fechaInicio} al ${fechaTermino} (${diasTexto})`;
     }
-    return new Date(solicitud.fecha).toLocaleDateString('es-CL');
+    
+    // Validar que la fecha exista
+    if (!solicitud.fecha) {
+      return 'Fecha no disponible';
+    }
+    
+    // Parsear fecha sin conversión de timezone (YYYY-MM-DD)
+    const [year, month, day] = solicitud.fecha.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('es-CL');
   };
 
   const getTipoSolicitudBadge = (solicitud) => {
