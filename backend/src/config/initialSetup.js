@@ -57,16 +57,7 @@ userRepository.save(
         }),
       ),
 
-      // Usuario de prueba agregado
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Usuario de Prueba",
-          rut: "12.184.931-3",
-          email: "prueba.usuario2025@gmail.cl",
-          password: await encryptPassword("CONTRA1234"), // Contraseña aleatoria
-          rol: "usuario",
-        }),
-      ),
+
     ]);
 
     console.log("* => Usuarios creados exitosamente");
