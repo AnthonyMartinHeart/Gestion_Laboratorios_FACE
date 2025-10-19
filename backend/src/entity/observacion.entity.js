@@ -22,7 +22,7 @@ const ObservacionSchema = new EntitySchema({
     },
     fecha: {
       type: "date",
-      nullable: false,
+      nullable: true, // Permitir NULL temporalmente para migración
     },
     observacion: {
       type: "text",
