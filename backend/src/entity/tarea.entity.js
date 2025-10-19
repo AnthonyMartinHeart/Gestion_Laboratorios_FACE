@@ -25,7 +25,7 @@ const TareaSchema = new EntitySchema({
     },
     fechaLimite: {
       type: "date",
-      nullable: false,
+      nullable: true, // Permitir NULL temporalmente para migración
     },
     estado: {
       type: "enum",
