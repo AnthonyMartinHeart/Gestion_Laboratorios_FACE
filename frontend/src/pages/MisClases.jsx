@@ -14,6 +14,51 @@ const MisClases = () => {
   const [filtroSemana, setFiltroSemana] = useState('actual'); // 'actual', 'siguiente', 'todas'
   const [vistaCalendario, setVistaCalendario] = useState(false);
 
+  // Función para generar fechas específicas de clases recurrentes
+  const generarFechasRecurrentes = (fechaInicio, fechaTermino, diasSemana) => {
+    const fechas = [];
+    
+    // Crear fechas locales sin conversión de zona horaria
+    const [yInicio, mInicio, dInicio] = fechaInicio.split('-').map(Number);
+    const inicio = new Date(yInicio, mInicio - 1, dInicio);
+    
+    const [yTermino, mTermino, dTermino] = fechaTermino.split('-').map(Number);
+    const termino = new Date(yTermino, mTermino - 1, dTermino);
+    
+    // Mapear nombres de días a números (JavaScript: 0=Domingo, 1=Lunes, etc.)
+    const diasSemanaMap = {
+      'lunes': 1, 'martes': 2, 'miercoles': 3, 'miércoles': 3,
+      'jueves': 4, 'viernes': 5, 'sabado': 6, 'sábado': 6, 'domingo': 0
+    };
+    
+    const diasNumeros = diasSemana
+      .map(dia => diasSemanaMap[dia.toLowerCase()])
+      .filter(d => d !== undefined);
+    
+    console.log('🗓️ Generando fechas recurrentes:', {
+      fechaInicio,
+      fechaTermino,
+      diasSemana,
+      diasNumeros
+    });
+    
+    const fechaActual = new Date(inicio);
+    while (fechaActual <= termino) {
+      const diaSemana = fechaActual.getDay();
+      if (diasNumeros.includes(diaSemana)) {
+        // Guardar como string YYYY-MM-DD
+        const y = fechaActual.getFullYear();
+        const m = String(fechaActual.getMonth() + 1).padStart(2, '0');
+        const d = String(fechaActual.getDate()).padStart(2, '0');
+        fechas.push(`${y}-${m}-${d}`);
+      }
+      fechaActual.setDate(fechaActual.getDate() + 1);
+    }
+    
+    console.log('📅 Fechas generadas:', fechas);
+    return fechas;
+  };
+
   // Obtener clases aprobadas del profesor
   const fetchClasesAprobadas = useCallback(async () => {
     try {
@@ -53,7 +98,21 @@ const MisClases = () => {
     return clasesAprobadas.map(solicitud => {
       // Si es recurrente, crear una clase por cada fecha específica (YYYY-MM-DD)
       if (solicitud.tipoSolicitud === 'recurrente') {
-        const fechasEspecificas = solicitud.fechasEspecificas || [];
+        // Validar que existan fecha, fechaTermino y diasSemana
+        if (!solicitud.fecha || !solicitud.fechaTermino || !solicitud.diasSemana || solicitud.diasSemana.length === 0) {
+          console.warn('Solicitud recurrente incompleta:', solicitud);
+          return null;
+        }
+        
+        // Generar fechas específicas usando fecha inicio, fecha término y días de la semana
+        const fechasEspecificas = generarFechasRecurrentes(
+          solicitud.fecha,
+          solicitud.fechaTermino,
+          solicitud.diasSemana
+        );
+        
+        console.log(`📚 Solicitud recurrente ID ${solicitud.id} generó ${fechasEspecificas.length} fechas`);
+        
         return fechasEspecificas.map(fechaStr => {
           // Validar que fechaStr exista
           if (!fechaStr) {
@@ -121,7 +180,7 @@ const MisClases = () => {
         };
       }
     }).flat().filter(Boolean); // Filtrar valores null/undefined
-  }, [clasesAprobadas]);
+  }, [clasesAprobadas, generarFechasRecurrentes]);
 
   // Filtrar clases según el filtro seleccionado
   const clasesFiltradas = useMemo(() => {
