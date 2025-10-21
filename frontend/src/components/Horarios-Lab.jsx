@@ -28,9 +28,11 @@ function isLongText(text) {
   return text && (text.length > 15 || text.includes(" ") && text.length > 12);
 }
 
-export default function HorarioLaboratorios({ laboratorio, selectedDate: propSelectedDate }) {
+export default function HorarioLaboratorios({ laboratorio, selectedDate: propSelectedDate, viewMode = 'daily' }) {
   const { user } = useAuth();
   const isAdmin = user?.rol === 'administrador';
+  
+  console.log('🔍 HorarioLaboratorios recibió viewMode:', viewMode);
   
   // Hook para sincronización automática (EXACTAMENTE como useReservationSync)
   const { 
@@ -48,10 +50,23 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
   const [hasChanges, setHasChanges] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
-  // Usar la fecha de la prop o la fecha actual (memoizado para evitar recreación)
-  const selectedDate = useMemo(() => {
-    return propSelectedDate ? new Date(propSelectedDate + 'T00:00:00') : new Date();
+  // Usar la fecha de la prop o la fecha actual (como string YYYY-MM-DD)
+  const selectedDateString = useMemo(() => {
+    if (propSelectedDate) {
+      return propSelectedDate; // Ya viene en formato YYYY-MM-DD
+    }
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }, [propSelectedDate]);
+  
+  // Crear objeto Date solo cuando sea necesario, evitando problemas de timezone
+  const selectedDate = useMemo(() => {
+    const [year, month, day] = selectedDateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }, [selectedDateString]);
 
   // Función para ajustar la clase de las textareas con texto largo
   const adjustAllTextareas = useCallback(() => {
@@ -148,77 +163,139 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
       if (typeof fecha === 'string') {
         const [year, month, day] = fecha.split('-').map(Number);
         const d = new Date(year, month - 1, day);
-        return diasES[d.getDay()];
+        const diaNumero = d.getDay();
+        const diaNombre = diasES[diaNumero];
+        
+        console.log('🔍 getDiaSemanaFromFecha:', {
+          fechaString: fecha,
+          year, month, day,
+          dateCreado: d.toString(),
+          diaNumero: diaNumero,
+          diaNombre: diaNombre
+        });
+        
+        return diaNombre;
       }
       
       // Si ya es un objeto Date, usarlo directamente
       return diasES[fecha.getDay()];
     }
 
+    // Función para calcular el rango de semana (lunes a sábado) de una fecha dada
+    function getWeekRange(dateString) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      const dayOfWeek = date.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
+      
+      // Calcular cuántos días hay que restar para llegar al lunes
+      // Si es domingo (0), restar 6 días; si es lunes (1), restar 0; etc.
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      
+      // Calcular la fecha del lunes de esta semana
+      const monday = new Date(year, month - 1, day);
+      monday.setDate(monday.getDate() - daysToMonday);
+      
+      // Calcular la fecha del sábado de esta semana (lunes + 5 días)
+      const saturday = new Date(monday);
+      saturday.setDate(monday.getDate() + 5);
+      
+      // Convertir a strings en formato YYYY-MM-DD
+      const formatDate = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dy = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dy}`;
+      };
+      
+      const mondayStr = formatDate(monday);
+      const saturdayStr = formatDate(saturday);
+      
+      console.log('📆 Calculando rango de semana:', {
+        fechaSeleccionada: dateString,
+        diaDeLaSemana: dayOfWeek,
+        diasHastaLunes: daysToMonday,
+        lunesDeEstaSemana: mondayStr,
+        sabadoDeEstaSemana: saturdayStr
+      });
+      
+      return { start: mondayStr, end: saturdayStr };
+    }
+
     function pintarClasesEnTabla(tabla, clases, labNumber) {
       // Clonar la tabla para no mutar el estado original
       const nuevaTabla = tabla.map(row => [...row]);
-      // console.log('=== PINTANDO CLASES PARA LAB', labNumber, '===');
-      // console.log('Fecha seleccionada:', selectedDate.toISOString().split('T')[0]);
+      console.log(`\n=== 🎨 PINTANDO CLASES PARA LAB ${labNumber} ===`);
+      console.log('📅 Fecha seleccionada:', selectedDateString);
+      console.log('� Modo de vista:', viewMode);
+      console.log('�📚 Total de clases aprobadas:', clases.length);
       
-      clases.forEach(clase => {
-        // console.log('\n--- Procesando clase ---');
-        // console.log('Título:', clase.titulo);
-        // console.log('Tipo:', clase.tipoSolicitud);
-        // console.log('Laboratorio:', clase.laboratorio);
-        // console.log('Fecha:', clase.fecha);
-        // console.log('Fecha Término:', clase.fechaTermino);
-        // console.log('Días Semana:', clase.diasSemana);
-        // console.log('Hora inicio:', clase.horaInicio);
-        // console.log('Hora término:', clase.horaTermino);
+      clases.forEach((clase, index) => {
+        console.log(`\n--- 🔍 Procesando clase ${index + 1}/${clases.length} ---`);
+        console.log('📋 Título:', clase.titulo);
+        console.log('🔄 Tipo:', clase.tipoSolicitud);
+        console.log('🏢 Laboratorio:', clase.laboratorio);
+        console.log('📅 Fecha:', clase.fecha);
+        console.log('📅 Fecha Término:', clase.fechaTermino);
+        console.log('🗓️ Días Semana (raw):', JSON.stringify(clase.diasSemana)); // Usar JSON.stringify para ver el contenido
+        console.log('⏰ Hora inicio:', clase.horaInicio);
+        console.log('⏰ Hora término:', clase.horaTermino);
 
         // Verificar que la clase es para este laboratorio
         const labClase = Number(clase.laboratorio?.replace('lab', ''));
+        console.log('🔍 Comparando laboratorios: clase es para LAB', labClase, ', pintando en LAB', labNumber);
         if (labClase !== labNumber) {
-          // console.log('❌ No es para este laboratorio');
+          console.log('❌ No es para este laboratorio (esperado:', labNumber, ', recibido:', labClase, ')');
           return;
         }
+        
+        console.log('✅ Laboratorio correcto - CONTINUANDO con validaciones de fecha...');
 
         // --- VALIDACIÓN DE FECHAS ---
-        const fechaSeleccionada = new Date(selectedDate);
-        fechaSeleccionada.setHours(0,0,0,0);
-        
-        let fechaInicio, fechaTermino;
+        // Trabajar con strings de fecha para evitar problemas de timezone
         let estaCancelada = false; // Flag para marcar si está cancelada
+        
+        // Calcular el rango de semana si estamos en modo semanal
+        const weekRange = viewMode === 'weekly' ? getWeekRange(selectedDateString) : null;
+        console.log(`🔍 Modo de vista: ${viewMode}`, weekRange ? `(Semana: ${weekRange.start} - ${weekRange.end})` : '');
         
         if (clase.tipoSolicitud === 'unica') {
           // Para clases únicas, solo mostrar en la fecha exacta
           // Validar que la fecha exista
           if (!clase.fecha) {
-            // console.log('❌ Clase única sin fecha');
+            console.log('❌ Clase única sin fecha');
             return;
           }
           
-          // Parsear fecha sin conversión de timezone
-          const [yearF, monthF, dayF] = clase.fecha.split('-').map(Number);
-          fechaInicio = new Date(yearF, monthF - 1, dayF);
-          fechaTermino = new Date(yearF, monthF - 1, dayF);
-          fechaInicio.setHours(0,0,0,0);
-          fechaTermino.setHours(0,0,0,0);
+          console.log('📋 Validando clase ÚNICA:', {
+            titulo: clase.titulo,
+            fechaClase: clase.fecha,
+            fechaSeleccionada: selectedDateString,
+            modo: viewMode,
+            rangoSemana: weekRange
+          });
           
-          const fechaSelStr = fechaSeleccionada.toISOString().split('T')[0];
-          const fechaClaseStr = fechaInicio.toISOString().split('T')[0];
+          // En modo diario: comparar fecha exacta
+          // En modo semanal: verificar que la fecha esté dentro de la semana
+          let fechaValida = false;
+          if (viewMode === 'daily') {
+            fechaValida = clase.fecha === selectedDateString;
+            console.log(`Modo diario: ${clase.fecha} === ${selectedDateString} = ${fechaValida}`);
+          } else {
+            fechaValida = clase.fecha >= weekRange.start && clase.fecha <= weekRange.end;
+            console.log(`Modo semanal: ${clase.fecha} en rango [${weekRange.start}, ${weekRange.end}] = ${fechaValida}`);
+          }
           
-          // console.log('Validando clase ÚNICA:', {
-          //   fechaSeleccionada: fechaSelStr,
-          //   fechaClase: fechaClaseStr
-          // });
-          
-          if (fechaSelStr !== fechaClaseStr) {
-            // console.log('❌ Fecha no coincide');
+          if (!fechaValida) {
+            console.log('❌ Fecha no válida para este modo de vista');
             return;
           }
+          
+          console.log('✅ Fecha válida - clase única será visible');
           
           // Verificar si la clase única fue cancelada
           const cancelaciones = clase.clasesCanceladas || clase.cancelaciones || [];
-          console.log(`🔍 Verificando cancelaciones para clase única "${clase.titulo}":`, cancelaciones);
           if (cancelaciones.length > 0) {
-            // console.log('Verificando cancelaciones:', cancelaciones);
+            console.log(`🔍 Verificando cancelaciones para clase única "${clase.titulo}":`, cancelaciones);
             const cancelada = cancelaciones.some(c => {
               // La fecha puede venir en c.fecha o c.fechaEspecifica
               const fechaCancelStr = c.fecha || c.fechaEspecifica;
@@ -226,93 +303,282 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
               
               // Comparar strings directamente en formato YYYY-MM-DD
               const fechaCancelFormat = fechaCancelStr.split('T')[0];
-              const coincide = fechaCancelFormat === fechaSelStr;
-              console.log(`Comparando cancelación: ${fechaCancelFormat} vs ${fechaSelStr} = ${coincide}`);
+              const coincide = fechaCancelFormat === clase.fecha;
+              console.log(`Comparando cancelación: ${fechaCancelFormat} vs ${clase.fecha} = ${coincide}`);
               return coincide;
             });
             
             if (cancelada) {
               estaCancelada = true; // Marcar como cancelada en lugar de return
-              console.log('✅ CLASE MARCADA COMO CANCELADA:', clase.titulo);
+              console.log('⚠️ CLASE MARCADA COMO CANCELADA:', clase.titulo);
             }
           }
           
-          // console.log('✅ Fecha coincide');
         } else if (clase.tipoSolicitud === 'recurrente') {
           // Para clases recurrentes, validar rango de fechas Y día de semana
           // Validar que las fechas existan
           if (!clase.fecha) {
-            // console.log('❌ Clase recurrente sin fecha de inicio');
+            console.log('❌ Clase recurrente sin fecha de inicio');
             return;
           }
           
-          // Parsear fechas sin conversión de timezone
-          const [yearI, monthI, dayI] = clase.fecha.split('-').map(Number);
-          fechaInicio = new Date(yearI, monthI - 1, dayI);
-          
+          // Comparar strings de fechas directamente
+          const fechaInicioStr = clase.fecha;
           const fechaTerminoStr = clase.fechaTermino || clase.fecha;
-          const [yearT, monthT, dayT] = fechaTerminoStr.split('-').map(Number);
-          fechaTermino = new Date(yearT, monthT - 1, dayT);
           
-          fechaInicio.setHours(0,0,0,0);
-          fechaTermino.setHours(0,0,0,0);
+          console.log('🔄 Validando clase RECURRENTE:', {
+            titulo: clase.titulo,
+            modo: viewMode,
+            fechaSeleccionada: selectedDateString,
+            rangoSemana: weekRange,
+            fechaInicio: fechaInicioStr,
+            fechaTermino: fechaTerminoStr,
+            diasSemana: clase.diasSemana
+          });
           
-          // console.log('Validando clase RECURRENTE:', {
-          //   fechaSeleccionada: fechaSeleccionada.toISOString().split('T')[0],
-          //   fechaInicio: fechaInicio.toISOString().split('T')[0],
-          //   fechaTermino: fechaTermino.toISOString().split('T')[0]
-          // });
+          // En modo diario: verificar que selectedDate esté dentro del rango de la clase
+          // En modo semanal: verificar que haya solapamiento entre la semana seleccionada y el rango de la clase
+          let rangoValido = false;
+          if (viewMode === 'daily') {
+            rangoValido = selectedDateString >= fechaInicioStr && selectedDateString <= fechaTerminoStr;
+            console.log(`Modo diario: ${selectedDateString} en [${fechaInicioStr}, ${fechaTerminoStr}] = ${rangoValido}`);
+          } else {
+            // Verificar si hay solapamiento entre la semana y el rango de la clase
+            rangoValido = !(weekRange.end < fechaInicioStr || weekRange.start > fechaTerminoStr);
+            console.log(`Modo semanal: semana [${weekRange.start}, ${weekRange.end}] solapa con clase [${fechaInicioStr}, ${fechaTerminoStr}] = ${rangoValido}`);
+          }
           
-          if (fechaSeleccionada < fechaInicio || fechaSeleccionada > fechaTermino) {
-            // console.log('❌ Fecha fuera del rango');
+          if (!rangoValido) {
+            console.log('❌ Fecha/semana fuera del rango de la clase');
             return;
           }
           
-          // Validar día de semana
-          const diaSemanaSeleccionado = getDiaSemanaFromFecha(selectedDate);
-          const diasSemanaFormateados = clase.diasSemana.map(d => 
-            d.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          );
-          
-          // console.log('Validando día de semana:', {
-          //   diaSeleccionado: diaSemanaSeleccionado,
-          //   diasClase: diasSemanaFormateados
-          // });
-          
-          if (!diasSemanaFormateados.includes(diaSemanaSeleccionado)) {
-            // console.log('❌ No es un día de clase');
-            return;
-          }
-          
-          // Verificar si esta fecha específica de la clase recurrente fue cancelada
-          const cancelaciones = clase.clasesCanceladas || clase.cancelaciones || [];
-          if (cancelaciones.length > 0) {
-            const fechaSelStr = fechaSeleccionada.toISOString().split('T')[0];
-            // console.log('Verificando cancelaciones para clase recurrente:', cancelaciones);
-            const cancelada = cancelaciones.some(c => {
-              // La fecha puede venir en c.fecha o c.fechaEspecifica
-              const fechaCancelStr = c.fecha || c.fechaEspecifica;
-              if (!fechaCancelStr) return false;
-              
-              // Comparar strings directamente en formato YYYY-MM-DD
-              const fechaCancelFormat = fechaCancelStr.split('T')[0];
-              const coincide = fechaCancelFormat === fechaSelStr;
-              console.log(`Comparando cancelación recurrente: ${fechaCancelFormat} vs ${fechaSelStr} = ${coincide}`);
-              return coincide;
+          // En modo diario: validar que selectedDate sea un día de clase
+          // En modo semanal: la clase se mostrará en todos sus días de la semana que caigan dentro del rango
+          if (viewMode === 'daily') {
+            const diaSemanaSeleccionado = getDiaSemanaFromFecha(selectedDateString);
+            
+            // Normalizar ambos lados: eliminar acentos de los días de la clase Y del día seleccionado
+            const diasSemanaFormateados = clase.diasSemana.map(d => 
+              d.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            );
+            
+            const diaSemanaSeleccionadoNormalizado = diaSemanaSeleccionado
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, ''); // Eliminar acentos del día seleccionado también
+            
+            console.log('🗓️ Validando día de semana (modo diario):', {
+              diaSeleccionadoOriginal: diaSemanaSeleccionado,
+              diaSeleccionadoNormalizado: diaSemanaSeleccionadoNormalizado,
+              diasClaseOriginales: clase.diasSemana,
+              diasClaseFormateados: diasSemanaFormateados,
+              coincide: diasSemanaFormateados.includes(diaSemanaSeleccionadoNormalizado)
             });
             
-            if (cancelada) {
-              estaCancelada = true; // Marcar como cancelada en lugar de return
-              // console.log('❌ Esta fecha de la clase recurrente fue cancelada - se pintará con marca de CANCELADA');
+            if (!diasSemanaFormateados.includes(diaSemanaSeleccionadoNormalizado)) {
+              console.log('❌ No es un día de clase recurrente');
+              return;
             }
+            
+            console.log('✅ Clase recurrente válida para este día');
+            
+            // Verificar si esta fecha específica de la clase recurrente fue cancelada
+            const cancelaciones = clase.clasesCanceladas || clase.cancelaciones || [];
+            if (cancelaciones.length > 0) {
+              console.log('🔍 Verificando cancelaciones para clase recurrente:', cancelaciones);
+              const cancelada = cancelaciones.some(c => {
+                // La fecha puede venir en c.fecha o c.fechaEspecifica
+                const fechaCancelStr = c.fecha || c.fechaEspecifica;
+                if (!fechaCancelStr) return false;
+                
+                // Comparar strings directamente en formato YYYY-MM-DD
+                const fechaCancelFormat = fechaCancelStr.split('T')[0];
+                const coincide = fechaCancelFormat === selectedDateString;
+                console.log(`Comparando cancelación recurrente: ${fechaCancelFormat} vs ${selectedDateString} = ${coincide}`);
+                return coincide;
+              });
+              
+              if (cancelada) {
+                estaCancelada = true; // Marcar como cancelada en lugar de return
+                console.log('⚠️ Esta fecha de la clase recurrente fue cancelada - se pintará con marca de CANCELADA');
+              }
+            }
+          } else {
+            // En modo semanal, no validamos el día específico aquí
+            // La clase se pintará en todos sus días de la semana
+            console.log('✅ Modo semanal - la clase se mostrará en sus días correspondientes');
           }
           
           // console.log('✅ Día válido');
         }
 
-        // --- DETERMINAR DÍA DE LA TABLA ---
-        const diaSemana = getDiaSemanaFromFecha(clase.tipoSolicitud === 'unica' ? clase.fecha : selectedDate);
+        // --- DETERMINAR DÍA DE LA TABLA (MODIFICADO PARA MODO SEMANAL) ---
+        // En modo diario: usar la fecha como antes
+        // En modo semanal: para clases recurrentes, pintar en TODOS sus días de la semana
+        
+        console.log(`🎯 Antes de decidir cómo pintar - viewMode: ${viewMode}, tipo: ${clase.tipoSolicitud}`);
+        
+        // MODO SEMANAL - Pintar clases recurrentes en todos sus días
+        if (viewMode === 'weekly' && clase.tipoSolicitud === 'recurrente') {
+          console.log('🚀 ENTRANDO EN MODO SEMANAL RECURRENTE');
+          if (!weekRange) {
+            console.error('❌ weekRange es null en modo semanal!');
+            return;
+          }
+          // Para clases recurrentes en modo semanal, pintar en cada día especificado
+          const diasSemanaFormateados = clase.diasSemana.map(d => 
+            d.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          );
+          
+          console.log(`🗓️ Modo semanal - pintando clase recurrente en días: ${diasSemanaFormateados.join(', ')}`);
+          
+          diasSemanaFormateados.forEach(diaClase => {
+            const diaIndexClase = dias.map(d => 
+              d.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            ).indexOf(diaClase);
+            
+            if (diaIndexClase === -1) {
+              console.warn(`❌ Día no encontrado en tabla: ${diaClase}`);
+              return;
+            }
+            
+            // Calcular la fecha específica de este día en la semana actual
+            const diasDesdeInicio = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO']
+              .map(d => d.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+              .indexOf(diaClase);
+            
+            const [yearStart, monthStart, dayStart] = weekRange.start.split('-').map(Number);
+            const fechaEspecifica = new Date(yearStart, monthStart - 1, dayStart);
+            fechaEspecifica.setDate(fechaEspecifica.getDate() + diasDesdeInicio);
+            
+            const formatDateStr = (d) => {
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              const dy = String(d.getDate()).padStart(2, '0');
+              return `${y}-${m}-${dy}`;
+            };
+            
+            const fechaEspecificaStr = formatDateStr(fechaEspecifica);
+            
+            // Verificar que esta fecha específica esté dentro del rango de la clase
+            if (fechaEspecificaStr < clase.fecha || fechaEspecificaStr > (clase.fechaTermino || clase.fecha)) {
+              console.log(`❌ Fecha ${fechaEspecificaStr} (${diaClase}) está fuera del rango de la clase`);
+              return;
+            }
+            
+            // Verificar si esta fecha específica está cancelada
+            let estaCanceladaEspecifica = false;
+            const cancelaciones = clase.clasesCanceladas || clase.cancelaciones || [];
+            if (cancelaciones.length > 0) {
+              estaCanceladaEspecifica = cancelaciones.some(c => {
+                const fechaCancelStr = c.fecha || c.fechaEspecifica;
+                if (!fechaCancelStr) return false;
+                const fechaCancelFormat = fechaCancelStr.split('T')[0];
+                return fechaCancelFormat === fechaEspecificaStr;
+              });
+            }
+            
+            console.log(`✅ Pintando en ${dias[diaIndexClase]} (columna ${diaIndexClase + 1}) - fecha: ${fechaEspecificaStr}${estaCanceladaEspecifica ? ' [CANCELADA]' : ''}`);
+            
+            // Abreviar nombre del profesor
+            let profe = '';
+            if (clase.profesorNombre) {
+              const partes = clase.profesorNombre.trim().split(' ');
+              const nombre = partes[0] ? partes[0][0].toUpperCase() + partes[0].slice(1).toLowerCase() : '';
+              const apellido = partes[1] ? partes[1][0].toUpperCase() + '.' : '';
+              profe = nombre + (apellido ? ' ' + apellido : '');
+            }
+
+            // Construir nombre de la clase, agregando "CANCELADA" si aplica
+            let nombreClaseEspecifica = `${clase.titulo || clase.descripcion || 'Clase'}${profe ? ' - ' + profe : ''}`;
+            if (estaCanceladaEspecifica) {
+              nombreClaseEspecifica = `❌ CANCELADA - ${nombreClaseEspecifica}`;
+            }
+            
+            // Pintar en este día de la tabla
+            const horaInicio = (clase.horaInicio || '').trim();
+            const horaTermino = (clase.horaTermino || '').trim();
+            
+            if (!horaInicio || !horaTermino) {
+              console.warn('❌ Faltan horas en clase');
+              return;
+            }
+            
+            // Pintar todos los bloques en el rango
+            let dentroRango = false;
+            for (let i = 0; i < horas.length; i++) {
+              const [bloqueInicio, bloqueFin] = horas[i].split('-');
+              
+              // Empezar a pintar
+              if (bloqueInicio === horaInicio) {
+                dentroRango = true;
+              }
+              
+              // Pintar si estamos en el rango
+              if (dentroRango) {
+                const celdaActual = nuevaTabla[i][diaIndexClase + 1];
+                
+                // Verificar si la celda tiene contenido manual
+                let esManual = false;
+                try {
+                  if (celdaActual && celdaActual.trim().startsWith('{')) {
+                    const data = JSON.parse(celdaActual);
+                    if (data.content && !data.auto) {
+                      esManual = true;
+                      console.log(`⚠️ Celda ${i} tiene contenido manual, se respeta: "${data.content}"`);
+                    }
+                  }
+                } catch (e) {
+                  if (celdaActual && celdaActual.trim() !== '') {
+                    esManual = true;
+                    console.log(`⚠️ Celda ${i} tiene contenido manual (texto plano), se respeta: "${celdaActual}"`);
+                  }
+                }
+                
+                // Solo pintar si NO es manual
+                if (!esManual) {
+                  nuevaTabla[i][diaIndexClase + 1] = JSON.stringify({
+                    content: nombreClaseEspecifica,
+                    auto: true,
+                    cancelada: estaCanceladaEspecifica,
+                    solicitudId: clase.id,
+                    date: fechaEspecificaStr
+                  });
+                  console.log(`✅ Pintado bloque ${i}: ${horas[i]}${estaCanceladaEspecifica ? ' (CANCELADA)' : ''}`);
+                }
+                
+                // Terminar de pintar DESPUÉS de pintar este bloque
+                if (bloqueFin === horaTermino) {
+                  break;
+                }
+              }
+            }
+          });
+          
+          // En modo semanal recurrente, ya pintamos todo en el forEach, así que no seguir
+          console.log('✅ Terminado de pintar clase recurrente en modo semanal');
+          return;
+        }
+        
+        console.log('📍 Continuando con flujo normal (modo diario o clase única)');
+        
+        // MODO DIARIO o CLASE ÚNICA (ambos modos)
+        // Para clases únicas, usar la fecha de la clase directamente
+        // Para clases recurrentes en modo diario, usar la fecha seleccionada
+        const fechaParaDia = clase.tipoSolicitud === 'unica' ? clase.fecha : selectedDateString;
+        const diaSemana = getDiaSemanaFromFecha(fechaParaDia);
         const diaIndex = dias.indexOf(diaSemana);
+        
+        console.log('🗓️ DEBUG - Determinando día de tabla:', {
+          titulo: clase.titulo,
+          tipo: clase.tipoSolicitud,
+          fechaClase: clase.fecha,
+          fechaSeleccionada: selectedDateString,
+          fechaUsadaParaDia: fechaParaDia,
+          diaSemanaCalculado: diaSemana,
+          diaIndex: diaIndex,
+          columnaDia: dias[diaIndex]
+        });
         
         if (diaIndex === -1) {
           console.warn('❌ Día no encontrado en tabla:', diaSemana);
@@ -381,14 +647,15 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
             // Solo pintar si NO es manual
             if (!esManual) {
               // Marcar como contenido automático
+              // En modo semanal, usar fechaParaDia para que cada clase tenga su fecha correcta
               nuevaTabla[i][diaIndex + 1] = JSON.stringify({
                 content: nombreClase,
                 auto: true,
                 cancelada: estaCancelada, // Marcar si está cancelada
                 solicitudId: clase.id,
-                date: selectedDate.toISOString().split('T')[0]
+                date: fechaParaDia // Usar fechaParaDia en lugar de selectedDateString
               });
-              console.log(`✅ Pintado bloque ${i}: ${horas[i]}${estaCancelada ? ' (CANCELADA)' : ''}`);
+              console.log(`✅ Pintado bloque ${i}: ${horas[i]} - Fecha: ${fechaParaDia}${estaCancelada ? ' (CANCELADA)' : ''}`);
             }
             
             // Terminar de pintar DESPUÉS de pintar este bloque
@@ -407,6 +674,13 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
     // Leer hasChanges sin que sea dependencia para evitar loops
     const shouldUpdate = !hasChanges;
     
+    console.log('🔍 Estado de actualización:', {
+      shouldUpdate,
+      hasChanges,
+      horarios: !!horarios,
+      clasesAprobadas: clasesAprobadas?.length || 0
+    });
+    
     if (!shouldUpdate) {
       console.log('⚠️ Hay cambios sin guardar, no se sobrescriben las tablas');
       return;
@@ -418,13 +692,23 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
       let tabla2 = horarios.lab2 || generarTablaInicial();
       let tabla3 = horarios.lab3 || generarTablaInicial();
 
+      console.log('🔍 Verificando clases aprobadas:', {
+        existe: !!clasesAprobadas,
+        cantidad: clasesAprobadas?.length || 0,
+        clases: clasesAprobadas,
+        viewMode: viewMode,
+        selectedDate: selectedDateString
+      });
+
       if (clasesAprobadas && clasesAprobadas.length > 0) {
-        console.log('Procesando clases aprobadas para fecha:', selectedDate);
+        console.log('✅ Procesando clases aprobadas para fecha:', selectedDate);
         
         // Pintar las clases aprobadas ENCIMA de los horarios guardados
         tabla1 = pintarClasesEnTabla(tabla1, clasesAprobadas, 1);
         tabla2 = pintarClasesEnTabla(tabla2, clasesAprobadas, 2);
         tabla3 = pintarClasesEnTabla(tabla3, clasesAprobadas, 3);
+      } else {
+        console.log('❌ NO hay clases aprobadas para pintar');
       }
       
       setLab1(tabla1);
@@ -437,7 +721,7 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
       setLab3(generarTablaInicial());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [horarios, clasesAprobadas, selectedDate]); // Solo dependencias externas, hasChanges se lee pero no es dependencia
+  }, [horarios, clasesAprobadas, selectedDateString, viewMode, adjustAllTextareas]); // Agregar viewMode a las dependencias
 
   const handleSave = async () => {
     if (!isAdmin) {
@@ -606,7 +890,7 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
         // Si se está agregando contenido, guardarlo con la fecha
         newData[rowIndex][colIndex] = JSON.stringify({
           content: value,
-          date: selectedDate.toISOString().split('T')[0]
+          date: selectedDateString
         });
       } else {
         // Si se está borrando, guardar string vacío
@@ -672,15 +956,45 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
                                 try {
                                   if (!cell) return '';
                                   const parsed = JSON.parse(cell);
-                                  // Solo mostrar el contenido si es para la fecha seleccionada
-                                  // Funciona tanto para contenido manual como automático
-                                  if (parsed.date === selectedDate.toISOString().split('T')[0]) {
-                                    return parsed.content || '';
+                                  
+                                  // En modo semanal, mostrar si la fecha está dentro del rango de la semana
+                                  // En modo diario, mostrar solo si la fecha coincide exactamente
+                                  if (viewMode === 'weekly') {
+                                    // Calcular el rango de la semana
+                                    const [year, month, day] = selectedDateString.split('-').map(Number);
+                                    const date = new Date(year, month - 1, day);
+                                    const dayOfWeek = date.getDay();
+                                    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                                    
+                                    const monday = new Date(year, month - 1, day);
+                                    monday.setDate(monday.getDate() - daysToMonday);
+                                    
+                                    const saturday = new Date(monday);
+                                    saturday.setDate(monday.getDate() + 5);
+                                    
+                                    const formatDate = (d) => {
+                                      const y = d.getFullYear();
+                                      const m = String(d.getMonth() + 1).padStart(2, '0');
+                                      const dy = String(d.getDate()).padStart(2, '0');
+                                      return `${y}-${m}-${dy}`;
+                                    };
+                                    
+                                    const mondayStr = formatDate(monday);
+                                    const saturdayStr = formatDate(saturday);
+                                    
+                                    // Mostrar si la fecha de la clase está dentro de la semana
+                                    if (parsed.date >= mondayStr && parsed.date <= saturdayStr) {
+                                      return parsed.content || '';
+                                    }
+                                  } else {
+                                    // Modo diario: mostrar solo si la fecha coincide exactamente
+                                    if (parsed.date === selectedDateString) {
+                                      return parsed.content || '';
+                                    }
                                   }
                                   return '';
                                 } catch {
                                   // Si no es JSON (contenido antiguo), mostrar directamente
-                                  // Limpiar cualquier formato de hora que pueda estar al inicio
                                   const cleanCell = cell ? String(cell).replace(/^\d{1,2}:\d{2}\s*-\d{1,2}:\d{2}\s*/, '') : '';
                                   return cleanCell;
                                 }
@@ -718,15 +1032,45 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
                             try {
                               if (!row[diaIndex + 1]) return '';
                               const parsed = JSON.parse(row[diaIndex + 1]);
-                              // Solo mostrar el contenido si es para la fecha seleccionada
-                              // Funciona tanto para contenido manual como automático
-                              if (parsed.date === selectedDate.toISOString().split('T')[0]) {
-                                return parsed.content || '';
+                              
+                              // En modo semanal, mostrar si la fecha está dentro del rango de la semana
+                              // En modo diario, mostrar solo si la fecha coincide exactamente
+                              if (viewMode === 'weekly') {
+                                // Calcular el rango de la semana
+                                const [year, month, day] = selectedDateString.split('-').map(Number);
+                                const date = new Date(year, month - 1, day);
+                                const dayOfWeek = date.getDay();
+                                const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                                
+                                const monday = new Date(year, month - 1, day);
+                                monday.setDate(monday.getDate() - daysToMonday);
+                                
+                                const saturday = new Date(monday);
+                                saturday.setDate(monday.getDate() + 5);
+                                
+                                const formatDate = (d) => {
+                                  const y = d.getFullYear();
+                                  const m = String(d.getMonth() + 1).padStart(2, '0');
+                                  const dy = String(d.getDate()).padStart(2, '0');
+                                  return `${y}-${m}-${dy}`;
+                                };
+                                
+                                const mondayStr = formatDate(monday);
+                                const saturdayStr = formatDate(saturday);
+                                
+                                // Mostrar si la fecha de la clase está dentro de la semana
+                                if (parsed.date >= mondayStr && parsed.date <= saturdayStr) {
+                                  return parsed.content || '';
+                                }
+                              } else {
+                                // Modo diario: mostrar solo si la fecha coincide exactamente
+                                if (parsed.date === selectedDateString) {
+                                  return parsed.content || '';
+                                }
                               }
                               return '';
                             } catch {
                               // Si no es JSON (contenido antiguo), mostrar directamente
-                              // Limpiar cualquier formato de hora que pueda estar al inicio
                               const cleanCell = row[diaIndex + 1] ? String(row[diaIndex + 1]).replace(/^\d{1,2}:\d{2}\s*-\d{1,2}:\d{2}\s*/, '') : '';
                               return cleanCell;
                             }
@@ -776,7 +1120,7 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
         </div>
       )}
       
-      {/* Se eliminó la sección de información para consultores */}
+      {/*  */}
     </div>
   );
 }
