@@ -74,143 +74,6 @@ function generarFechasRecurrentes(fechaInicio, fechaTermino, diasSemana) {
   return fechas;
 }
 
-// Función para integrar clases aprobadas en los horarios
-async function integrarClasesAprobadas(horariosBase) {
-  try {
-    const solicitudRepository = AppDataSource.getRepository("Solicitud");
-    const cancelacionRepository = AppDataSource.getRepository("Cancelacion");
-    
-    // Obtener todas las solicitudes aprobadas
-    const solicitudesAprobadas = await solicitudRepository.find({
-      where: { estado: "aprobada" },
-      order: { fecha: "ASC" }
-    });
-    
-    // Obtener todas las cancelaciones
-    const cancelaciones = await cancelacionRepository.find();
-    
-    console.log('📚 Integrando clases aprobadas en horarios:', {
-      solicitudes: solicitudesAprobadas.length,
-      cancelaciones: cancelaciones.length
-    });
-    
-    // Log detallado de todas las solicitudes aprobadas
-    solicitudesAprobadas.forEach(s => {
-      console.log(`📋 Solicitud ID ${s.id}: ${s.titulo} - ${s.profesorNombre} - ${s.horaInicio}-${s.horaTermino} - Lab: ${s.laboratorio} - Tipo: ${s.tipoSolicitud}`);
-    });
-    
-    // Crear copia de horarios base para no modificar el original
-    const horariosConClases = JSON.parse(JSON.stringify(horariosBase));
-    
-    // Objeto para rastrear clases ya agregadas por posición
-    const clasesAgregadas = {};
-    
-    // Procesar cada solicitud aprobada
-    for (const solicitud of solicitudesAprobadas) {
-      console.log(`🔍 Procesando solicitud ID: ${solicitud.id}, título: ${solicitud.titulo}, horario: ${solicitud.horaInicio}-${solicitud.horaTermino}, tipo: ${solicitud.tipoSolicitud}`);
-      
-      const profesorFormateado = formatearNombreProfesor(solicitud.profesorNombre);
-      const textoClase = `${solicitud.titulo} - ${profesorFormateado}`;
-      
-      // Determinar qué laboratorio
-      const labKey = solicitud.laboratorio.toLowerCase(); // lab1, lab2, lab3
-      if (!horariosConClases[labKey]) {
-        console.warn(`Laboratorio ${labKey} no existe en horarios`);
-        continue;
-      }
-      
-      // Generar fechas específicas según tipo de solicitud
-      let fechasEspecificas = [];
-      
-      if (solicitud.tipoSolicitud === 'recurrente') {
-        fechasEspecificas = generarFechasRecurrentes(
-          solicitud.fecha, 
-          solicitud.fechaTermino, 
-          solicitud.diasSemana || []
-        );
-        console.log(`📅 Fechas generadas para solicitud ${solicitud.id}:`, fechasEspecificas.map(f => f.toISOString().split('T')[0]));
-      } else {
-        fechasEspecificas = [new Date(solicitud.fecha)];
-        console.log(`📅 Fecha única para solicitud ${solicitud.id}:`, fechasEspecificas[0].toISOString().split('T')[0]);
-      }
-      
-      // Procesar cada fecha específica
-      for (const fechaEspecifica of fechasEspecificas) {
-        // Verificar si esta fecha específica está cancelada
-        const fechaStr = fechaEspecifica.toISOString().split('T')[0];
-        const estaCancelada = cancelaciones.some(cancelacion => 
-          cancelacion.solicitudId === solicitud.id && 
-          cancelacion.fechaEspecifica === fechaStr
-        );
-        
-        if (estaCancelada) {
-          console.log(`⚠️ Clase cancelada: ${solicitud.titulo} el ${fechaStr}`);
-          continue; // Saltar clases canceladas
-        }
-        
-        // Solo mostrar clases futuras o del día actual
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        if (fechaEspecifica < hoy) {
-          continue; // Saltar clases pasadas
-        }
-        
-        // Obtener índices de fila y columna solo para la hora de INICIO
-        const filaIndex = mapearHorarioAIndice(solicitud.horaInicio);
-        const diaSemana = fechaEspecifica.getDay();
-        const columnaIndex = mapearDiaAIndice(diaSemana);
-        
-        if (filaIndex >= 0 && columnaIndex >= 0) {
-          // Crear clave única para esta posición (sin incluir ID de solicitud para evitar duplicados de la misma clase)
-          const claveUnica = `${labKey}-${filaIndex}-${columnaIndex}-${solicitud.horaInicio}-${solicitud.horaTermino}-${textoClase}-${fechaStr}`;
-          
-          // Verificar si ya agregamos esta clase en esta posición para esta fecha
-          if (clasesAgregadas[claveUnica]) {
-            console.log(`⚠️ Clase ya agregada en esta posición para esta fecha, omitiendo: ${claveUnica}`);
-            continue;
-          }
-          
-          // Verificar que los índices sean válidos
-          if (horariosConClases[labKey][filaIndex] && horariosConClases[labKey][filaIndex][columnaIndex] !== undefined) {
-            const celdaActual = horariosConClases[labKey][filaIndex][columnaIndex];
-            
-            // Crear el texto con formato: "15:40 -16:20 Clases Metodologia De Desarrollo - M. Elena Gonzal"
-            const textoCompleto = `${solicitud.horaInicio} -${solicitud.horaTermino} ${textoClase}`;
-            
-            console.log(`📝 Agregando a celda [${filaIndex}][${columnaIndex}]: "${textoCompleto}"`);
-            console.log(`📝 Contenido actual de la celda: "${celdaActual}"`);
-            
-            // Si la celda ya tiene contenido manual, agregamos la clase con separador
-            if (celdaActual && celdaActual.trim() !== "" && !celdaActual.includes("Asignatura")) {
-              // Verificar si ya existe este texto exacto para evitar duplicados
-              if (!celdaActual.includes(textoCompleto)) {
-                horariosConClases[labKey][filaIndex][columnaIndex] = `${celdaActual}\n${textoCompleto}`;
-                console.log(`✅ Clase agregada con separador`);
-              } else {
-                console.log(`⚠️ Clase ya existe en la celda, omitiendo duplicado`);
-              }
-            } else {
-              // Reemplazar completamente la celda (incluso si tiene "Asignatura")
-              horariosConClases[labKey][filaIndex][columnaIndex] = textoCompleto;
-              console.log(`✅ Clase agregada reemplazando contenido anterior: "${celdaActual}" -> "${textoCompleto}"`);
-            }
-            
-            // Marcar esta clase como agregada
-            clasesAgregadas[claveUnica] = true;
-            
-            console.log(`✅ Clase integrada: ${textoCompleto} en ${labKey}[${filaIndex}][${columnaIndex}] para ${fechaStr}`);
-          }
-        }
-      }
-    }
-    
-    return horariosConClases;
-  } catch (error) {
-    console.error('Error al integrar clases aprobadas:', error);
-    return horariosBase; // Retornar horarios base si hay error
-  }
-}
-
 export async function getHorariosService() {
   try {
     const repo = AppDataSource.getRepository(Horario);
@@ -246,31 +109,29 @@ export async function getHorariosService() {
         timestamp: Date.now()
       };
       
-      // Integrar clases aprobadas en la estructura inicial
-      const horariosConClases = await integrarClasesAprobadas(initialData);
+      // NO integrar clases en el backend - el frontend se encarga del filtrado por fecha
       
       // Crear el registro en la base de datos para evitar generarlo en cada consulta
       try {
         const newHorario = repo.create({
-          data: horariosConClases,
+          data: initialData,
           lastModified: new Date(),
           modifiedBy: 'Sistema'
         });
         
         await repo.save(newHorario);
-        console.log('Horario inicial creado en la base de datos con clases integradas');
+        console.log('Horario inicial creado en la base de datos');
       } catch (dbError) {
         console.error('Error al crear horario inicial:', dbError);
         // Si hay error al guardar, continuamos retornando los datos iniciales
       }
       
-      return [horariosConClases, null];
+      return [initialData, null];
     }
     
-    // Integrar clases aprobadas en los horarios existentes
-    const horariosConClases = await integrarClasesAprobadas(horario.data);
-    
-    return [horariosConClases, null];
+    // Devolver solo los horarios base sin integrar clases
+    // El frontend se encargará de pintar las clases según la fecha seleccionada
+    return [horario.data, null];
   } catch (error) {
     console.error("Error al obtener horarios:", error);
     return [null, "Error interno del servidor"];
