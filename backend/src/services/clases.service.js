@@ -110,7 +110,16 @@ class ClasesService {
 
       const cancelacionGuardada = await this.cancelacionRepository.save(cancelacion);
 
-      return [cancelacionGuardada, null];
+      // Retornar la cancelación junto con la información de la solicitud
+      return [{
+        ...cancelacionGuardada,
+        solicitud: {
+          laboratorio: solicitud.laboratorio,
+          horaInicio: solicitud.horaInicio,
+          horaTermino: solicitud.horaTermino,
+          titulo: solicitud.titulo
+        }
+      }, null];
     } catch (error) {
       console.error("Error al cancelar clase:", error);
       return [null, "Error interno del servidor"];
