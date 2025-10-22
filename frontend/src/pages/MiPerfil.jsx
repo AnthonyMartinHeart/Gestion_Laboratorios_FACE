@@ -122,6 +122,55 @@ const MiPerfil = () => {
     return <div>Cargando...</div>;
   }
 
+  // Función para detectar si es nombre de mujer
+  const esNombreFemenino = (nombreCompleto) => {
+    if (!nombreCompleto) return false;
+    
+    const nombreMinusculas = nombreCompleto.toLowerCase();
+    
+    // Terminaciones comunes en nombres femeninos
+    const terminacionesFemeninas = ['a', 'ela', 'ina', 'ana', 'ía', 'ie', 'ette', 'elle'];
+    
+    // Nombres femeninos comunes en Chile
+    const nombresFemeninos = [
+      'maria', 'jose', 'francisca', 'javiera', 'constanza', 'fernanda', 
+      'valentina', 'camila', 'carolina', 'daniela', 'andrea', 'paula',
+      'magdalena', 'isidora', 'florencia', 'trinidad', 'paz', 'luz',
+      'beatriz', 'carmen', 'rosa', 'pilar', 'soledad', 'mercedes',
+      'elizabeth', 'isabel', 'gabriela', 'alejandra', 'barbara', 'natalia',
+      'veronica', 'patricia', 'claudia', 'cristina', 'katherine', 'karen',
+      'pamela', 'nicole', 'michelle', 'stephanie', 'vanessa', 'jessica',
+      'catalina', 'antonia', 'sofia', 'emilia', 'agustina', 'martina'
+    ];
+    
+    // Obtener el primer nombre
+    const primerNombre = nombreCompleto.split(' ')[0].toLowerCase();
+    
+    // Verificar si el primer nombre está en la lista
+    if (nombresFemeninos.includes(primerNombre)) {
+      return true;
+    }
+    
+    // Verificar terminaciones
+    return terminacionesFemeninas.some(term => primerNombre.endsWith(term));
+  };
+
+  // Función para obtener el rol con género
+  const obtenerRolConGenero = (rol, nombreCompleto) => {
+    const esFemenino = esNombreFemenino(nombreCompleto);
+    
+    switch (rol.toLowerCase()) {
+      case 'profesor':
+        return esFemenino ? 'Profesora' : 'Profesor';
+      case 'administrador':
+        return esFemenino ? 'Administradora' : 'Administrador';
+      case 'consultor':
+        return esFemenino ? 'Consultora' : 'Consultor';
+      default:
+        return rol.charAt(0).toUpperCase() + rol.slice(1);
+    }
+  };
+
   // Validar si el correo es uno de los dominios permitidos
   const esCorreoValido = 
                          userData.email.endsWith('@alumnos.ubiobio.cl') ||
@@ -162,7 +211,7 @@ const MiPerfil = () => {
         {userData.email && userData.email.endsWith('@alumnos.ubiobio.cl') && (
           <p><strong>Carrera:</strong> {userData.carrera ? userData.carrera.toUpperCase() : 'No registrado'}</p>
         )}
-        <p><strong>Rol:</strong> {userData.rol.charAt(0).toUpperCase() + userData.rol.slice(1)}</p>
+        <p><strong>Rol:</strong> {obtenerRolConGenero(userData.rol, userData.nombreCompleto)}</p>
       </div>
     </div>
   );
