@@ -245,94 +245,49 @@ const MisReservas = () => {
               <div className="header-title-box">
                 <span className="header-title">Reservas Activas</span>
               </div>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <button 
-                  onClick={cargarMisReservas}
-                  disabled={cargandoReservas}
-                  title="Actualizar lista"
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: cargandoReservas ? '#93c5fd' : '#3b82f6',
-                    color: 'white',
-                    border: 'none',
-                    outline: 'none',
-                    borderRadius: '12px',
-                    cursor: cargandoReservas ? 'not-allowed' : 'pointer',
-                    fontWeight: 600,
-                    fontSize: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: cargandoReservas ? 'none' : '0 4px 12px rgba(59, 130, 246, 0.3)',
-                    WebkitTapHighlightColor: 'transparent',
-                    userSelect: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!cargandoReservas) {
-                      e.currentTarget.style.backgroundColor = '#2563eb';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!cargandoReservas) {
-                      e.currentTarget.style.backgroundColor = '#3b82f6';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-                    }
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.outline = 'none';
-                  }}
-                >
-                  <span style={{fontSize:18,verticalAlign:'middle',pointerEvents:'none'}}>🔄</span>
-                  <span style={{verticalAlign:'middle',pointerEvents:'none'}}>{cargandoReservas ? 'Actualizando...' : 'Actualizar'}</span>
-                </button>
-                <button 
-                  onClick={borrarHistorialInactivas}
-                  disabled={cargandoReservas}
-                  title="Borrar reservas inactivas del historial"
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: cargandoReservas ? '#fca5a5' : '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    outline: 'none',
-                    borderRadius: '12px',
-                    cursor: cargandoReservas ? 'not-allowed' : 'pointer',
-                    fontWeight: 600,
-                    fontSize: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: cargandoReservas ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.3)',
-                    WebkitTapHighlightColor: 'transparent',
-                    userSelect: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!cargandoReservas) {
-                      e.currentTarget.style.backgroundColor = '#dc2626';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!cargandoReservas) {
-                      e.currentTarget.style.backgroundColor = '#ef4444';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-                    }
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.outline = 'none';
-                  }}
-                >
-                  <span style={{fontSize:18,verticalAlign:'middle',pointerEvents:'none'}}>🗑️</span>
-                  <span style={{verticalAlign:'middle',pointerEvents:'none'}}>Borrar Historial</span>
-                </button>
-              </div>
+              <button 
+                onClick={borrarHistorialInactivas}
+                disabled={cargandoReservas}
+                title="Borrar reservas inactivas del historial"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: cargandoReservas ? '#fca5a5' : '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '12px',
+                  cursor: cargandoReservas ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                  fontSize: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: cargandoReservas ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.3)',
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (!cargandoReservas) {
+                    e.currentTarget.style.backgroundColor = '#dc2626';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!cargandoReservas) {
+                    e.currentTarget.style.backgroundColor = '#ef4444';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                  }
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.outline = 'none';
+                }}
+              >
+                <span style={{fontSize:18,verticalAlign:'middle',pointerEvents:'none'}}>🗑️</span>
+                <span style={{verticalAlign:'middle',pointerEvents:'none'}}>Borrar Historial</span>
+              </button>
             </div>
 
             <div className="reservas-lista">
