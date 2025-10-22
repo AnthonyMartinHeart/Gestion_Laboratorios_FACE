@@ -79,16 +79,32 @@ const cancelarClase = async (req, res) => {
     // Crear notificación para administradores y consultores
     try {
       console.log("🔔 Intentando crear notificación de cancelación...");
+      
+      // Formatear el nombre del profesor correctamente
+      const formatearNombre = (nombre) => {
+        if (!nombre) return '';
+        return nombre
+          .toLowerCase()
+          .split(' ')
+          .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+          .join(' ');
+      };
+      
+      const nombreFormateado = formatearNombre(nombreCompleto);
+      
       await crearNotificacion(
-        "cancelacion",
+        "cancelacion_clase_profesor",
         "Clase Cancelada por Profesor",
-        `${nombreCompleto} canceló su clase del ${fechaEspecifica}: ${motivoCancelacion}`,
+        `${nombreFormateado} canceló su clase del ${fechaEspecifica}`,
         {
           profesorRut: rut,
           profesorNombre: nombreCompleto,
           solicitudId,
           fecha: fechaEspecifica,
-          motivo: motivoCancelacion
+          motivo: motivoCancelacion,
+          laboratorio: cancelacion.solicitud?.laboratorio,
+          horaInicio: cancelacion.solicitud?.horaInicio,
+          horaTermino: cancelacion.solicitud?.horaTermino
         }
       );
       console.log("✅ Notificación de cancelación creada exitosamente");
