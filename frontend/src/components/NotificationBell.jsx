@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { notificationsService } from '../services/notifications.service';
+import { formatearNombre } from '../helpers/formatText.js';
 import '../styles/notificationBell.css';
 
 // Variable global para la función de recarga de notificaciones
@@ -388,42 +389,19 @@ const NotificationBell = () => {
                       <>
                         <h4>{notification.titulo}</h4>
                         <p>{(() => {
-                          // Para mensaje de cancelacion_clase_profesor, reescribir nombre y fecha con formato correcto
+                          // Para mensaje de cancelacion_clase_profesor, formatear la fecha correctamente
                           if (notification.tipo === 'cancelacion_clase_profesor' && notification.mensaje) {
                             let mensaje = notification.mensaje;
-                            // Regex para encontrar el nombre después de 'la profesora' o 'el profesor'
-                            const nombreMatch = mensaje.match(/(?:la profesora|el profesor) ([a-záéíóúñ ]+)/i);
-                            if (nombreMatch && nombreMatch[1]) {
-                              const nombreOriginal = nombreMatch[1].trim();
-                              // Capitalizar solo la primera letra de cada palabra
-                              const nombreFormateado = nombreOriginal.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-                              mensaje = mensaje.replace(nombreOriginal, nombreFormateado);
-                            }
-                            // Reemplazar la fecha en el mensaje por la local correcta
+                            
+                            // Reemplazar la fecha en el mensaje por la local correcta (formato DD-MM-YYYY)
                             try {
                               const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
                               let fechaMostrar = detalles && detalles.fecha;
-                              if (typeof fechaMostrar === 'string') {
-                                if (/^\d{4}-\d{2}-\d{2}$/.test(fechaMostrar)) {
-                                  const [y, m, d] = fechaMostrar.split('-');
-                                  const fechaLocal = new Date(Number(y), Number(m) - 1, Number(d));
-                                  const day = String(fechaLocal.getDate()).padStart(2, '0');
-                                  const month = String(fechaLocal.getMonth() + 1).padStart(2, '0');
-                                  const year = fechaLocal.getFullYear();
-                                  fechaMostrar = `${day}-${month}-${year}`;
-                                } else if (/^\d{2}-\d{2}-\d{4}$/.test(fechaMostrar)) {
-                                  // ya está bien
-                                } else {
-                                  const d = new Date(fechaMostrar);
-                                  if (!isNaN(d)) {
-                                    const day = String(d.getDate()).padStart(2, '0');
-                                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                                    const year = d.getFullYear();
-                                    fechaMostrar = `${day}-${month}-${year}`;
-                                  }
-                                }
-                                // Reemplazar cualquier fecha en el mensaje por la correcta
-                                mensaje = mensaje.replace(/\d{2,4}-\d{2}-\d{2,4}/, fechaMostrar);
+                              if (typeof fechaMostrar === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fechaMostrar)) {
+                                const [y, m, d] = fechaMostrar.split('-');
+                                fechaMostrar = `${d}-${m}-${y}`;
+                                // Reemplazar cualquier fecha YYYY-MM-DD en el mensaje
+                                mensaje = mensaje.replace(/\d{4}-\d{2}-\d{2}/, fechaMostrar);
                               }
                             } catch {}
                             return mensaje;
@@ -459,18 +437,16 @@ const NotificationBell = () => {
                                   }
                                 }
                               }
-                              // Capitalizar nombre completo (solo primera letra de cada palabra)
-                              const capitalizarNombre = (nombre) => {
-                                if (!nombre) return '';
-                                return nombre.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
-                              };
+                              
                               return (
                                 <div className="notification-details">
-                                  <span className="usuario">👤 {capitalizarNombre(detalles.profesorNombre || detalles.usuario)}</span>
+                                  <span className="usuario">👤 {formatearNombre(detalles.profesorNombre || detalles.usuario)}</span>
                                   <span className="laboratorio">🏢 {detalles.laboratorio}</span>
                                   <span className="fecha">📅 {fechaMostrar}</span>
-                                  <span className="hora">⏰ {detalles.horaInicio} - {detalles.horaTermino}</span>
-                                  <span className="motivo">💭 {detalles.motivo}</span>
+                                  <span className="hora">⏰ Horario: {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                  {detalles.motivo && (
+                                    <span className="motivo">💭 Observación: {detalles.motivo}</span>
+                                  )}
                                 </div>
                               );
                             }
@@ -478,7 +454,7 @@ const NotificationBell = () => {
                             return (
                               <div className="notification-details">
                                 {detalles.usuario && (
-                                  <span className="usuario">👤 {detalles.usuario}</span>
+                                  <span className="usuario">👤 {formatearNombre(detalles.usuario)}</span>
                                 )}
                                 {detalles.laboratorio && (
                                   <span className="laboratorio">🏢 {detalles.laboratorio}</span>
@@ -660,7 +636,7 @@ const NotificationBell = () => {
                                 return (
                                   <div className="notification-modal-details">
                                     {detalles.usuario && (
-                                      <span className="usuario">👤 {detalles.usuario}</span>
+                                      <span className="usuario">👤 {formatearNombre(detalles.usuario)}</span>
                                     )}
                                     {detalles.laboratorio && (
                                       <span className="laboratorio">🏢 {detalles.laboratorio}</span>
