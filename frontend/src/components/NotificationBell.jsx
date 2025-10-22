@@ -287,17 +287,6 @@ const NotificationBell = () => {
             <div className="notification-header">
               <h3>📢 Notificaciones</h3>
               <div className="notification-header-buttons">
-                {notificationsCleared && (
-                  <button 
-                    className="refresh-notifications"
-                    onClick={() => {
-                      setNotificationsCleared(false);
-                      loadNotifications();
-                    }}
-                  >
-                    🔄 Actualizar
-                  </button>
-                )}
                 {notifications.length > 0 && (
                   <button 
                     className="mark-all-read"
@@ -498,17 +487,6 @@ const NotificationBell = () => {
               <div className="modal-header-content">
                 <h2>📋 Todas las Notificaciones</h2>
                 <div className="modal-header-buttons">
-                  {notificationsCleared && (
-                    <button 
-                      className="modal-refresh-notifications"
-                      onClick={() => {
-                        setNotificationsCleared(false);
-                        loadNotifications();
-                      }}
-                    >
-                      🔄 Actualizar
-                    </button>
-                  )}
                   {notifications.length > 0 && (
                     <button 
                       className="modal-mark-all-read"
