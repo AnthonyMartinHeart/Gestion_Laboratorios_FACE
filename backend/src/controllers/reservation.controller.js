@@ -291,18 +291,22 @@ export async function deleteReservation(req, res) {
           );
         }
       } else {
-        await crearNotificacion(
-          "cancelacion",
-          "Reserva Cancelada",
-          `Se ha cancelado una reserva para el ${deleted.fechaReserva} de ${deleted.horaInicio} a ${deleted.horaTermino}`,
-          {
-            reservaId: deleted.id,
-            usuario: deleted.user?.nombre || "Usuario desconocido",
-            laboratorio: deleted.laboratorio || "No especificado",
-            motivo: "Cancelación manual"
-          }
-          // Notificación general para administradores
-        );
+        // Solo crear notificación si NO es un administrador quien elimina
+        // (evitar notificaciones redundantes a administradores)
+        if (req.user?.rol !== 'administrador') {
+          await crearNotificacion(
+            "cancelacion",
+            "Reserva Cancelada",
+            `Se ha cancelado una reserva para el ${deleted.fechaReserva} de ${deleted.horaInicio} a ${deleted.horaTermino}`,
+            {
+              reservaId: deleted.id,
+              usuario: deleted.user?.nombre || "Usuario desconocido",
+              laboratorio: deleted.laboratorio || "No especificado",
+              motivo: "Cancelación manual"
+            }
+            // Notificación general para administradores
+          );
+        }
       }
     } catch (notificationError) {
       console.error("Error al crear notificación:", notificationError);
