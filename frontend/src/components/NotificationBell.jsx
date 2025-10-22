@@ -338,45 +338,27 @@ const NotificationBell = () => {
                     {/* Personalizar mensaje para reserva_equipo (estudiantes y consultores) */}
                     {['estudiante', 'consultor', 'usuario'].includes(user.rol) && notification.tipo === 'reserva_equipo' ? (
                       <>
-                        <h4>💻 Reserva Confirmada</h4>
-                        <p>
-                          {notification.mensaje || `Has reservado el equipo PC-${(() => {
-                            try {
-                              const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
-                              return detalles && detalles.pcId ? detalles.pcId : 'N/A';
-                            } catch {
-                              return 'N/A';
-                            }
-                          })()} para el día ${(() => {
-                            try {
-                              const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
-                              // Prioridad: fecha > fechaReserva > fechaCreacion
-                              if (detalles && detalles.fecha) return detalles.fecha;
-                              if (detalles && detalles.fechaReserva) return detalles.fechaReserva;
-                              // Solo si no hay otra opción, usar fechaCreacion
-                              return formatearFecha(notification.fechaCreacion);
-                            } catch {
-                              return 'N/A';
-                            }
-                          })()}`}
+                        <h4> Reserva Confirmada ✅</h4>
+                        <p style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, marginBottom: '8px' }}>
+                          Has Reservado Exitosamente El:
                         </p>
-                        {/* Mostrar detalles adicionales para reserva_equipo */}
+                        {/* Mostrar detalles en tarjeta estilo horario */}
                         {notification.detalles && (() => {
                           try {
                             const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
                             return (
-                              <div className="notification-details">
-                                {detalles.laboratorio && (
-                                  <span className="laboratorio">🏢 {detalles.laboratorio}</span>
-                                )}
+                              <div className="notification-details reservation-card-style">
                                 {detalles.pcId && (
                                   <span className="pcId">💻 PC-{detalles.pcId}</span>
                                 )}
-                                {detalles.fecha && (
-                                  <span className="fecha">📅 {detalles.fecha}</span>
+                                {detalles.laboratorio && (
+                                  <span className="laboratorio">🏢 {detalles.laboratorio}</span>
                                 )}
                                 {detalles.horaInicio && detalles.horaTermino && (
-                                  <span className="hora">⏰ {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                  <span className="hora">⏰ Horario: {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                )}
+                                {detalles.fecha && (
+                                  <span className="fecha">📅 Fecha: {detalles.fecha}</span>
                                 )}
                               </div>
                             );
@@ -577,46 +559,28 @@ const NotificationBell = () => {
                         {/* Personalizar mensaje para reserva_equipo (estudiantes y consultores) */}
                         {['estudiante', 'consultor', 'usuario'].includes(user.rol) && notification.tipo === 'reserva_equipo' ? (
                           <>
-                            <h4>💻 Reserva Confirmada</h4>
-                            <p>
-                              {notification.mensaje || `Has reservado el equipo PC-${(() => {
-                                try {
-                                  const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
-                                  return detalles && detalles.pcId ? detalles.pcId : 'N/A';
-                                } catch {
-                                  return 'N/A';
-                                }
-                              })()} para el día ${(() => {
-                                try {
-                                  const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
-                                  // Prioridad: fecha > fechaReserva > fechaCreacion
-                                  if (detalles && detalles.fecha) return detalles.fecha;
-                                  if (detalles && detalles.fechaReserva) return detalles.fechaReserva;
-                                  // Solo si no hay otra opción, usar fechaCreacion
-                                  return formatearFecha(notification.fechaCreacion);
-                                } catch {
-                                  return 'N/A';
-                                }
-                              })()}`}
+                            <h4> Reserva Confirmada ✅</h4>
+                            <p style={{ fontSize: '0.9rem', color: '#16a34a', fontWeight: 600, marginBottom: '10px' }}>
+                              Has Reservado Exitosamente El:
                             </p>
                             
-                            {/* Mostrar detalles adicionales */}
+                            {/* Mostrar detalles en tarjeta estilo horario */}
                             {notification.detalles && (() => {
                               try {
                                 const detalles = typeof notification.detalles === 'string' ? JSON.parse(notification.detalles) : notification.detalles;
                                 return (
-                                  <div className="notification-modal-details">
-                                    {detalles.laboratorio && (
-                                      <span className="laboratorio">🏢 {detalles.laboratorio}</span>
-                                    )}
+                                  <div className="notification-modal-details reservation-card-style">
                                     {detalles.pcId && (
                                       <span className="pcId">💻 PC-{detalles.pcId}</span>
                                     )}
-                                    {detalles.fecha && (
-                                      <span className="fecha">📅 {detalles.fecha}</span>
+                                    {detalles.laboratorio && (
+                                      <span className="laboratorio">🏢 {detalles.laboratorio}</span>
                                     )}
                                     {detalles.horaInicio && detalles.horaTermino && (
-                                      <span className="hora">⏰ {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                      <span className="hora">⏰ Horario: {detalles.horaInicio} - {detalles.horaTermino}</span>
+                                    )}
+                                    {detalles.fecha && (
+                                      <span className="fecha">📅 Fecha: {detalles.fecha}</span>
                                     )}
                                   </div>
                                 );
