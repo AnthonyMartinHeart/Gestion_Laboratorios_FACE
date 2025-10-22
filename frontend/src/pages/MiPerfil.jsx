@@ -138,7 +138,6 @@ const MiPerfil = () => {
           ) : (
             <span className="sin-foto">+</span>
           )}
-          <div className="icono-editar">✏️</div>
         </div>
         <input
           type="file"
