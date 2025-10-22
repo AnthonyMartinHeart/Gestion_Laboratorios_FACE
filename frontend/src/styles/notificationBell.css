@@ -279,6 +279,63 @@
   gap: 4px;
 }
 
+/* ===== ESTILO DE TARJETA PARA RESERVAS (igual que horarios) ===== */
+.notification-details.reservation-card-style,
+.notification-modal-details.reservation-card-style {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 51, 102, 0.3);
+  overflow: hidden;
+}
+
+.notification-details.reservation-card-style span,
+.notification-modal-details.reservation-card-style span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Cada campo con su estilo específico */
+.notification-details.reservation-card-style .laboratorio,
+.notification-modal-details.reservation-card-style .laboratorio {
+  background: linear-gradient(135deg, rgba(0, 51, 102, 0.15), rgba(0, 85, 164, 0.15));
+  color: #003366;
+  border: 1px solid rgba(0, 51, 102, 0.3);
+}
+
+.notification-details.reservation-card-style .pcId,
+.notification-modal-details.reservation-card-style .pcId {
+  background: rgba(0, 102, 204, 0.1);
+  color: #0066CC;
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+.notification-details.reservation-card-style .fecha,
+.notification-modal-details.reservation-card-style .fecha {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.notification-details.reservation-card-style .hora,
+.notification-modal-details.reservation-card-style .hora {
+  background: rgba(168, 85, 247, 0.1);
+  color: #7c3aed;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
 .notification-time {
   font-size: 0.75rem;
   color: #999;
