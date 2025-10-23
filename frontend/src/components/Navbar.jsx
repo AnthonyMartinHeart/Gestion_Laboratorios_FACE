@@ -1,5 +1,6 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { logout } from "@services/auth.service.js";
+import { useAuth } from "@context/AuthContext";
 import Swal from "sweetalert2";
 import "@styles/navbar.css";
 import { useState, useEffect } from "react";
@@ -11,6 +12,7 @@ import NotificationBell from "./NotificationBell";
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout: contextLogout } = useAuth(); // Obtener el logout del contexto
   const [menuOpen, setMenuOpen] = useState(false);
   const [usuariosSubmenuOpen, setUsuariosSubmenuOpen] = useState(false);
   const [bitacorasSubmenuOpen, setBitacorasSubmenuOpen] = useState(false);
@@ -63,8 +65,8 @@ const Navbar = () => {
 
   const logoutSubmit = () => {
     try {
-      logout();
-      navigate("/auth");
+      logout(); // Llamar al servicio de backend
+      contextLogout(); // Llamar al logout del contexto (desconecta socket y limpia estado)
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
