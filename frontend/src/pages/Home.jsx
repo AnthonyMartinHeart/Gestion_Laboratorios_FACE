@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from '@context/AuthContext';
 import { formatearNombre } from '@helpers/formatText.js';
 import { obtenerPrefijoBienvenida } from '@helpers/genderHelper.js';
+import UsuariosConectados from '@components/UsuariosConectados';
 import '@styles/Home.css';
 
 const Home = () => {
@@ -78,6 +79,9 @@ const Home = () => {
           </div>
         </>
       )}
+
+      {/* Componente de usuarios conectados */}
+      <UsuariosConectados />
     </div>
   );
 };
