@@ -1,7 +1,7 @@
 import HorarioLaboratorios from "@components/Horarios-Lab";
 import { useAuth } from "@context/AuthContext";
 import { useState, useMemo } from 'react';
-import '@styles/horarios.css';
+import '@styles/Horarios.css';
 import '@styles/bitacoras.css';
 
 export default function HorarioPage({ laboratorio }) {
@@ -94,28 +94,30 @@ export default function HorarioPage({ laboratorio }) {
           }}>
           {/* Toggle para cambiar modo de vista */}
           <div style={{
-            display: 'flex',
-            gap: '10px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            padding: '8px',
-            borderRadius: '50px',
+            display: 'inline-flex',
+            gap: '0px',
+            background: 'transparent',
+            padding: '0px',
+            borderRadius: '0px',
+            width: 'auto',
           }}>
             <button
               onClick={() => setViewMode('daily')}
               style={{
-                padding: '10px 20px',
-                borderRadius: '25px',
+                padding: '8px 16px',
+                borderRadius: '20px 0 0 20px',
                 border: 'none',
-                background: viewMode === 'daily' ? 'white' : 'transparent',
+                background: viewMode === 'daily' ? 'white' : 'rgba(255, 255, 255, 0.2)',
                 color: viewMode === 'daily' ? '#2c3e50' : 'white',
                 fontWeight: viewMode === 'daily' ? 'bold' : 'normal',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                fontSize: '0.95rem',
+                fontSize: '0.85rem',
+                whiteSpace: 'nowrap',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '6px',
+                backdropFilter: 'blur(10px)',
               }}
             >
               📅 Vista Diaria
@@ -123,18 +125,20 @@ export default function HorarioPage({ laboratorio }) {
             <button
               onClick={() => setViewMode('weekly')}
               style={{
-                padding: '10px 20px',
-                borderRadius: '25px',
+                padding: '8px 16px',
+                borderRadius: '0 20px 20px 0',
                 border: 'none',
-                background: viewMode === 'weekly' ? 'white' : 'transparent',
+                background: viewMode === 'weekly' ? 'white' : 'rgba(255, 255, 255, 0.2)',
                 color: viewMode === 'weekly' ? '#2c3e50' : 'white',
                 fontWeight: viewMode === 'weekly' ? 'bold' : 'normal',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                fontSize: '0.95rem',
+                fontSize: '0.85rem',
+                whiteSpace: 'nowrap',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '6px',
+                backdropFilter: 'blur(10px)',
               }}
             >
               📆 Vista Semanal
