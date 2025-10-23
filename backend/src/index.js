@@ -6,14 +6,28 @@ import indexRoutes from "./routes/index.routes.js";
 import session from "express-session";
 import passport from "passport";
 import express, { json, urlencoded } from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { createUsers } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
 
+// Set para almacenar usuarios conectados
+const connectedUsers = new Set();
+
 async function setupServer() {
   try {
     const app = express();
+    const httpServer = createServer(app);
+    
+    // Configurar Socket.IO
+    const io = new Server(httpServer, {
+      cors: {
+        origin: true,
+        credentials: true,
+      },
+    });
 
     app.disable("x-powered-by");
 
@@ -61,8 +75,48 @@ async function setupServer() {
 
     app.use("/api", indexRoutes);
 
-    app.listen(PORT, () => {
+    // Socket.IO - Manejar conexiones
+    io.on("connection", (socket) => {
+      console.log("🔌 Usuario conectado:", socket.id);
+      
+      // Enviar el conteo actual al nuevo usuario conectado
+      socket.emit("users-count", connectedUsers.size);
+
+      socket.on("user-login", (userData) => {
+        connectedUsers.add(socket.id);
+        console.log(`✅ Usuario ${socket.id} hizo login. Total: ${connectedUsers.size}`);
+        console.log('📋 Usuarios conectados:', Array.from(connectedUsers));
+        
+        // Emitir a todos los clientes el nuevo conteo
+        io.emit("users-count", connectedUsers.size);
+      });
+
+      // Nuevo evento para obtener el conteo actual
+      socket.on("get-users-count", () => {
+        console.log(`📊 Cliente ${socket.id} solicita conteo actual: ${connectedUsers.size}`);
+        socket.emit("users-count", connectedUsers.size);
+      });
+
+      socket.on("user-logout", () => {
+        connectedUsers.delete(socket.id);
+        console.log(`👋 Usuario ${socket.id} hizo logout. Total: ${connectedUsers.size}`);
+        
+        // Emitir a todos los clientes el nuevo conteo
+        io.emit("users-count", connectedUsers.size);
+      });
+
+      socket.on("disconnect", (reason) => {
+        connectedUsers.delete(socket.id);
+        console.log(`❌ Usuario ${socket.id} desconectado (${reason}). Total: ${connectedUsers.size}`);
+        
+        // Emitir a todos los clientes el nuevo conteo
+        io.emit("users-count", connectedUsers.size);
+      });
+    });
+
+    httpServer.listen(PORT, () => {
       console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
+      console.log(`=> WebSocket disponible en ${HOST}:${PORT}`);
     });
   } catch (error) {
     console.log("Error en index.js -> setupServer(), el error es: ", error);
