@@ -125,19 +125,8 @@ const useReservationSync = (labId) => {
           isMaintenance: reservation.carrera === 'MAINTENANCE'
         };
 
-        console.log(`Agregando reserva para PC ${reservation.pcId}:`, reservationData);
-
-        // Log para debug de mantenimiento
-        if (reservation.carrera === 'MAINTENANCE') {
-          console.log('Reserva de mantenimiento encontrada:', reservation);
-        }
-
         newReservedPCs.set(reservation.pcId, reservationData);
       });
-
-      console.log('=== MAPA FINAL DE RESERVAS ===');
-      console.log('PCs reservados:', Array.from(newReservedPCs.keys()));
-      console.log('Detalles completos:', newReservedPCs);
 
       setReservedPCs(newReservedPCs);
     } catch (error) {
