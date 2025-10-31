@@ -8,14 +8,16 @@ const crearSolicitud = async (req, res) => {
     const { 
       titulo, 
       descripcion, 
-      laboratorio, 
+      laboratorio,
+      carrera,
       fecha, 
       fechaInicio, 
       fechaTermino,
       horaInicio, 
       horaTermino, 
       tipoSolicitud,
-      diasSemana 
+      diasSemana,
+      tipoActividad // Nuevo campo
     } = req.body;
     const { rut, nombreCompleto, email } = req.user;
 
@@ -53,17 +55,21 @@ const crearSolicitud = async (req, res) => {
         return handleErrorClient(res, "La fecha es obligatoria para solicitudes únicas", 400);
       }
 
-      const fechaSolicitud = new Date(fecha);
+      // Validar que la fecha no sea pasada (permitir hoy)
+      // Usar solo la parte de la fecha (sin hora) para comparar
+      const fechaSolicitud = new Date(fecha + 'T00:00:00');
       const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      
-      if (fechaSolicitud < hoy) {
+      const fechaSolMidnight = new Date(fechaSolicitud.getFullYear(), fechaSolicitud.getMonth(), fechaSolicitud.getDate()).getTime();
+      const hoyMidnight = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).getTime();
+      if (fechaSolMidnight < hoyMidnight) {
         return handleErrorClient(res, "No se pueden crear solicitudes para fechas pasadas", 400);
       }
 
       // Validar que no sea domingo
-      if (fechaSolicitud.getDay() === 0) {
-        return handleErrorClient(res, "No se pueden solicitar bloques para los domingos", 400);
+      // Validar que no sea domingo usando fecha local
+      const fechaLocal = new Date(fecha + 'T00:00:00');
+      if (fechaLocal.getDay() === 0) {
+        return handleErrorClient(res, 400, "No se pueden solicitar bloques para los domingos");
       }
     }
 
@@ -97,9 +103,11 @@ const crearSolicitud = async (req, res) => {
       titulo,
       descripcion: descripcion || '',
       laboratorio,
+      carrera: carrera || null,
       horaInicio,
       horaTermino,
-      tipoSolicitud: tipoSolicitud || 'unica'
+      tipoSolicitud: tipoSolicitud || 'unica',
+      tipoActividad: tipoActividad || null // Nuevo campo
     };
 
     // Agregar campos específicos según tipo de solicitud
@@ -211,32 +219,27 @@ const actualizarEstadoSolicitud = async (req, res) => {
       return handleErrorClient(res, error.includes("no encontrada") ? 404 : 400, error);
     }
 
-    // Si la solicitud fue aprobada, forzar actualización de horarios
-    if (estado === "aprobada") {
-      try {
-        console.log('🔄 Solicitud aprobada, actualizando horarios automáticamente...');
-        
-        // Obtener horarios actuales y forzar regeneración
-        const { getHorariosService } = await import("../services/horario.service.js");
-        const [horariosActualizados, errorHorarios] = await getHorariosService();
-        
-        if (!errorHorarios) {
-          // Guardar los horarios actualizados para que se reflejen inmediatamente
-          await saveHorariosService(
-            horariosActualizados, 
-            `Sistema (Aprobación por ${nombreCompleto || 'Admin'})`
-          );
-          console.log('✅ Horarios actualizados automáticamente tras aprobación');
-        } else {
-          console.warn('⚠️ Error al actualizar horarios tras aprobación:', errorHorarios);
-        }
-      } catch (horarioError) {
-        console.error('❌ Error al actualizar horarios tras aprobación:', horarioError);
-        // No afectar la operación principal si falla la actualización de horarios
-      }
-    }
-
-    // Crear notificación para el profesor
+    // Si la solicitud fue aprobada, forzar actualización de horarios y crear reservas para recurrentes
+        if (estado === "aprobada") {
+          try {
+            console.log('🔄 Solicitud aprobada, actualizando horarios automáticamente...');
+            // Obtener horarios actuales y forzar regeneración
+            const { getHorariosService } = await import("../services/horario.service.js");
+            const [horariosActualizados, errorHorarios] = await getHorariosService();
+            if (!errorHorarios) {
+              await saveHorariosService(
+                horariosActualizados, 
+                `Sistema (Aprobación por ${nombreCompleto || 'Admin'})`
+              );
+              console.log('✅ Horarios actualizados automáticamente tras aprobación');
+            } else {
+              console.warn('⚠️ Error al actualizar horarios tras aprobación:', errorHorarios);
+            }
+            // Ya no creamos reservas para las solicitudes aprobadas
+          } catch (horarioError) {
+            console.error('❌ Error al actualizar horarios:', horarioError);
+          }
+        }    // Crear notificación para el profesor
     try {
       if (estado === "aprobada") {
         await NotificacionesService.notificarSolicitudAprobada(
