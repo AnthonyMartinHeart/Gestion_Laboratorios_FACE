@@ -78,6 +78,38 @@ html, body {
   box-shadow: none !important;
 }
 
+.solicitudes-header-flex {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.solicitudes-header-flex .filters-section {
+  margin: 0;
+  box-shadow: none;
+  padding: 0;
+  background: none;
+  border: none;
+  max-width: 350px;
+}
+
+.solicitudes-header-flex .filters-content {
+  display: block;
+}
+
+.solicitudes-header-flex .filter-group {
+  min-width: 180px;
+  width: 100%;
+}
+
+.solicitudes-header-flex .btn-nueva-solicitud {
+  margin-left: auto;
+  margin-bottom: 0;
+}
+
 @keyframes titleGlow {
   from {
     color: #ffffff;
@@ -174,13 +206,15 @@ html, body {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
-  padding: 25px; /* Padding más generoso */
-  margin-top: 0px; /* Sin margen superior */
-  margin-bottom: 25px; /* Margen inferior para separar de las tarjetas */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  max-width: 1200px;
-  width: 100%;
+  border-radius: 16px;
+  padding: 15px 20px;
+  margin-top: 0px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-width: 350px; /* Ancho reducido para que sea compacto */
+  width: auto; /* Ancho automático basado en contenido */
+  margin-left: 0; /* Alineado a la izquierda */
+  margin-right: auto;
 }
 
 .filters-header {
@@ -200,11 +234,7 @@ html, body {
 }
 
 .filters-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px; /* Más espacio entre elementos */
-  align-items: flex-end; /* Alinear al final para que los botones estén en la misma línea */
-  justify-content: flex-start; /* Alineado al inicio */
+  display: block; /* Cambiar de flex a block para compactar */
 }
 
 /* Contenedor específico para los botones */
@@ -218,26 +248,27 @@ html, body {
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Más espacio entre label e input */
-  min-width: 160px; /* Ancho mínimo consistente */
+  gap: 8px;
+  width: 100%; /* Usar todo el ancho disponible */
 }
 
 .filter-label {
-  font-size: 0.95rem; /* Tamaño ligeramente mayor */
-  font-weight: 600; /* Más peso */
-  color: #003366; /* Color más fuerte */
-  text-align: left; /* Alineado a la izquierda */
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #003366;
+  text-align: left;
+  white-space: nowrap; /* Evitar saltos de línea */
 }
 
 .filter-input {
-  padding: 12px 15px; /* Padding más generoso */
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 10px; /* Bordes más redondeados */
-  font-size: 0.95rem; /* Tamaño ligeramente mayor */
+  border-radius: 8px;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
   background: white;
-  min-width: 160px; /* Ancho mínimo consistente */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+  width: 100%; /* Ancho completo del contenedor */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .filter-input:focus {
@@ -272,6 +303,20 @@ html, body {
 
 .filter-button.clear:hover {
   background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+}
+
+.filter-card {
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+  max-width: 500px;
+  margin-left: 0;
 }
 
 @media (max-width: 768px) {
