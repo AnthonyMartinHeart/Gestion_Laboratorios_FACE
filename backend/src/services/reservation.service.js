@@ -14,7 +14,7 @@ function getLabRange(labId) {
 
 export async function createReservationService(data) {
   try {
-    const { labId, pcId, horaInicio, horaTermino, carrera, rut } = data;
+  const { labId, pcId, horaInicio, horaTermino, carrera, rut, tipoActividad } = data;
     // (Ya validado por Joi que pcId esté en rango)
     const repo = AppDataSource.getRepository(Reservation);
 
@@ -60,42 +60,20 @@ export async function createReservationService(data) {
     const rutOverlaps = await rutQuery.getMany();
 
     // Validar solapamientos del mismo RUT
-    // Permitir que los bloques de clases (ADMIN) se solapen entre sí del mismo administrador
     if (rutOverlaps.length > 0) {
-      // Si la nueva reserva es un bloque de clases (ADMIN)
-      if (carrera === 'ADMIN') {
-        // Para bloques de clases, solo verificar que no haya reservas individuales (no ADMIN)
-        const hasNonAdminOverlap = rutOverlaps.some(overlap => overlap.carrera !== 'ADMIN');
-        if (hasNonAdminOverlap) {
-          return [null, "Ya tienes una reserva individual que se solapa con este horario"];
-        }
-        // Si todas son bloques de clases (ADMIN), permitir sin problema
-        console.log(`Permitiendo bloque de clases ADMIN en PC ${pcId} - sin conflictos individuales`);
-      } else {
-        // Si la nueva reserva es individual, no permitir solapamiento con nada
-        return [null, "Ya tienes una reserva que se solapa con este horario en el laboratorio"];
-      }
+      return [null, "Ya tienes una reserva que se solapa con este horario en el laboratorio"];
     }
 
     // Validar solapamientos en el PC específico
     if (pcOverlaps.length > 0) {
-      // Si la nueva reserva es de un admin (bloque de clases)
-      if (carrera === 'ADMIN') {
-        // Para bloques de clases, verificar que no haya reservas individuales
-        const hasIndividualReservation = pcOverlaps.some(overlap => overlap.carrera !== 'ADMIN');
-        if (hasIndividualReservation) {
-          return [null, "Ya existe una reserva individual en ese PC y horario"];
-        }
-        // Si solo hay otros bloques de clases (ADMIN), permitir
-        console.log(`Permitiendo bloque de clases ADMIN en PC ${pcId} - coexistencia con otros bloques`);
-      } else {
-        // Si la nueva reserva es individual (estudiante/consultor)
-        // NO PERMITIR si hay CUALQUIER reserva existente (individual O bloque de clases)
-        return [null, "El PC ya está reservado en ese horario"];
-      }
+      return [null, "El PC ya está reservado en ese horario"];
     }
 
-    const toSave = repo.create(data);
+    // Propagar tipoActividad si existe
+    const toSave = repo.create({
+      ...data,
+      tipoActividad: tipoActividad || null
+    });
     const saved = await repo.save(toSave);
     return [saved, null];
   } catch (error) {
