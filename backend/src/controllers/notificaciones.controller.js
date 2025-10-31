@@ -32,11 +32,12 @@ export async function obtenerNotificaciones(req, res) {
         take: 50
       });
     } else if (user.rol === 'profesor') {
-      // Los profesores solo ven notificaciones relacionadas con sus solicitudes
+      // Los profesores ven notificaciones de solicitudes y reservas de equipo
       notificaciones = await notificacionRepository.find({
         where: [
           { tipo: 'solicitud_aprobada', targetRut: user.rut },
-          { tipo: 'solicitud_rechazada', targetRut: user.rut }
+          { tipo: 'solicitud_rechazada', targetRut: user.rut },
+          { tipo: 'reserva_equipo', targetRut: user.rut }
         ],
         order: { fechaCreacion: "DESC" },
         take: 50
@@ -91,7 +92,8 @@ export async function obtenerConteoNoLeidas(req, res) {
       count = await notificacionRepository.count({
         where: [
           { tipo: 'solicitud_aprobada', targetRut: user.rut, leida: false },
-          { tipo: 'solicitud_rechazada', targetRut: user.rut, leida: false }
+          { tipo: 'solicitud_rechazada', targetRut: user.rut, leida: false },
+          { tipo: 'reserva_equipo', targetRut: user.rut, leida: false }
         ]
       });
     } else if (user.rol === 'consultor') {
@@ -180,7 +182,7 @@ export async function marcarTodasComoLeidas(req, res) {
         { 
           leida: false,
           targetRut: user.rut,
-          tipo: In(['solicitud_aprobada', 'solicitud_rechazada'])
+          tipo: In(['solicitud_aprobada', 'solicitud_rechazada', 'reserva_equipo'])
         },
         { 
           leida: true,
@@ -245,7 +247,7 @@ export async function limpiarNotificaciones(req, res) {
       // Los profesores solo pueden limpiar sus notificaciones específicas
       deleteResult = await notificacionRepository.delete({
         targetRut: user.rut,
-        tipo: In(['solicitud_aprobada', 'solicitud_rechazada'])
+        tipo: In(['solicitud_aprobada', 'solicitud_rechazada', 'reserva_equipo'])
       });
     } else if (user.rol === 'consultor') {
       // Los consultores limpian exactamente las mismas notificaciones que ven
