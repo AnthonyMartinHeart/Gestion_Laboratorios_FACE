@@ -278,7 +278,7 @@ const MisClases = () => {
         // Marcar la clase como cancelada en los horarios (sin borrarla)
         if (window.marcarClaseCancelada) {
           window.marcarClaseCancelada(solicitudId, fechaEnviar);
-          console.log('� Clase marcada como CANCELADA en horarios');
+          console.log('✅ Clase marcada como CANCELADA en horarios');
         }
         
         // Refrescar notificaciones inmediatamente
@@ -292,7 +292,15 @@ const MisClases = () => {
         );
         
         // Recargar las clases para mostrar el estado actualizado
-        fetchClasesAprobadas();
+        await fetchClasesAprobadas();
+        
+        // 🔄 Refrescar bitácoras con un pequeño delay para que el backend procese la cancelación
+        setTimeout(() => {
+          if (window.refreshBitacoras) {
+            window.refreshBitacoras();
+            console.log('✅ Bitácoras refrescadas - Clase cancelada eliminada de vista');
+          }
+        }, 500); // 500ms de delay
       } catch (error) {
         console.error('Error al cancelar clase:', error);
         showErrorAlert('Error', error.message || 'No se pudo cancelar la clase. Inténtalo de nuevo.');
@@ -393,7 +401,7 @@ const MisClases = () => {
 
   if (user?.rol !== 'profesor') {
     return (
-      <div className="mis-clases-container">
+      <div className="mis-clases-container gestion-tareas-container">
         <div className="access-denied">
           <div className="access-icon">🚫</div>
           <h3>Acceso Denegado</h3>
@@ -405,7 +413,7 @@ const MisClases = () => {
 
   if (loading) {
     return (
-      <div className="mis-clases-container">
+      <div className="mis-clases-container gestion-tareas-container">
         <div className="loading-container">
           <div className="spinner"></div>
           <p>Cargando clases...</p>
@@ -416,7 +424,7 @@ const MisClases = () => {
 
   if (error) {
     return (
-      <div className="mis-clases-container">
+      <div className="mis-clases-container gestion-tareas-container">
         <div className="error-container">
           <div className="error-icon">⚠️</div>
           <h3>Error al cargar las clases</h3>
@@ -431,7 +439,7 @@ const MisClases = () => {
 
   if (!clasesFiltradas || clasesFiltradas.length === 0) {
     return (
-      <div className="mis-clases-container">
+      <div className="mis-clases-container gestion-tareas-container">
         <div className="clases-header">
           <div className="header-title">
             <h1>📚 Mis Clases</h1>
@@ -482,7 +490,7 @@ const MisClases = () => {
   }
 
   return (
-    <div className="mis-clases-container">
+    <div className="mis-clases-container gestion-tareas-container">
       <div className="clases-header">
         <div className="header-title">
           <h1>📚 Mis Clases</h1>
@@ -652,3 +660,4 @@ const MisClases = () => {
 };
 
 export default MisClases;
+
