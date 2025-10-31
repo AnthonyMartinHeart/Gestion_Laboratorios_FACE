@@ -16,7 +16,17 @@ export const tareasService = {
   async getTareas(filtros = {}) {
     try {
       const params = new URLSearchParams();
-      if (filtros.fecha) params.append('fecha', filtros.fecha);
+      
+      if (filtros.fechaLimite) {
+        console.log('DEBUG Frontend - Fecha límite original:', filtros.fechaLimite);
+        params.append('fechaLimite', filtros.fechaLimite);
+      }
+      
+      if (filtros.fechaAsignacion) {
+        console.log('DEBUG Frontend - Fecha asignación original:', filtros.fechaAsignacion);
+        params.append('fechaAsignacion', filtros.fechaAsignacion);
+      }
+      
       if (filtros.estado) params.append('estado', filtros.estado);
       if (filtros.prioridad) params.append('prioridad', filtros.prioridad);
 
@@ -103,3 +113,4 @@ export const tareasService = {
 };
 
 export default tareasService;
+
