@@ -34,7 +34,6 @@ const Bitacoras = ({ laboratorio }) => {
     return () => {
       // Limpiar estados cuando se desmonta el componente
       setModalFunctions({});
-      console.log('Bitacoras component cleanup completed');
     };
   }, []); // Solo al cambio de ruta principal
 
@@ -42,24 +41,27 @@ const Bitacoras = ({ laboratorio }) => {
 
   // Función para manejar cuando se elimina una reserva
   const handleReservationDeleted = () => {
-    console.log('🔄 handleReservationDeleted ejecutándose - Refrescando datos...');
-    console.log('🔍 Referencias disponibles:', {
-      'lab1.refetch': typeof lab1.refetch,
-      'lab2.refetch': typeof lab2.refetch,
-      'lab3.refetch': typeof lab3.refetch
-    });
-    
     // Refrescar los datos de todos los laboratorios
     if (lab1.refetch) lab1.refetch();
     if (lab2.refetch) lab2.refetch();
     if (lab3.refetch) lab3.refetch();
-    
-    console.log('✅ Datos de todos los laboratorios refrescados');
   };
+
+  // Exponer función global para refrescar bitácoras desde otros componentes (ej: MisClases)
+  useEffect(() => {
+    window.refreshBitacoras = () => {
+      if (lab1.refetch) lab1.refetch();
+      if (lab2.refetch) lab2.refetch();
+      if (lab3.refetch) lab3.refetch();
+    };
+
+    return () => {
+      window.refreshBitacoras = null;
+    };
+  }, [lab1.refetch, lab2.refetch, lab3.refetch]);
 
   // Función estable para manejar la apertura del modal
   const handleModalOpen = useCallback((labNumber, openModalFn) => {
-    console.log(`📝 Registrando función modal para LAB ${labNumber}`);
     setModalFunctions(prev => ({...prev, [labNumber]: openModalFn}));
   }, []);
 
@@ -161,3 +163,4 @@ const Bitacoras = ({ laboratorio }) => {
 };
 
 export default Bitacoras;
+
