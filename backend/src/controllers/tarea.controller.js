@@ -40,12 +40,13 @@ export async function getTareas(req, res) {
   try {
     const userRole = req.userRole;
     const userId = req.userId;
-    const { fecha, estado, prioridad } = req.query;
+    const { fechaLimite, fechaAsignacion, estado, prioridad } = req.query;
 
     const [tareas, error] = await getTareasService({
       userRole,
       userId,
-      fecha,
+      fechaLimite,
+      fechaAsignacion,
       estado,
       prioridad
     });
