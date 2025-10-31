@@ -38,6 +38,7 @@ export async function createTareaService(tareaData) {
       titulo,
       descripcion,
       fechaLimite: new Date(fechaLimite),
+      fechaAsignacion: new Date(),
       prioridad,
       estado: "pendiente",
       asignadoPor: asignadoPor,
@@ -95,7 +96,7 @@ export async function createTareaService(tareaData) {
 
 export async function getTareasService(filters) {
   try {
-    const { userRole, userId, fecha, estado, prioridad } = filters;
+    const { userRole, userId, fechaLimite, fechaAsignacion, estado, prioridad } = filters;
 
     let whereConditions = {};
 
@@ -139,10 +140,55 @@ export async function getTareasService(filters) {
       queryBuilder = queryBuilder.andWhere("tarea.prioridad = :prioridad", { prioridad });
     }
 
-    // Filtro por fecha
-    if (fecha) {
-      queryBuilder = queryBuilder.andWhere("DATE(tarea.fechaLimite) = :fecha", { fecha });
+    // Filtro por fecha límite
+    if (fechaLimite) {
+      console.log('DEBUG - Fecha límite recibida:', fechaLimite);
+      
+      // Convertir la fecha a formato YYYY-MM-DD
+      const fechaFormateada = fechaLimite.split('T')[0];
+      console.log('DEBUG - Fecha formateada:', fechaFormateada);
+      
+      queryBuilder = queryBuilder.andWhere(
+        "DATE_FORMAT(tarea.fechaLimite, '%Y-%m-%d') = :fechaLimite",
+        { fechaLimite: fechaFormateada }
+      );
+
+      // Obtener y mostrar las tareas antes de aplicar el filtro
+      const todasLasTareas = await queryBuilder.getMany();
+      console.log('DEBUG - Tareas encontradas:', todasLasTareas.map(t => ({
+        id: t.id,
+        titulo: t.titulo,
+        fechaLimite: t.fechaLimite,
+        fechaLimiteStr: new Date(t.fechaLimite).toISOString().split('T')[0]
+      })));
+
+      // Log de la consulta final para debugging
+      const [query, parameters] = queryBuilder.getQueryAndParameters();
+      console.log('DEBUG - Query final:', query);
+      console.log('DEBUG - Parámetros:', parameters);
     }
+
+    // Filtro por fecha de asignación
+    if (fechaAsignacion) {
+      const fechaAsignacionInicio = new Date(fechaAsignacion + 'T00:00:00');
+      const fechaAsignacionFin = new Date(fechaAsignacion + 'T23:59:59.999');
+      
+      console.log('Filtro fecha asignación:', {
+        fechaOriginal: fechaAsignacion,
+        inicio: fechaAsignacionInicio,
+        fin: fechaAsignacionFin
+      });
+
+      queryBuilder = queryBuilder.andWhere(
+        "DATE(tarea.fechaAsignacion) = DATE(:fechaAsignacion)",
+        { fechaAsignacion: fechaAsignacionInicio }
+      );
+    }
+
+    // Log de la consulta final
+    const [query, parameters] = queryBuilder.getQueryAndParameters();
+    console.log('Query final:', query);
+    console.log('Parámetros:', parameters);
 
     const tareas = await queryBuilder
       .orderBy("tarea.fechaLimite", "ASC")
