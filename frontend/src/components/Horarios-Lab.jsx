@@ -489,8 +489,8 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
               profe = nombre + (apellido ? ' ' + apellido : '');
             }
 
-            // Construir nombre de la clase, agregando "CANCELADA" si aplica
-            let nombreClaseEspecifica = `${clase.titulo || clase.descripcion || 'Clase'}${profe ? ' - ' + profe : ''}`;
+            // Construir nombre de la clase, agregando carrera y "CANCELADA" si aplica
+            let nombreClaseEspecifica = `${clase.titulo || clase.descripcion || 'Clase'}${profe ? ' - ' + profe : ''}${clase.carrera ? ' [' + clase.carrera + ']' : ''}`;
             if (estaCanceladaEspecifica) {
               nombreClaseEspecifica = `❌ CANCELADA - ${nombreClaseEspecifica}`;
             }
@@ -605,8 +605,8 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
           profe = nombre + (apellido ? ' ' + apellido : '');
         }
 
-        // Construir nombre de la clase, agregando "CANCELADA" si aplica
-        let nombreClase = `${clase.titulo || clase.descripcion || 'Clase'}${profe ? ' - ' + profe : ''}`;
+        // Construir nombre de la clase, agregando carrera y "CANCELADA" si aplica
+        let nombreClase = `${clase.titulo || clase.descripcion || 'Clase'}${profe ? ' - ' + profe : ''}${clase.carrera ? ' [' + clase.carrera + ']' : ''}`;
         if (estaCancelada) {
           nombreClase = `❌ CANCELADA - ${nombreClase}`;
         }
