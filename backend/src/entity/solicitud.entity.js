@@ -38,6 +38,11 @@ const SolicitudEntity = new EntitySchema({
       length: 10,
       nullable: false // lab1, lab2, lab3
     },
+    carrera: {
+      type: "varchar",
+      length: 10,
+      nullable: true // Código de carrera abreviado (CPA, ICO, ICINF, etc.)
+    },
     fecha: {
       type: "varchar", // Cambiado de "date" a "varchar" para evitar conversiones de timezone
       length: 10,
@@ -79,12 +84,17 @@ const SolicitudEntity = new EntitySchema({
     administradorRut: {
       type: "varchar",
       length: 12,
-      nullable: true // Se llena cuando se aprueba/rechaza
+      nullable: true 
     },
     fechaRespuesta: {
       type: "timestamp",
       nullable: true
     },
+      tipoActividad: {
+        type: "varchar",
+        length: 30,
+        nullable: true 
+      },
     createdAt: {
       type: "timestamp",
       createDate: true
