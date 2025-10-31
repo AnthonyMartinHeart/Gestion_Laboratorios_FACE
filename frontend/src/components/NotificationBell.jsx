@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { notificationsService } from '../services/notifications.service';
 import { formatearNombre } from '../helpers/formatText.js';
@@ -11,6 +11,7 @@ window.refreshNotifications = null;
 const NotificationBell = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
@@ -131,11 +132,7 @@ const NotificationBell = () => {
       console.log('🔔 Cargando notificaciones para usuario:', user?.rut, 'rol:', user?.rol);
       let data = await notificationsService.getNotifications();
       console.log('📨 Notificaciones recibidas del backend:', data);
-      // Filtrar notificaciones para estudiantes y usuarios (el backend ya debería filtrar correctamente)
-      // Este filtro es redundante pero por seguridad lo dejamos
-      if (user.rol === 'estudiante' || user.rol === 'usuario') {
-        data = data.filter(n => n.tipo === 'reserva_equipo');
-      }
+      // NO filtrar por tipo - mostrar todas las notificaciones del usuario
       setNotifications(data);
       setHasUnread(data.some(n => !n.leida));
       console.log('🔕 Notificaciones no leídas:', data.filter(n => !n.leida).length);
@@ -163,6 +160,56 @@ const NotificationBell = () => {
 
   const toggleNotifications = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleNotificationClick = async (notification) => {
+    try {
+      // Marcar como leída
+      await markAsRead(notification.id);
+
+      // Cerrar el modal y el dropdown
+      setIsOpen(false);
+      setShowAllModal(false);
+
+      // Redirigir según el tipo de notificación
+      switch (notification.tipo) {
+        // Solicitudes
+        case 'solicitud':
+        case 'solicitud_aprobada':
+        case 'solicitud_rechazada':
+          console.log('🔄 Redirigiendo a la página de solicitudes...');
+          navigate('/mis-solicitudes');
+          break;
+
+        // Turnos
+        case 'turno_asignado':
+          console.log('🔄 Redirigiendo a la página de turnos...');
+          navigate('/turnos');
+          break;
+
+        // Tareas
+        case 'tarea_asignada':
+        case 'tarea_completada':
+        case 'tarea_no_completada':
+          console.log('🔄 Redirigiendo a la página de gestión de tareas...');
+          navigate('/gestion-tareas');
+          break;
+
+        // Observaciones
+        case 'observacion_actualizada':
+          console.log('🔄 Redirigiendo a la página de observaciones...');
+          navigate('/observaciones');
+          break;
+
+        // Horarios
+        case 'horario_actualizado':
+          console.log('🔄 Redirigiendo a la página de horarios...');
+          navigate('/horarios');
+          break;
+      }
+    } catch (error) {
+      console.error('Error al manejar el clic en la notificación:', error);
+    }
   };
 
   const markAsRead = async (notificationId) => {
@@ -323,11 +370,31 @@ const NotificationBell = () => {
                   <div className="notification-icon">
                     {getIconoTipo(notification.tipo)}
                   </div>
-                  <div className="notification-content" onClick={() => markAsRead(notification.id)}>
-                    {/* Personalizar mensaje para reserva_equipo (estudiantes y consultores) */}
-                    {['estudiante', 'consultor', 'usuario'].includes(user.rol) && notification.tipo === 'reserva_equipo' ? (
+                  <div 
+                    className="notification-content" 
+                    onClick={() => handleNotificationClick(notification)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {/* Personalizar mensaje para solicitud de clase */}
+                    {notification.tipo === 'solicitud_clase' ? (
                       <>
-                        <h4> Reserva Confirmada ✅</h4>
+                        <p style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                          {(() => {
+                            const messageParts = notification.mensaje.split(' ha creado una');
+                            if (messageParts.length === 2) {
+                              const nombre = messageParts[0]
+                                .split(' ')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                .join(' ');
+                              return `${nombre} Ha Creado Una Nueva Solicitud De Clases Para: ${notification.titulo.replace('Nueva Solicitud de Clase: ', '')}`;
+                            }
+                            return notification.mensaje;
+                          })()}
+                        </p>
+                      </>
+                    ) : notification.tipo === 'reserva_equipo' ? (
+                      <>
+                        <h4>✅ Reserva Confirmada</h4>
                         <p style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, marginBottom: '8px' }}>
                           Has Reservado Exitosamente El:
                         </p>
@@ -533,11 +600,31 @@ const NotificationBell = () => {
                         {getIconoTipo(notification.tipo)}
                       </div>
                       
-                      <div className="notification-modal-content-item" onClick={() => markAsRead(notification.id)}>
-                        {/* Personalizar mensaje para reserva_equipo (estudiantes y consultores) */}
-                        {['estudiante', 'consultor', 'usuario'].includes(user.rol) && notification.tipo === 'reserva_equipo' ? (
+                      <div 
+                        className="notification-modal-content-item" 
+                        onClick={() => handleNotificationClick(notification)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {/* Personalizar mensaje para solicitud de clase */}
+                        {notification.tipo === 'solicitud_clase' ? (
                           <>
-                            <h4> Reserva Confirmada ✅</h4>
+                            <p style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                              {(() => {
+                                const messageParts = notification.mensaje.split(' ha creado una');
+                                if (messageParts.length === 2) {
+                                  const nombre = messageParts[0]
+                                    .split(' ')
+                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                    .join(' ');
+                                  return `${nombre} Ha Creado Una Nueva Solicitud De Clases Para: ${notification.titulo.replace('Nueva Solicitud de Clase: ', '')}`;
+                                }
+                                return notification.mensaje;
+                              })()}
+                            </p>
+                          </>
+                        ) : notification.tipo === 'reserva_equipo' ? (
+                          <>
+                            <h4>✅ Reserva Confirmada</h4>
                             <p style={{ fontSize: '0.9rem', color: '#16a34a', fontWeight: 600, marginBottom: '10px' }}>
                               Has Reservado Exitosamente El:
                             </p>
@@ -629,3 +716,4 @@ const NotificationBell = () => {
 };
 
 export default NotificationBell;
+
