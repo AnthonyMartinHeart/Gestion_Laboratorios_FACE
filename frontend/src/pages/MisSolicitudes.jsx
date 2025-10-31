@@ -23,15 +23,26 @@ const MisSolicitudes = () => {
   const { crear: crearSolicitud, loading: creandoSolicitud } = useCrearSolicitud(onSolicitudCreated);
   
   const [showForm, setShowForm] = useState(false);
+  const [showOtroCarrera, setShowOtroCarrera] = useState(false);
+  const [otroCarrera, setOtroCarrera] = useState('');
+  
+  // Función para obtener la fecha actual en formato YYYY-MM-DD
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
   const [filtros, setFiltros] = useState({
-    fechaCreacion: '',
-    estado: '',
-    laboratorio: ''
+    fechaCreacion: getCurrentDate() // Fecha actual por defecto
   });
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
     laboratorio: '',
+    carrera: '',
     fecha: '',
     fechaInicio: '',
     fechaTermino: '',
@@ -57,6 +68,17 @@ const MisSolicitudes = () => {
     { value: 'lab3', label: 'Laboratorio 3' }
   ];
 
+  const carreras = [
+    { value: 'CPA', label: 'Contador Público y Auditor' },
+    { value: 'ICO', label: 'Ingeniería Comercial' },
+    { value: 'ICINF', label: 'Ingeniería Civil en Informática' },
+    { value: 'IECI', label: 'Ingeniería de Ejecución en Computación e Informática' },
+    { value: 'DRCH', label: 'Derecho' },
+    { value: 'MG', label: 'Magister' },
+    { value: 'PECE', label: 'PECE' },
+    { value: 'otro', label: 'Otro' }
+  ];
+
   const diasSemanaOpciones = [
     { value: 'lunes', label: 'Lunes', numero: 1 },
     { value: 'martes', label: 'Martes', numero: 2 },
@@ -65,6 +87,27 @@ const MisSolicitudes = () => {
     { value: 'viernes', label: 'Viernes', numero: 5 },
     { value: 'sabado', label: 'Sábado', numero: 6 }
   ];
+
+
+
+  // Función para abreviar carrera personalizada
+  const abreviarCarrera = (texto) => {
+    if (!texto) return '';
+    
+    // Convertir a mayúsculas y limpiar
+    const textoLimpio = texto.toUpperCase().trim();
+    
+    // Dividir en palabras y tomar las iniciales
+    const palabras = textoLimpio.split(/\s+/);
+    
+    if (palabras.length === 1) {
+      // Si es una sola palabra, tomar las primeras 4 letras
+      return palabras[0].substring(0, 4).toUpperCase();
+    } else {
+      // Si son múltiples palabras, tomar las iniciales (máximo 5)
+      return palabras.slice(0, 5).map(palabra => palabra[0]).join('').toUpperCase();
+    }
+  };
 
     // Filtrar solicitudes según el rol
   const solicitudesFiltradas = useMemo(() => {
@@ -130,61 +173,53 @@ const MisSolicitudes = () => {
   const solicitudesConFiltros = useMemo(() => {
     let filtered = [...solicitudesFiltradas];
 
-    // Filtro por fecha de creación
+    // Filtro por FECHA DE CREACIÓN de la solicitud (cuándo se envió)
     if (filtros.fechaCreacion) {
       filtered = filtered.filter(solicitud => {
-        // Buscar la fecha de creación en diferentes campos posibles
+        // Buscar la fecha de creación en el campo createdAt
         const fechaCreacionSolicitud = parseDate(
           solicitud.createdAt ||        // Campo principal con la fecha de creación
           solicitud.fechaCreacion || 
-          solicitud.creada || 
-          solicitud.fecha ||
-          solicitud.fechaInicio
+          solicitud.creada
         );
         const fechaFiltro = parseDate(filtros.fechaCreacion);
         
-        if (!fechaCreacionSolicitud || !fechaFiltro) return false;
+        if (!fechaCreacionSolicitud || !fechaFiltro) {
+          console.log('❌ Fecha inválida:', { 
+            solicitudId: solicitud.id, 
+            fechaCreacion: solicitud.createdAt,
+            fechaFiltro: filtros.fechaCreacion 
+          });
+          return false;
+        }
         
         // Comparar solo las fechas (sin horas)
         const fechaSol = new Date(fechaCreacionSolicitud.getFullYear(), fechaCreacionSolicitud.getMonth(), fechaCreacionSolicitud.getDate());
         const fechaFil = new Date(fechaFiltro.getFullYear(), fechaFiltro.getMonth(), fechaFiltro.getDate());
         
-        return fechaSol.getTime() === fechaFil.getTime(); // Fecha exacta
+        const coincide = fechaSol.getTime() === fechaFil.getTime();
+        
+        if (coincide) {
+          console.log('✅ Solicitud coincide con filtro:', {
+            id: solicitud.id,
+            titulo: solicitud.titulo,
+            fechaCreacion: fechaSol.toLocaleDateString('es-CL'),
+            fechaFiltro: fechaFil.toLocaleDateString('es-CL')
+          });
+        }
+        
+        return coincide;
       });
     }
 
-    // Filtro por estado
-    if (filtros.estado) {
-      filtered = filtered.filter(solicitud => {
-        const estadoSolicitud = (solicitud.estado || '').toString().toLowerCase();
-        const estadoFiltro = filtros.estado.toLowerCase();
-        return estadoSolicitud === estadoFiltro;
-      });
-    }
-
-    // Filtro por laboratorio
-    if (filtros.laboratorio) {
-      filtered = filtered.filter(solicitud => {
-        const labSolicitud = (solicitud.laboratorio || '').toString().toUpperCase();
-        const labFiltro = filtros.laboratorio.toString().toUpperCase();
-        
-        // Comparación directa primero
-        if (labSolicitud === labFiltro) return true;
-        
-        // Manejar diferentes formatos posibles
-        const formatosLab = {
-          'LAB1': ['LAB1', 'LABORATORIO 1', 'LABORATORIO1'],
-          'LAB2': ['LAB2', 'LABORATORIO 2', 'LABORATORIO2'], 
-          'LAB3': ['LAB3', 'LABORATORIO 3', 'LABORATORIO3']
-        };
-        
-        const formatosValidos = formatosLab[labFiltro] || [];
-        return formatosValidos.includes(labSolicitud);
-      });
-    }
+    console.log('📊 Resultado del filtro:', {
+      total: solicitudesFiltradas.length,
+      filtradas: filtered.length,
+      fechaFiltro: filtros.fechaCreacion
+    });
 
     return filtered;
-  }, [solicitudesFiltradas, filtros]);
+  }, [solicitudesFiltradas, filtros, parseDate]);
 
   // Obtener horarios de término válidos según la hora de inicio
   const getHorariosTerminoValidos = (horaInicioSeleccionada) => {
@@ -206,7 +241,17 @@ const MisSolicitudes = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    if (name === 'horaInicio') {
+    if (name === 'carrera') {
+      if (value === 'otro') {
+        setShowOtroCarrera(true);
+        setOtroCarrera('');
+        setFormData({ ...formData, carrera: '' });
+      } else {
+        setShowOtroCarrera(false);
+        setOtroCarrera('');
+        setFormData({ ...formData, carrera: value });
+      }
+    } else if (name === 'horaInicio') {
       // Al cambiar hora de inicio, limpiar hora de término
       setFormData({ 
         ...formData, 
@@ -242,14 +287,6 @@ const MisSolicitudes = () => {
     }));
   };
 
-  const limpiarFiltros = () => {
-    setFiltros({
-      fechaCreacion: '',
-      estado: '',
-      laboratorio: ''
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -264,6 +301,24 @@ const MisSolicitudes = () => {
       return;
     }
 
+    if (!formData.carrera && !showOtroCarrera) {
+      showErrorAlert('Error', 'Debe seleccionar una carrera');
+      return;
+    }
+
+    if (showOtroCarrera && !otroCarrera.trim()) {
+      showErrorAlert('Error', 'Debe especificar el nombre de la carrera');
+      return;
+    }
+
+    // Preparar datos de la solicitud
+    const solicitudData = { ...formData };
+    
+    // Manejar carrera personalizada
+    if (showOtroCarrera && otroCarrera) {
+      solicitudData.carrera = abreviarCarrera(otroCarrera);
+    }
+
     if (formData.tipoSolicitud === 'unica') {
       // Validaciones para solicitud única
       if (!formData.fecha) {
@@ -271,18 +326,20 @@ const MisSolicitudes = () => {
         return;
       }
 
-      // Validar que la fecha no sea pasada
-      const fechaSolicitud = new Date(formData.fecha);
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      
-      if (fechaSolicitud < hoy) {
+      // Validar que la fecha no sea pasada (permitir hoy)
+      // Usar la fecha del input directamente para evitar problemas de zona horaria
+      const fechaInput = formData.fecha;
+      const hoyInput = new Date().toISOString().split('T')[0];
+
+      if (fechaInput < hoyInput) {
         showErrorAlert('Error', 'No se pueden crear solicitudes para fechas pasadas');
         return;
       }
-      
-      // Validar que no sea domingo
-      if (fechaSolicitud.getDay() === 0) {
+
+      // Validar que no sea domingo (corregir bug de timezone)
+      // getDay() devuelve 0 para domingo, pero la fecha debe ser local
+      const fechaLocal = new Date(formData.fecha + 'T00:00:00');
+      if (fechaLocal.getDay() === 0) {
         showErrorAlert('Error', 'No se pueden solicitar bloques para los domingos');
         return;
       }
@@ -330,7 +387,7 @@ const MisSolicitudes = () => {
       }
     }
 
-    const result = await crearSolicitud(formData);
+    const result = await crearSolicitud(solicitudData);
     
     if (result.success) {
       // Limpiar formulario
@@ -338,6 +395,7 @@ const MisSolicitudes = () => {
         titulo: '',
         descripcion: '',
         laboratorio: '',
+        carrera: '',
         fecha: '',
         fechaInicio: '',
         fechaTermino: '',
@@ -346,6 +404,8 @@ const MisSolicitudes = () => {
         tipoSolicitud: 'unica',
         diasSemana: []
       });
+      setShowOtroCarrera(false);
+      setOtroCarrera('');
       setShowForm(false);
     }
   };
@@ -390,6 +450,7 @@ const MisSolicitudes = () => {
             <p><strong>Profesor:</strong> ${solicitud.profesorNombre}</p>
             <p><strong>Título:</strong> ${solicitud.titulo}</p>
             <p><strong>Laboratorio:</strong> ${solicitud.laboratorio.toUpperCase()}</p>
+            ${solicitud.carrera ? `<p><strong>Carrera:</strong> ${solicitud.carrera}</p>` : ''}
             <p><strong>Tipo:</strong> ${solicitud.tipoSolicitud === 'recurrente' ? '🔄 Recurrente' : '📅 Única'}</p>
             <p><strong>Fecha:</strong> ${formatearFechaSolicitud(solicitud)}</p>
             <p><strong>Horario:</strong> ${solicitud.horaInicio} - ${solicitud.horaTermino}</p>
@@ -440,125 +501,6 @@ const MisSolicitudes = () => {
       } else {
         showErrorAlert('Error', result.error);
       }
-    }
-  };
-
-  const handleLimpiarSolicitudesProcesadas = async () => {
-    console.log('🧹 Iniciando limpieza de solicitudes procesadas...');
-    
-    // Obtener solicitudes aprobadas y rechazadas de TODAS las solicitudes, no solo las filtradas
-    const solicitudesProcesadas = solicitudesFiltradas.filter(
-      solicitud => solicitud.estado === 'aprobada' || solicitud.estado === 'rechazada'
-    );
-
-    console.log('📊 Solicitudes encontradas:', {
-      total: solicitudesFiltradas.length,
-      procesadas: solicitudesProcesadas.length,
-      aprobadas: solicitudesProcesadas.filter(s => s.estado === 'aprobada').length,
-      rechazadas: solicitudesProcesadas.filter(s => s.estado === 'rechazada').length
-    });
-
-    if (solicitudesProcesadas.length === 0) {
-      showErrorAlert('Sin solicitudes', 'No hay solicitudes aprobadas o rechazadas para eliminar');
-      return;
-    }
-
-    const confirmResult = await Swal.fire({
-      title: '¿Limpiar todas las solicitudes procesadas?',
-      html: `
-        <div style="text-align: left;">
-          <p>Se eliminarán <strong>${solicitudesProcesadas.length}</strong> solicitudes procesadas:</p>
-          <ul style="margin: 10px 0; padding-left: 20px;">
-            <li>✅ <strong>${solicitudesProcesadas.filter(s => s.estado === 'aprobada').length}</strong> solicitudes aprobadas</li>
-            <li>❌ <strong>${solicitudesProcesadas.filter(s => s.estado === 'rechazada').length}</strong> solicitudes rechazadas</li>
-          </ul>
-          <p style="color: #28a745; font-weight: bold;">✋ Las solicitudes PENDIENTES NO se eliminarán</p>
-          <p style="color: #dc3545; font-weight: bold; margin-top: 10px;">⚠️ Esta acción no se puede deshacer</p>
-        </div>
-      `,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: '🗑️ Eliminar Procesadas',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#dc3545',
-      customClass: {
-        popup: 'swal-wide'
-      }
-    });
-
-    if (confirmResult.isConfirmed) {
-      let eliminadas = 0;
-      let errores = 0;
-
-      // Mostrar progreso
-      Swal.fire({
-        title: 'Eliminando solicitudes...',
-        html: `Progreso: <b>0</b> de <b>${solicitudesProcesadas.length}</b>`,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      // Eliminar una por una
-      for (let i = 0; i < solicitudesProcesadas.length; i++) {
-        const solicitud = solicitudesProcesadas[i];
-        
-        console.log(`🗑️ Eliminando solicitud ${i + 1}/${solicitudesProcesadas.length}:`, {
-          id: solicitud.id,
-          titulo: solicitud.titulo,
-          estado: solicitud.estado
-        });
-        
-        // Actualizar progreso
-        Swal.update({
-          html: `Eliminando: <b>${solicitud.titulo}</b><br>Progreso: <b>${i + 1}</b> de <b>${solicitudesProcesadas.length}</b>`
-        });
-
-        const result = await eliminarSolicitud(solicitud.id);
-        
-        console.log(`📋 Resultado de eliminación:`, result);
-        
-        if (result.success) {
-          eliminadas++;
-          console.log(`✅ Solicitud ${solicitud.id} eliminada exitosamente`);
-        } else {
-          errores++;
-          console.error(`❌ Error eliminando solicitud ${solicitud.id}:`, result.error);
-        }
-        
-        // Pequeña pausa para no saturar el servidor
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-
-      // Cerrar modal de progreso
-      Swal.close();
-
-      // Mostrar resultado final
-      if (errores === 0) {
-        showSuccessAlert(
-          'Limpieza completada', 
-          `Se eliminaron exitosamente ${eliminadas} solicitudes procesadas`
-        );
-      } else {
-        Swal.fire({
-          title: 'Limpieza completada con errores',
-          html: `
-            <div style="text-align: left;">
-              <p>✅ <strong>${eliminadas}</strong> solicitudes eliminadas correctamente</p>
-              <p>❌ <strong>${errores}</strong> solicitudes no se pudieron eliminar</p>
-              <p style="color: #6c757d; font-size: 14px;">Revisa la consola para más detalles sobre los errores</p>
-            </div>
-          `,
-          icon: 'warning',
-          confirmButtonText: 'Entendido'
-        });
-      }
-
-      // Actualizar la lista
-      fetchSolicitudes();
     }
   };
 
@@ -650,88 +592,34 @@ const MisSolicitudes = () => {
   return (
     <div className="solicitudes-container">
       <div className="solicitudes-header">
-        <h1>Solicitudes De Clases</h1>
-        
-        {user?.rol === 'profesor' && (
-          <button 
-            className="btn-nueva-solicitud"
-            onClick={() => setShowForm(true)}
-            disabled={creandoSolicitud}
-          >
-            ➕ Nueva Solicitud
-          </button>
-        )}
+        <h1 style={{ textAlign: 'center', width: '100%', marginBottom: '20px' }}>Solicitudes De Clases</h1>
       </div>
 
-      {/* Sección de filtros */}
-      <div className="filters-section">
-        <div className="filters-header">
-          <div className="filters-title">
-            🔍 Filtros de Búsqueda
+      <div className="solicitudes-header-flex">
+        <div className="filter-card">
+          <div className="filters-section">
+            <div className="filters-content">
+              <div className="filter-group">
+                <label className="filter-label">📅 Fecha de envío de solicitud:</label>
+                <input
+                  type="date"
+                  name="fechaCreacion"
+                  value={filtros.fechaCreacion}
+                  onChange={handleFilterChange}
+                  className="filter-input"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div className="filters-content">
-          <div className="filter-group">
-            <label className="filter-label">Creación:</label>
-            <input
-              type="date"
-              name="fechaCreacion"
-              value={filtros.fechaCreacion}
-              onChange={handleFilterChange}
-              className="filter-input"
-            />
-          </div>
-          
-          <div className="filter-group">
-            <label className="filter-label">Estado:</label>
-            <select
-              name="estado"
-              value={filtros.estado}
-              onChange={handleFilterChange}
-              className="filter-input"
-            >
-              <option value="">Todos los estados</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="aprobada">Aprobada</option>
-              <option value="rechazada">Rechazada</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label className="filter-label">Laboratorio:</label>
-            <select
-              name="laboratorio"
-              value={filtros.laboratorio}
-              onChange={handleFilterChange}
-              className="filter-input"
-            >
-              <option value="">Todos los laboratorios</option>
-              <option value="LAB1">LAB1</option>
-              <option value="LAB2">LAB2</option>
-              <option value="LAB3">LAB3</option>
-            </select>
-          </div>
-          
-          <div className="filters-buttons">
+          {user?.rol === 'profesor' && (
             <button 
-              onClick={limpiarFiltros}
-              className="filter-button clear"
+              className="btn-nueva-solicitud"
+              onClick={() => setShowForm(true)}
+              disabled={creandoSolicitud}
             >
-              🗑️ Limpiar Filtros
+              ➕ Nueva Solicitud
             </button>
-            
-            {user?.rol === 'administrador' && (
-              <button 
-                className="btn-limpiar-procesadas"
-                onClick={handleLimpiarSolicitudesProcesadas}
-                disabled={loading}
-                title="Eliminar todas las solicitudes aprobadas y rechazadas"
-              >
-                🧹 Limpiar Procesadas
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -799,13 +687,15 @@ const MisSolicitudes = () => {
                     className="modern-textarea"
                   />
                 </div>
+
+
               </div>
 
               {/* Sección 2: Laboratorio y fechas */}
               <div className="form-section">
                 <div className="section-header">
                   <div className="section-icon">🏢</div>
-                  <h4>Lugar y Tipo de Solicitud</h4>
+                  <h4>Lugar, Carrera y Tipo de Solicitud</h4>
                 </div>
                 
                 <div className="form-group">
@@ -830,6 +720,53 @@ const MisSolicitudes = () => {
                     ))}
                   </select>
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="carrera" className="modern-label">
+                    <span className="label-text">Carrera</span>
+                    <span className="required-indicator">*</span>
+                  </label>
+                  <select
+                    id="carrera"
+                    name="carrera"
+                    value={showOtroCarrera ? 'otro' : formData.carrera}
+                    onChange={handleChange}
+                    disabled={creandoSolicitud}
+                    className="modern-select"
+                    required
+                  >
+                    <option value="">Seleccionar carrera</option>
+                    {carreras.map(carrera => (
+                      <option key={carrera.value} value={carrera.value}>
+                        {carrera.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {showOtroCarrera && (
+                  <div className="form-group">
+                    <label htmlFor="otroCarrera" className="modern-label">
+                      <span className="label-text">Especifica tu carrera</span>
+                      <span className="required-indicator">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="otroCarrera"
+                      name="otroCarrera"
+                      value={otroCarrera}
+                      onChange={(e) => setOtroCarrera(e.target.value)}
+                      placeholder="Escribe el nombre de tu carrera"
+                      maxLength="50"
+                      disabled={creandoSolicitud}
+                      className="modern-input"
+                      required
+                    />
+                    <small style={{ display: 'block', marginTop: '0.5rem', color: '#6c757d' }}>
+                      Se abreviará automáticamente: {otroCarrera ? abreviarCarrera(otroCarrera) : '(esperando...)'}
+                    </small>
+                  </div>
+                )}
 
                 {/* Toggle para tipo de solicitud */}
                 <div className="form-group">
@@ -1006,6 +943,15 @@ const MisSolicitudes = () => {
                   <div className="date-info-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                     <div className="info-icon" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📅</div>
                     <div className="info-content">
+                      {formData.carrera && (
+                        <>
+                          <p style={{ margin: 0 }}><strong>🎓 Carrera:</strong></p>
+                          <p style={{ margin: 0, fontWeight: 'bold', fontSize: '1.1rem', color: '#2563eb' }}>
+                            {showOtroCarrera && otroCarrera ? abreviarCarrera(otroCarrera) : formData.carrera}
+                          </p>
+                          <hr style={{ width: '50%', margin: '0.5rem auto', border: '1px solid #e5e7eb' }} />
+                        </>
+                      )}
                       {formData.tipoSolicitud === 'unica' ? (
                         <>
                           <p style={{ margin: 0 }}><strong>Fecha solicitada:</strong></p>
@@ -1105,6 +1051,14 @@ const MisSolicitudes = () => {
                     <span className="label">🏢 Laboratorio:</span>
                     <span>{solicitud.laboratorio.toUpperCase()}</span>
                   </div>
+
+                  
+                  {solicitud.carrera && (
+                    <div className="info-row">
+                      <span className="label">🎓 Carrera:</span>
+                      <span>{solicitud.carrera}</span>
+                    </div>
+                  )}
                   
                   <div className="info-row">
                     <span className="label">📅 Fecha:</span>
@@ -1144,7 +1098,16 @@ const MisSolicitudes = () => {
                 </div>
                 
                 <div className="card-actions">
-                  {/* Acciones para administradores */}
+                  {/* Acciones para administradores y profesores: solo pueden eliminar sus propias solicitudes */}
+                  {solicitud.estado === 'pendiente' && solicitud.profesorRut === user?.rut && (
+                    <button 
+                      className="btn-eliminar"
+                      onClick={() => handleEliminar(solicitud)}
+                    >
+                      🗑️ Eliminar
+                    </button>
+                  )}
+                  {/* Acciones para administradores: aprobar/rechazar cualquier solicitud */}
                   {user?.rol === 'administrador' && solicitud.estado === 'pendiente' && (
                     <>
                       <button 
@@ -1161,16 +1124,6 @@ const MisSolicitudes = () => {
                       </button>
                     </>
                   )}
-                  
-                  {/* Acciones para profesores */}
-                  {user?.rol === 'profesor' && solicitud.estado === 'pendiente' && (
-                    <button 
-                      className="btn-eliminar"
-                      onClick={() => handleEliminar(solicitud)}
-                    >
-                      🗑️ Eliminar
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
@@ -1182,3 +1135,4 @@ const MisSolicitudes = () => {
 };
 
 export default MisSolicitudes;
+
