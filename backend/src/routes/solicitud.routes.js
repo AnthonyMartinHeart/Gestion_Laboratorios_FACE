@@ -11,7 +11,16 @@ import { isAdmin, isProfesor } from "../middlewares/authorization.middleware.js"
 const router = Router();
 
 // Crear solicitud (solo profesores)
-router.post('/', authenticateJwt, isProfesor, crearSolicitud);
+router.post('/', authenticateJwt, (req, res, next) => {
+  // Permitir a administradores y profesores crear solicitudes
+  if (req.user.rol !== 'administrador' && req.user.rol !== 'profesor') {
+    return res.status(403).json({ 
+      success: false, 
+      error: "No tienes permisos para crear solicitudes" 
+    });
+  }
+  next();
+}, crearSolicitud);
 
 // Obtener solicitudes (profesores ven las suyas, administradores ven todas)
 router.get('/', authenticateJwt, (req, res, next) => {
