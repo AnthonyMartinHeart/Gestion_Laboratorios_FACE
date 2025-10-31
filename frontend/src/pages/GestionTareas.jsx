@@ -10,7 +10,8 @@ const GestionTareas = () => {
   const [consultores, setConsultores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({
-    fecha: '',
+    fechaLimite: '',
+    fechaAsignacion: '',
     estado: '',
     prioridad: ''
   });
@@ -95,7 +96,8 @@ const GestionTareas = () => {
 
   const limpiarFiltros = () => {
     setFiltros({
-      fecha: '',
+      fechaLimite: '',
+      fechaAsignacion: '',
       estado: '',
       prioridad: ''
     });
@@ -464,8 +466,17 @@ const GestionTareas = () => {
               <label>📅 Fecha límite:</label>
               <input
                 type="date"
-                value={filtros.fecha}
-                onChange={(e) => handleFiltroChange('fecha', e.target.value)}
+                value={filtros.fechaLimite}
+                onChange={(e) => handleFiltroChange('fechaLimite', e.target.value)}
+              />
+            </div>
+
+            <div className="filtro-item">
+              <label>📋 Fecha asignación:</label>
+              <input
+                type="date"
+                value={filtros.fechaAsignacion}
+                onChange={(e) => handleFiltroChange('fechaAsignacion', e.target.value)}
               />
             </div>
 
@@ -733,3 +744,4 @@ const GestionTareas = () => {
 };
 
 export default GestionTareas;
+
