@@ -13,9 +13,14 @@ const horas = [
 ];
 
 export const exportToExcel = (numEquipos, startIndex, date, reservations = []) => {
+  // Filtrar las reservas ADMIN antes de procesar
+  const filteredReservations = reservations.filter(reserva => 
+    reserva && reserva.carrera !== 'ADMIN'
+  );
+
   // Crear un mapa de reservas por PC y hora
   const reservationMap = {};
-  reservations.forEach(reserva => {
+  filteredReservations.forEach(reserva => {
     const pcId = reserva.pcId;
     const horaInicio = reserva.horaInicio?.substring(0, 5);
     const horaTermino = reserva.horaTermino?.substring(0, 5);
@@ -42,12 +47,7 @@ export const exportToExcel = (numEquipos, startIndex, date, reservations = []) =
       const reserva = reservationMap[key];
       
       if (reserva) {
-        // Verificar si es un bloque de clases
-        if (reserva.carrera === 'ADMIN') {
-          rowData.push('CLASES\nAdministrador');
-        } else {
-          rowData.push(`${reserva.rut}\n${reserva.carrera}`);
-        }
+        rowData.push(`${reserva.rut}\n${reserva.carrera}`);
       } else {
         rowData.push('');
       }
@@ -198,26 +198,13 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
     }
     
     if (!reservations || reservations.length === 0) {
-      console.log('❌ No hay reservas disponibles para este laboratorio y fecha');
       return [];
     }
     
-    console.log('✅ Procesando reservas para el modal...');
-    
     const equipos = [];
-    reservations.forEach((reservation, index) => {
-      console.log(`� [${index + 1}] Procesando reserva:`, {
-        id: reservation.id,
-        pcId: reservation.pcId,
-        rut: reservation.rut,
-        carrera: reservation.carrera,
-        horaInicio: reservation.horaInicio,
-        horaTermino: reservation.horaTermino
-      });
-      
-      // Excluir reservas de mantenimiento del modal
-      if (reservation.carrera === 'MAINTENANCE') {
-        console.log(`⚠️ Excluyendo reserva de mantenimiento: ${reservation.id}`);
+    reservations.forEach((reservation) => {
+      // Excluir reservas de mantenimiento y ADMIN del modal
+      if (reservation.carrera === 'MAINTENANCE' || reservation.carrera === 'ADMIN') {
         return;
       }
       
@@ -286,21 +273,12 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
     setEquiposReservados(equipos);
     setSelectedEquipos([]);
     setShowDeleteModal(true);
-    console.log(`✅ [LAB ${labNumber}] Modal abierto correctamente`);
   };
 
   // Exponer la función hacia el componente padre cuando cambian las reservas
   React.useEffect(() => {
-    console.log(`🔄 [LAB ${labNumber}] BitacoraTable actualizado - Reservas:`, {
-      date,
-      labNumber,
-      'reservations-length': reservations?.length || 0,
-      'tiene-reservas': reservations && reservations.length > 0
-    });
-    
     // Solo exponer la función cuando hay un cambio significativo
     if (onModalOpen && typeof onModalOpen === 'function') {
-      console.log(`📤 [LAB ${labNumber}] Exponiendo función openDeleteModal al padre`);
       onModalOpen(openDeleteModal);
     }
   }, [reservations?.length, date]); // Eliminar onModalOpen de las dependencias
@@ -493,7 +471,19 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
   // Mapa para relacionar reservas con bloques horarios
   const reservationMap = {};
 
-  reservations.forEach(reserva => {
+  // Filtrar las reservas inválidas y las de tipo ADMIN
+  const filteredReservations = (reservations || []).filter(reserva => 
+    reserva && 
+    reserva.carrera && 
+    reserva.carrera !== 'ADMIN' &&
+    reserva.horaInicio &&
+    reserva.horaTermino &&
+    reserva.pcId
+  );
+
+  console.log('Reservas filtradas:', filteredReservations.length);
+  
+  filteredReservations.forEach(reserva => {
     if (!reserva || !reserva.horaInicio || !reserva.horaTermino) {
       console.warn('Reserva inválida:', reserva);
       return;
@@ -503,14 +493,11 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
     const horaInicio = reserva.horaInicio.substring(0, 5);
     const horaTermino = reserva.horaTermino.substring(0, 5);
 
-    console.log(`Procesando reserva - PC: ${pcId}, Inicio: ${horaInicio}, Fin: ${horaTermino}`); // Debug
-
     horas.forEach(horaBloqueStr => {
       const [inicioBloque] = horaBloqueStr.split(' - ');
       if (inicioBloque >= horaInicio && inicioBloque < horaTermino) {
         const key = `${pcId}-${inicioBloque}`;
         reservationMap[key] = reserva;
-        console.log(`Agregada reserva para bloque ${key}`); // Debug
       }
     });
   });
@@ -522,27 +509,13 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
 
     if (!reserva) return null;
 
-    // Verificar si es una reserva de bloque de clases (carrera = 'ADMIN')
-    const isClassBlock = reserva.carrera === 'ADMIN';
-
     return (
-      <div className={`reservation-info ${isClassBlock ? 'class-block-reservation' : ''}`}>
-        {isClassBlock ? (
-          <>
-            <div className="class-block-title">📚 CLASES</div>
-            <div className="class-block-subtitle">Administrador</div>
-          </>
-        ) : (
-          <>
-            <div className="rut">{reserva.rut}</div>
-            {reserva.carrera && <div className="carrera">{reserva.carrera}</div>}
-          </>
-        )}
+      <div className="reservation-info">
+        <div className="rut">{reserva.rut}</div>
+        <div className="carrera">{reserva.carrera}</div>
       </div>
     );
   };
-
-  // Efecto de limpieza cuando el componente se desmonta
   useEffect(() => {
     return () => {
       // Limpiar estado inmediatamente
@@ -595,10 +568,9 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
                 {Array.from({ length: numEquipos }, (_, colIndex) => {
                   const pcId = startIndex + colIndex;
                   const info = getReservationInfo(pcId, hora);
-                  const isClassBlock = info && reservationMap[`${pcId}-${hora.split(' - ')[0]}`]?.carrera === 'ADMIN';
                   const hasReservation = !!info;
                   return (
-                    <td key={colIndex} className={`${hasReservation ? 'reservado' : ''} ${isClassBlock ? 'class-block-cell' : ''}`}>
+                    <td key={colIndex} className={hasReservation ? 'reservado' : ''}>
                       {info}
                     </td>
                   );
@@ -709,3 +681,4 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
 };
 
 export default BitacoraTable;
+
