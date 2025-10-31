@@ -322,7 +322,7 @@ const Navbar = () => {
             </>
           )}
 
-          {(userRole === "estudiante" || userRole === "consultor") && (
+          {(userRole === "estudiante" || userRole === "consultor" || userRole === "profesor") && (
             <div className="collapsed-item" data-tooltip="Mis Reservas">
               <NavLink to="/mis-reservas">
                 <FaClipboardList className="collapsed-icon" />
@@ -547,7 +547,7 @@ const Navbar = () => {
               </>
             )}
 
-            {(userRole === "estudiante" || userRole === "consultor") && (
+            {(userRole === "estudiante" || userRole === "consultor" || userRole === "profesor") && (
               <li>
                 <NavLink to="/mis-reservas" className={({ isActive }) => (isActive ? "active" : "")}>
                   <FaClipboardList className="nav-icon" />
@@ -611,3 +611,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
