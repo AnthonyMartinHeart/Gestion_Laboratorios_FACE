@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from "react";
 import useClasesAprobadas from "@hooks/solicitudes/useClasesAprobadas";
 import { useAuth } from "@context/AuthContext";
 import useHorarioSync from "@hooks/useHorarioSync.jsx";
@@ -28,7 +28,7 @@ function isLongText(text) {
   return text && (text.length > 15 || text.includes(" ") && text.length > 12);
 }
 
-export default function HorarioLaboratorios({ laboratorio, selectedDate: propSelectedDate, viewMode = 'daily' }) {
+const HorarioLaboratorios = forwardRef(({ laboratorio, selectedDate: propSelectedDate, viewMode = 'daily', renderButtons, onStateChange }, ref) => {
   const { user } = useAuth();
   const isAdmin = user?.rol === 'administrador';
   
@@ -49,6 +49,13 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
   const [lab3, setLab3] = useState(generarTablaInicial());
   const [hasChanges, setHasChanges] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  // Notificar al padre cuando cambien los estados
+  useEffect(() => {
+    if (onStateChange) {
+      onStateChange({ hasChanges, isLoading });
+    }
+  }, [hasChanges, isLoading, onStateChange]);
   
   // Usar la fecha de la prop o la fecha actual (como string YYYY-MM-DD)
   const selectedDateString = useMemo(() => {
@@ -861,6 +868,14 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
     ? [laboratorios[laboratorio - 1]] // Mostrar solo el laboratorio específico (laboratorio es 1-indexed)
     : laboratorios; // Mostrar todos los laboratorios
 
+  // Exponer métodos al componente padre mediante ref
+  useImperativeHandle(ref, () => ({
+    handleSave,
+    handleClear,
+    hasChanges,
+    isLoading
+  }), [hasChanges, isLoading]);
+
   const handleCellChange = useCallback((labIndex, rowIndex, colIndex, value) => {
     // Verificar rol primero
     if (!isAdmin) {
@@ -1094,7 +1109,8 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
         })}
       </div>
       
-      {isAdmin && (
+      {/* Los botones se renderizan donde se llame renderButtons */}
+      {isAdmin && !renderButtons && (
         <div className="save-section mt-6">
           <div className="button-group flex gap-3 justify-center">
             <button 
@@ -1123,4 +1139,9 @@ export default function HorarioLaboratorios({ laboratorio, selectedDate: propSel
       {/*  */}
     </div>
   );
-}
+});
+
+HorarioLaboratorios.displayName = 'HorarioLaboratorios';
+
+export default HorarioLaboratorios;
+
