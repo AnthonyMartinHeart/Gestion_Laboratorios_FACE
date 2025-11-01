@@ -417,7 +417,10 @@ const GestionTareas = () => {
   };
 
   const formatearFecha = (fechaStr) => {
-    const fecha = new Date(fechaStr);
+    // Evitar problemas de zona horaria parseando manualmente la fecha
+    const [year, month, day] = fechaStr.split('T')[0].split('-');
+    const fecha = new Date(year, month - 1, day);
+    
     return fecha.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
@@ -463,20 +466,20 @@ const GestionTareas = () => {
         <div className="filtros-row">
           <div className="filtros-left">
             <div className="filtro-item">
-              <label>📅 Fecha límite:</label>
-              <input
-                type="date"
-                value={filtros.fechaLimite}
-                onChange={(e) => handleFiltroChange('fechaLimite', e.target.value)}
-              />
-            </div>
-
-            <div className="filtro-item">
               <label>📋 Fecha asignación:</label>
               <input
                 type="date"
                 value={filtros.fechaAsignacion}
                 onChange={(e) => handleFiltroChange('fechaAsignacion', e.target.value)}
+              />
+            </div>
+
+            <div className="filtro-item">
+              <label>📅 Fecha límite:</label>
+              <input
+                type="date"
+                value={filtros.fechaLimite}
+                onChange={(e) => handleFiltroChange('fechaLimite', e.target.value)}
               />
             </div>
 
@@ -744,4 +747,5 @@ const GestionTareas = () => {
 };
 
 export default GestionTareas;
+
 
