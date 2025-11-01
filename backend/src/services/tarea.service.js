@@ -37,7 +37,7 @@ export async function createTareaService(tareaData) {
     const nuevaTarea = tareaRepository.create({
       titulo,
       descripcion,
-      fechaLimite: new Date(fechaLimite),
+      fechaLimite: fechaLimite, // Guardar directamente como string YYYY-MM-DD
       fechaAsignacion: new Date(),
       prioridad,
       estado: "pendiente",
@@ -142,41 +142,27 @@ export async function getTareasService(filters) {
 
     // Filtro por fecha límite
     if (fechaLimite) {
-      console.log('DEBUG - Fecha límite recibida:', fechaLimite);
+      console.log('DEBUG ADMIN - Fecha límite recibida:', fechaLimite);
       
       // Convertir la fecha a formato YYYY-MM-DD
       const fechaFormateada = fechaLimite.split('T')[0];
-      console.log('DEBUG - Fecha formateada:', fechaFormateada);
+      console.log('DEBUG ADMIN - Fecha formateada:', fechaFormateada);
       
       queryBuilder = queryBuilder.andWhere(
-        "DATE_FORMAT(tarea.fechaLimite, '%Y-%m-%d') = :fechaLimite",
+        "DATE(tarea.fechaLimite) = :fechaLimite",
         { fechaLimite: fechaFormateada }
       );
-
-      // Obtener y mostrar las tareas antes de aplicar el filtro
-      const todasLasTareas = await queryBuilder.getMany();
-      console.log('DEBUG - Tareas encontradas:', todasLasTareas.map(t => ({
-        id: t.id,
-        titulo: t.titulo,
-        fechaLimite: t.fechaLimite,
-        fechaLimiteStr: new Date(t.fechaLimite).toISOString().split('T')[0]
-      })));
-
-      // Log de la consulta final para debugging
-      const [query, parameters] = queryBuilder.getQueryAndParameters();
-      console.log('DEBUG - Query final:', query);
-      console.log('DEBUG - Parámetros:', parameters);
+      
+      console.log('DEBUG ADMIN - Aplicado filtro fecha límite:', fechaFormateada);
     }
 
     // Filtro por fecha de asignación
     if (fechaAsignacion) {
       const fechaAsignacionInicio = new Date(fechaAsignacion + 'T00:00:00');
-      const fechaAsignacionFin = new Date(fechaAsignacion + 'T23:59:59.999');
       
-      console.log('Filtro fecha asignación:', {
+      console.log('DEBUG - Filtro fecha asignación:', {
         fechaOriginal: fechaAsignacion,
-        inicio: fechaAsignacionInicio,
-        fin: fechaAsignacionFin
+        inicio: fechaAsignacionInicio
       });
 
       queryBuilder = queryBuilder.andWhere(
@@ -187,13 +173,22 @@ export async function getTareasService(filters) {
 
     // Log de la consulta final
     const [query, parameters] = queryBuilder.getQueryAndParameters();
-    console.log('Query final:', query);
-    console.log('Parámetros:', parameters);
+    console.log('DEBUG ADMIN - Query final:', query);
+    console.log('DEBUG ADMIN - Parámetros:', parameters);
 
     const tareas = await queryBuilder
       .orderBy("tarea.fechaLimite", "ASC")
       .addOrderBy("tarea.prioridad", "DESC")
       .getMany();
+
+    console.log('DEBUG ADMIN - Tareas encontradas:', tareas.length);
+    console.log('DEBUG ADMIN - Detalle de tareas:', tareas.map(t => ({
+      id: t.id,
+      titulo: t.titulo,
+      fechaLimiteOriginal: t.fechaLimite,
+      fechaLimiteFormateada: new Date(t.fechaLimite).toISOString().split('T')[0],
+      fechaLimiteTipo: typeof t.fechaLimite
+    })));
 
     return [tareas, null];
   } catch (error) {
@@ -286,33 +281,72 @@ export async function deleteTareaService(tareaId, userId, userRole) {
 
 export async function getTareasByConsultorService(consultorId, filters) {
   try {
-    const { fecha, estado } = filters;
-
-    let whereConditions = {
-      asignadoA: { id: consultorId }
-    };
-
-    if (estado) {
-      whereConditions.estado = estado;
-    }
+    const { fechaLimite, fechaAsignacion, estado, prioridad } = filters;
 
     let queryBuilder = tareaRepository.createQueryBuilder("tarea")
       .leftJoinAndSelect("tarea.asignadoPor", "asignadoPor")
       .leftJoinAndSelect("tarea.asignadoA", "asignadoA")
       .where("tarea.asignadoA.id = :consultorId", { consultorId });
 
+    // Aplicar filtros adicionales
     if (estado) {
       queryBuilder = queryBuilder.andWhere("tarea.estado = :estado", { estado });
     }
 
-    if (fecha) {
-      queryBuilder = queryBuilder.andWhere("DATE(tarea.fechaLimite) = :fecha", { fecha });
+    if (prioridad) {
+      queryBuilder = queryBuilder.andWhere("tarea.prioridad = :prioridad", { prioridad });
     }
+
+    // Filtro por fecha límite
+    if (fechaLimite) {
+      console.log('DEBUG CONSULTOR - Fecha límite recibida:', fechaLimite);
+      
+      const fechaFormateada = fechaLimite.split('T')[0];
+      console.log('DEBUG CONSULTOR - Fecha formateada:', fechaFormateada);
+      
+      queryBuilder = queryBuilder.andWhere(
+        "DATE(tarea.fechaLimite) = :fechaLimite",
+        { fechaLimite: fechaFormateada }
+      );
+      
+      console.log('DEBUG CONSULTOR - Aplicado filtro fecha límite:', fechaFormateada);
+    }
+
+    // Filtro por fecha de asignación
+    if (fechaAsignacion) {
+      console.log('DEBUG CONSULTOR - Fecha asignación recibida:', fechaAsignacion);
+      
+      const fechaAsignacionInicio = new Date(fechaAsignacion + 'T00:00:00');
+      
+      console.log('DEBUG CONSULTOR - Filtro fecha asignación:', {
+        fechaOriginal: fechaAsignacion,
+        inicio: fechaAsignacionInicio
+      });
+
+      queryBuilder = queryBuilder.andWhere(
+        "DATE(tarea.fechaAsignacion) = DATE(:fechaAsignacion)",
+        { fechaAsignacion: fechaAsignacionInicio }
+      );
+    }
+
+    // Log de la consulta final
+    const [query, parameters] = queryBuilder.getQueryAndParameters();
+    console.log('DEBUG CONSULTOR - Query final:', query);
+    console.log('DEBUG CONSULTOR - Parámetros:', parameters);
 
     const tareas = await queryBuilder
       .orderBy("tarea.fechaLimite", "ASC")
       .addOrderBy("tarea.prioridad", "DESC")
       .getMany();
+
+    console.log('DEBUG CONSULTOR - Tareas encontradas:', tareas.length);
+    console.log('DEBUG CONSULTOR - Detalle de tareas:', tareas.map(t => ({
+      id: t.id,
+      titulo: t.titulo,
+      fechaLimiteOriginal: t.fechaLimite,
+      fechaLimiteFormateada: new Date(t.fechaLimite).toISOString().split('T')[0],
+      fechaLimiteTipo: typeof t.fechaLimite
+    })));
 
     return [tareas, null];
   } catch (error) {
