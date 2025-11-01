@@ -3,6 +3,8 @@ import '@styles/bitacoras.css';
 import { deleteReservation } from '@services/reservation.service.js';
 import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '@helpers/sweetAlert.js';
 import Swal from 'sweetalert2';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const horas = [
   "08:10 - 08:50", "08:50 - 09:30", "09:40 - 10:20", "10:20 - 11:00",
@@ -126,6 +128,98 @@ export const exportToExcel = (numEquipos, startIndex, date, reservations = []) =
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+export const exportToPDF = (numEquipos, startIndex, date, reservations = [], labNumber) => {
+  // Filtrar las reservas ADMIN antes de procesar
+  const filteredReservations = reservations.filter(reserva => 
+    reserva && reserva.carrera !== 'ADMIN'
+  );
+
+  // Crear un mapa de reservas por PC y hora
+  const reservationMap = {};
+  filteredReservations.forEach(reserva => {
+    const pcId = reserva.pcId;
+    const horaInicio = reserva.horaInicio?.substring(0, 5);
+    const horaTermino = reserva.horaTermino?.substring(0, 5);
+
+    horas.forEach(horaBloqueStr => {
+      const [inicioBloque] = horaBloqueStr.split(' - ');
+      if (inicioBloque >= horaInicio && inicioBloque < horaTermino) {
+        const key = `${pcId}-${inicioBloque}`;
+        reservationMap[key] = reserva;
+      }
+    });
+  });
+
+  const doc = new jsPDF({
+    orientation: numEquipos > 20 ? 'landscape' : 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // Título del documento
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text(`Bitácora - Laboratorio ${labNumber}`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+  
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Fecha: ${date || 'Sin fecha'}`, doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+
+  // Preparar datos para la tabla
+  const header = [["Horario", ...Array.from({ length: numEquipos }, (_, i) => `PC ${startIndex + i}`)]];
+  
+  const rows = horas.map(hora => {
+    const [horaBloque] = hora.split(' - ');
+    const rowData = [hora];
+    
+    for (let i = 0; i < numEquipos; i++) {
+      const pcId = startIndex + i;
+      const key = `${pcId}-${horaBloque}`;
+      const reserva = reservationMap[key];
+      
+      if (reserva) {
+        rowData.push(`${reserva.rut}\n${reserva.carrera}`);
+      } else {
+        rowData.push('');
+      }
+    }
+    
+    return rowData;
+  });
+
+  // Generar la tabla con autoTable
+  autoTable(doc, {
+    head: header,
+    body: rows,
+    startY: 28,
+    theme: 'grid',
+    styles: {
+      fontSize: numEquipos > 20 ? 6 : 8,
+      cellPadding: 2,
+      halign: 'center',
+      valign: 'middle'
+    },
+    headStyles: {
+      fillColor: [3, 49, 99], // Color azul #033163
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { cellWidth: numEquipos > 20 ? 20 : 25, fontStyle: 'bold' }
+    },
+    didParseCell: (data) => {
+      // Aplicar color de fondo a celdas con datos
+      if (data.section === 'body' && data.column.index > 0 && data.cell.raw !== '') {
+        data.cell.styles.fillColor = [230, 243, 255]; // Color azul claro #e6f3ff
+      }
+    }
+  });
+
+  // Guardar el PDF
+  doc.save(`bitacora_lab${labNumber}_${date || 'sin_fecha'}.pdf`);
 };
 
 const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, labNumber, onReservationDeleted, onModalOpen }) => {
@@ -681,4 +775,5 @@ const BitacoraTable = ({ numEquipos, startIndex = 1, reservations = [], date, la
 };
 
 export default BitacoraTable;
+
 
