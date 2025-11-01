@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import BitacoraTable, { exportToExcel } from '@components/BitacoraTable';
+import BitacoraTable, { exportToExcel, exportToPDF } from '@components/BitacoraTable';
 import { useGetAllReservations } from '@hooks/reservation/useGetAllReservations';
 import { useAuth } from '@context/AuthContext';
 import '@styles/bitacoras.css';
@@ -71,17 +71,33 @@ const Bitacoras = ({ laboratorio }) => {
         {/* Botones centrados para cada laboratorio */}
         <div className="laboratorio-controls">
           <button 
-            className="export-button"
+            className="export-button excel-button"
             onClick={() => {
-              // Llamar a la función de exportar específica de cada tabla
               if (labData.reservations && labData.reservations.length > 0) {
                 exportToExcel(numEquipos, startIndex, selectedDate, labData.reservations);
               } else {
                 exportToExcel(numEquipos, startIndex, selectedDate, []);
               }
             }}
+            title="Exportar a Excel"
           >
-            <i className="fas fa-file-export"></i> Exportar Excel Lab {labNumber}
+            <span className="button-icon">📊</span>
+            <span className="button-text">Excel</span>
+          </button>
+
+          <button 
+            className="export-button pdf-button"
+            onClick={() => {
+              if (labData.reservations && labData.reservations.length > 0) {
+                exportToPDF(numEquipos, startIndex, selectedDate, labData.reservations, labNumber);
+              } else {
+                exportToPDF(numEquipos, startIndex, selectedDate, [], labNumber);
+              }
+            }}
+            title="Exportar a PDF"
+          >
+            <span className="button-icon">📄</span>
+            <span className="button-text">PDF</span>
           </button>
           
           {/* Solo mostrar el botón de eliminar reservas a los administradores */}
