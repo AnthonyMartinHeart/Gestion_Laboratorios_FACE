@@ -418,3 +418,5 @@ export async function getConsultoresService() {
     return [null, "Error interno del servidor"];
   }
 }
+
+
