@@ -1,5 +1,0 @@
-export * from './rebuild';
-export * from './electron-version';
-export * from './package-manager';
-export * from './author-name';
-//# sourceMappingURL=index.d.ts.map

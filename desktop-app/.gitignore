@@ -1,0 +1,81 @@
+
+
+# Dependencias de Node
+node_modules/
+
+# Archivos de compilacion / build
+dist/
+out/
+build/
+release/
+temp/
+tmp/
+
+# Archivos de electron Forge / Webpack
+.cache/
+webpack.cache/
+forge.config.js.LOK
+webpack.*.js.LOK
+
+# Archivos generados por empaquetadores
+*.asar
+*.asar.unpacked/
+*.exe
+*.dll
+*.dmg
+*.app
+*.pkg
+*.deb
+*.rpm
+*.snap
+*.zip
+*.tar.gz
+*.msi
+
+# Configuracion local y variables de entorno
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# Archivos de usuario o temporales
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Cache del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VSCode / IDE
+.vscode/
+.idea/
+*.code-workspace
+
+
+# Archivos de instalación interna
+releases/
+electron-builder.yml
+electron-builder.json
+electron-updater.yml
+
+# Archivos de pruebas o mocks
+__tests__/
+__mocks__/
+coverage/
+
+# Imágenes de disco y máquinas virtuales
+*.bin
+*.iso
+*.img
+*.vhd
+*.vhdx
+*.qcow2
