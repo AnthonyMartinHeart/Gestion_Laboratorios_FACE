@@ -131,18 +131,18 @@ class SolicitudService {
       
       const solicitudes = await queryBuilder.getMany();
       
-      // LOG: Ver qué fechas se leen de la DB
-      if (solicitudes.length > 0) {
-        console.log('📅 PRIMERA SOLICITUD LEÍDA DE DB:', {
-          id: solicitudes[0].id,
-          titulo: solicitudes[0].titulo,
-          fecha: solicitudes[0].fecha,
-          tipoFecha: typeof solicitudes[0].fecha,
-          cancelaciones: solicitudes[0].clasesCanceladas?.length || 0
-        });
-      }
+      // Mapear el campo fechaEspecifica a fecha en las cancelaciones
+      const solicitudesMapeadas = solicitudes.map(solicitud => {
+        if (solicitud.clasesCanceladas && solicitud.clasesCanceladas.length > 0) {
+          solicitud.clasesCanceladas = solicitud.clasesCanceladas.map(cancelacion => ({
+            ...cancelacion,
+            fecha: cancelacion.fechaEspecifica
+          }));
+        }
+        return solicitud;
+      });
       
-      return [solicitudes, null];
+      return [solicitudesMapeadas, null];
     } catch (error) {
       console.error("Error al obtener solicitudes:", error);
       return [null, "Error interno del servidor"];
@@ -235,14 +235,13 @@ class SolicitudService {
       
       // Validar permisos según el rol
       if (userRol === "profesor") {
-        // Los profesores solo pueden eliminar sus propias solicitudes pendientes
+        // Los profesores pueden eliminar:
+        // 1. Sus propias solicitudes pendientes (en cualquier momento)
+        // 2. Sus propias solicitudes aprobadas/rechazadas (para limpiar historial)
         if (solicitud.profesorRut !== userRut) {
           return [null, "No tienes permiso para eliminar esta solicitud"];
         }
-        
-        if (solicitud.estado !== "pendiente") {
-          return [null, "Solo se pueden eliminar solicitudes pendientes"];
-        }
+        // Ya no hay restricción de estado para profesores
       } else if (userRol === "administrador") {
         // Los administradores pueden eliminar cualquier solicitud, incluso aprobadas/rechazadas
         // Sin restricciones adicionales

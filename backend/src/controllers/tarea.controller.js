@@ -40,12 +40,13 @@ export async function getTareas(req, res) {
   try {
     const userRole = req.userRole;
     const userId = req.userId;
-    const { fecha, estado, prioridad } = req.query;
+    const { fechaLimite, fechaAsignacion, estado, prioridad } = req.query;
 
     const [tareas, error] = await getTareasService({
       userRole,
       userId,
-      fecha,
+      fechaLimite,
+      fechaAsignacion,
       estado,
       prioridad
     });
@@ -110,9 +111,9 @@ export async function deleteTarea(req, res) {
 export async function getMisTareas(req, res) {
   try {
     const userId = req.userId;
-    const { fecha, estado } = req.query;
+    const { fechaLimite, fechaAsignacion, estado, prioridad } = req.query;
 
-    const [tareas, error] = await getTareasByConsultorService(userId, { fecha, estado });
+    const [tareas, error] = await getTareasByConsultorService(userId, { fechaLimite, fechaAsignacion, estado, prioridad });
 
     if (error) return handleErrorClient(res, 400, error);
 
@@ -141,3 +142,5 @@ export async function completarTarea(req, res) {
     handleErrorServer(res, 500, error.message);
   }
 }
+
+

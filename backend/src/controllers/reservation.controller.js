@@ -219,12 +219,13 @@ export async function getReservationsByPC(req, res) {
         }
 
         // Transformar fechas y asegurar formato consistente
-        const formattedList = list.map(reserva => ({
-            ...reserva,
-            fechaReserva: new Date(reserva.fechaReserva).toISOString().split('T')[0],
-            horaInicio: reserva.horaInicio.slice(0, 5), // Asegurar formato HH:MM
-            horaTermino: reserva.horaTermino.slice(0, 5) // Asegurar formato HH:MM
-        }));
+    const formattedList = list.map(reserva => ({
+      ...reserva,
+      fechaReserva: new Date(reserva.fechaReserva).toISOString().split('T')[0],
+      horaInicio: reserva.horaInicio.slice(0, 5), // Asegurar formato HH:MM
+      horaTermino: reserva.horaTermino.slice(0, 5), // Asegurar formato HH:MM
+      tipoActividad: reserva.tipoActividad || null // Propagar tipoActividad
+    }));
 
         handleSuccess(res, 200, "Reservas encontradas", formattedList);
     } catch (e) {

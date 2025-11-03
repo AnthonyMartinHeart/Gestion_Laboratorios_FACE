@@ -61,11 +61,6 @@ const SelectPC = ({ onReservaCreada }) => {
     // Esto se ajusta automáticamente a la zona horaria configurada en el servidor/navegador
     const now = new Date();
     
-    // Log para debugging
-    console.log('🕐 Hora local del sistema:', now.toLocaleString());
-    console.log('📅 Fecha:', now.toLocaleDateString());
-    console.log('⏰ Hora:', now.toLocaleTimeString());
-    
     return now;
   };
 
@@ -107,50 +102,33 @@ const SelectPC = ({ onReservaCreada }) => {
     let enVentanaTransicion = false;
     let claseActivada = null;
     
-    for (const [horaTermino, config] of Object.entries(terminoAInicio)) {
+      for (const [horaTermino, config] of Object.entries(terminoAInicio)) {
       const { siguiente, ventanaInicio, ventanaFin } = config;
       
       // Si estamos entre la hora de término y el inicio de la siguiente clase
       if (tiempoActualEnMinutos >= ventanaInicio && tiempoActualEnMinutos <= ventanaFin) {
         enVentanaTransicion = true;
         claseActivada = siguiente;
-        console.log(`🕐 Ventana de transición detectada: ${horaTermino} → ${siguiente} (activación inmediata)`);
         break;
       }
-    }
-
-    const horariosInicioValidos = horasInicio.filter(hora => {
+    }    const horariosInicioValidos = horasInicio.filter(hora => {
       const [h, m] = hora.split(':').map(Number);
       const tiempoHora = h * 60 + m;
       
       // CASO 1: Si estamos en ventana de transición y esta es la siguiente clase, activar inmediatamente
       if (enVentanaTransicion && hora === claseActivada) {
-        console.log(`✅ Activando clase en ventana de transición: ${hora} (activación inmediata)`);
         return true;
       }
       
       // CASO 2: Si la clase ya comenzó, permitir reservas hasta 1 hora después del inicio
       if (tiempoHora <= tiempoActualEnMinutos) {
         const tiempoLimite = tiempoHora + 60; // 1 hora después del inicio de la clase
-        const permiteReserva = tiempoActualEnMinutos <= tiempoLimite;
-        if (permiteReserva) {
-          console.log(`🔄 Clase ya iniciada pero aún disponible: ${hora} (iniciada hace ${tiempoActualEnMinutos - tiempoHora} min)`);
-        } else {
-          console.log(`❌ Clase ya terminó: ${hora} (terminó hace ${tiempoActualEnMinutos - tiempoLimite} min)`);
-        }
-        return permiteReserva;
+        return tiempoActualEnMinutos <= tiempoLimite;
       }
       
       // CASO 3: Para TODAS las clases futuras, aplicar margen de anticipación uniforme de 30 minutos
       const tiempoActivacion = tiempoHora - margenAnticipacion; // 30 minutos antes del inicio
       const permiteReserva = tiempoActualEnMinutos >= tiempoActivacion;
-      
-      if (permiteReserva) {
-        console.log(`⏰ Clase futura DISPONIBLE: ${hora} (se activó hace ${tiempoActualEnMinutos - tiempoActivacion} min, inicia en ${tiempoHora - tiempoActualEnMinutos} min)`);
-      } else {
-        const minutosParaActivar = tiempoActivacion - tiempoActualEnMinutos;
-        console.log(`⏳ Clase futura NO disponible: ${hora} (se activa en ${minutosParaActivar} min a las ${Math.floor(tiempoActivacion/60)}:${(tiempoActivacion%60).toString().padStart(2,'0')})`);
-      }
       
       return permiteReserva;
     });
@@ -578,131 +556,6 @@ const SelectPC = ({ onReservaCreada }) => {
     }
   };
 
-  const handleClassBlockReservation = async () => {
-    const { value: formValues } = await Swal.fire({
-      title: 'Reservar Bloque de Clases',
-      html: `
-        <div style="text-align: left;">
-          <label for="blockType" style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de bloque:</label>
-          <select id="blockType" class="swal2-input" style="margin-bottom: 15px;">
-            <option value="">Seleccionar tipo</option>
-            <option value="CLASES">CLASES</option>
-            <option value="OTRO">OTRO</option>
-          </select>
-          
-          <div id="customTitleContainer" style="display: none;">
-            <label for="blockTitle" style="display: block; margin-bottom: 5px; font-weight: bold;">Título personalizado:</label>
-            <input id="blockTitle" class="swal2-input" placeholder="Ej: Reunión de profesores" style="margin-bottom: 15px;">
-          </div>
-          
-          <label for="blockStart" style="display: block; margin-bottom: 5px; font-weight: bold;">Hora de inicio:</label>
-          <select id="blockStart" class="swal2-input" style="margin-bottom: 15px;">
-            <option value="">Seleccionar hora de inicio</option>
-            ${horasInicio.map(hora => `<option value="${hora}">${hora}</option>`).join('')}
-          </select>
-          
-          <label for="blockEnd" style="display: block; margin-bottom: 5px; font-weight: bold;">Hora de término:</label>
-          <select id="blockEnd" class="swal2-input" style="margin-bottom: 15px;">
-            <option value="">Seleccionar hora de término</option>
-            ${horasTermino.map(hora => `<option value="${hora}">${hora}</option>`).join('')}
-          </select>
-        </div>
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: 'Reservar Bloque',
-      cancelButtonText: 'Cancelar',
-      didOpen: () => {
-        // Configurar el evento después de que el modal se renderice
-        const blockTypeSelect = document.getElementById('blockType');
-        const customContainer = document.getElementById('customTitleContainer');
-        const customInput = document.getElementById('blockTitle');
-        
-        const toggleCustomTitle = () => {
-          const blockType = blockTypeSelect.value;
-          
-          if (blockType === 'OTRO') {
-            customContainer.style.display = 'block';
-            customInput.required = true;
-          } else {
-            customContainer.style.display = 'none';
-            customInput.required = false;
-            customInput.value = '';
-          }
-        };
-        
-        // Agregar el event listener
-        blockTypeSelect.addEventListener('change', toggleCustomTitle);
-      },
-      preConfirm: () => {
-        const blockType = document.getElementById('blockType').value;
-        const customTitle = document.getElementById('blockTitle').value;
-        const horaInicio = document.getElementById('blockStart').value;
-        const horaTermino = document.getElementById('blockEnd').value;
-        
-        if (!blockType || !horaInicio || !horaTermino) {
-          Swal.showValidationMessage('Todos los campos obligatorios deben ser completados');
-          return false;
-        }
-        
-        if (blockType === 'OTRO' && !customTitle.trim()) {
-          Swal.showValidationMessage('Debe ingresar un título personalizado');
-          return false;
-        }
-        
-        if (horaAMinutos(horaInicio) >= horaAMinutos(horaTermino)) {
-          Swal.showValidationMessage('La hora de término debe ser mayor que la hora de inicio');
-          return false;
-        }
-        
-        const finalTitle = blockType === 'CLASES' ? 'CLASES' : customTitle.trim();
-        return { title: finalTitle, horaInicio, horaTermino };
-      }
-    });
-
-    if (formValues) {
-      try {
-        // Crear una reserva para cada PC del laboratorio
-        const reservationPromises = pcs.map(async (pcNumber) => {
-          const reservationData = {
-            rut: user.rut || '12.345.678-9', // RUT válido por defecto
-            carrera: 'ADMIN', // Identificador especial para bloques de clases
-            horaInicio: formValues.horaInicio,
-            horaTermino: formValues.horaTermino,
-            labId: labId === 'lab1' ? 1 : labId === 'lab2' ? 2 : 3,
-            pcId: pcNumber
-          };
-
-          console.log('Enviando datos de reserva:', reservationData); // Debug
-          return handleCreate(reservationData, false); // No mostrar alertas automáticas
-        });
-
-        const results = await Promise.all(reservationPromises);
-        
-        // Verificar si todas las reservas fueron exitosas
-        const allSuccessful = results.every(result => result.success);
-        
-        if (allSuccessful) {
-          // Actualizar la sincronización desde el backend
-          refreshReservations();
-
-          Swal.fire(
-            '¡Bloque Reservado!', 
-            `El bloque "${formValues.title}" ha sido reservado exitosamente para todo el ${labId.toUpperCase()} de ${formValues.horaInicio} a ${formValues.horaTermino}.`, 
-            'success'
-          );
-        } else {
-          const failedResults = results.filter(result => !result.success);
-          console.error('Resultados fallidos:', failedResults);
-          throw new Error(`Falló la creación de ${failedResults.length} reservas`);
-        }
-      } catch (error) {
-        console.error('Error al reservar bloque:', error);
-        Swal.fire('Error', `No se pudo reservar el bloque de clases: ${error.message}. Por favor, intenta nuevamente.`, 'error');
-      }
-    }
-  };
-
   const handlePCClick = (pcNumber) => {
     // Verificar si hay horarios disponibles
     const horariosValidos = getHorariosValidos();
@@ -760,22 +613,6 @@ const SelectPC = ({ onReservaCreada }) => {
         icon: 'info',
         confirmButtonText: 'Entendido'
       });
-      return;
-    }
-
-    // Verificar si el usuario es administrador o profesor y no permitir reservas individuales
-    if (user && (user.rol === 'administrador' || user.rol === 'profesor')) {
-      const classBlockStatus = isInClassBlock();
-      if (classBlockStatus.active) {
-        Swal.fire(
-          'Bloque de Clases Activo', 
-          `Actualmente hay un bloque de clases "${classBlockStatus.block.title}" reservado de ${classBlockStatus.block.horaInicio} a ${classBlockStatus.block.horaTermino}.`, 
-          'info'
-        );
-      } else {
-        const userType = user.rol === 'administrador' ? 'administradores' : 'profesores';
-        Swal.fire('Acceso restringido', `Los ${userType} solo pueden reservar bloques de clases completos usando el botón correspondiente.`, 'warning');
-      }
       return;
     }
 
@@ -943,12 +780,23 @@ const SelectPC = ({ onReservaCreada }) => {
     e.preventDefault();
 
     // Para usuarios estudiantes y consultores (@alumnos.ubiobio.cl), usar datos del perfil
+    // Para administradores y profesores, usar su ROL como identificador
     // Para otros usuarios, validar campos del formulario
     const esEstudianteOConsultor = user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl');
+    const esAdminOProfesor = user && (user.rol === 'administrador' || user.rol === 'profesor');
     
     let rutAUsar, carreraAUsar;
     
-    if (esEstudianteOConsultor) {
+    if (esAdminOProfesor) {
+      // Para administradores y profesores, usar su rol y rut del perfil
+      rutAUsar = user.rut || '';
+      carreraAUsar = user.rol.toUpperCase(); // 'ADMINISTRADOR' o 'PROFESOR'
+      
+      if (!rutAUsar || rutAUsar.trim() === '') {
+        Swal.fire('Error', 'No tienes un RUT registrado en tu perfil. Contacta al administrador.', 'error');
+        return;
+      }
+    } else if (esEstudianteOConsultor) {
       // Usar datos del perfil para estudiantes y consultores
       rutAUsar = user.rut || '';
       carreraAUsar = user.carrera || '';
@@ -1143,35 +991,22 @@ const SelectPC = ({ onReservaCreada }) => {
       })()}
       
       <div className="button-container">
-        {isAuthorized && (
-          <>
-            <button 
-              onClick={handleMaintenance}
-              className="action-button maintenance-button"
-            >
-              Gestionar Mantenimiento
-            </button>
-          </>
+        {(user && (user.rol === 'administrador' || user.rol === 'consultor')) && (
+          <button 
+            onClick={handleMaintenance}
+            className="action-button maintenance-button"
+          >
+            Gestionar Mantenimiento
+          </button>
         )}
-        {user && (user.rol === 'administrador' || user.rol === 'profesor') && (
-          <>
-            <button 
-              onClick={handleClassBlockReservation}
-              className="action-button class-block-button"
-              style={{ backgroundColor: '#28a745', color: 'white' }}
-            >
-              🏫 Reservar Bloque de Clases
-            </button>
-            {user.rol === 'administrador' && (
-              <button 
-                onClick={handleLibrarEquipos}
-                className="action-button liberar-button"
-                style={{ backgroundColor: '#dc3545', color: 'white' }}
-              >
-                🔓 Liberar Equipos
-              </button>
-            )}
-          </>
+        {user && user.rol === 'administrador' && (
+          <button 
+            onClick={handleLibrarEquipos}
+            className="action-button liberar-button"
+            style={{ backgroundColor: '#dc3545', color: 'white' }}
+          >
+            🔓 Liberar Equipos
+          </button>
         )}
         <button 
           onClick={() => navigate('/home')}
@@ -1190,15 +1025,6 @@ const SelectPC = ({ onReservaCreada }) => {
           // Verificar si es domingo
           const horariosInfo = getHorariosValidos();
           const esDomingo = horariosInfo.esDomingo;
-          
-          // Log simplificado
-          console.log(`PC ${pcNumber}:`, {
-            tieneReserva: !!reserva,
-            esMantenimiento: pcInMaintenance,
-            seDebePonerRojo: pcReservado,
-            esDomingo: esDomingo,
-            reservaCompleta: reserva
-          });
           
           return (
             <div
@@ -1258,8 +1084,8 @@ const SelectPC = ({ onReservaCreada }) => {
             </div>
 
             <form onSubmit={handleSubmit}>
-              {/* Solo mostrar campo RUT si NO es estudiante/consultor con correo @alumnos.ubiobio.cl */}
-              {!(user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
+              {/* Solo mostrar campo RUT si NO es estudiante/consultor/administrador/profesor con datos en perfil */}
+              {!(user && (((user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) || (user.rol === 'administrador' || user.rol === 'profesor'))) && (
                 <>
                   <label>RUT:</label>
                   <input
@@ -1275,8 +1101,8 @@ const SelectPC = ({ onReservaCreada }) => {
                 </>
               )}
 
-              {/* Solo mostrar campo carrera si NO es estudiante o consultor con correo @alumnos.ubiobio.cl */}
-              {!(user && (user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) && (
+              {/* Solo mostrar campo carrera si NO es estudiante/consultor/administrador/profesor con datos en perfil */}
+              {!(user && (((user.rol === 'usuario' || user.rol === 'estudiante' || user.rol === 'consultor') && user.email && user.email.endsWith('@alumnos.ubiobio.cl')) || (user.rol === 'administrador' || user.rol === 'profesor'))) && (
                 <>
                   <label>Carrera:</label>
                   <select
@@ -1315,6 +1141,18 @@ const SelectPC = ({ onReservaCreada }) => {
                     </>
                   )}
                 </>
+              )}
+
+              {/* Mostrar información del perfil para administradores y profesores */}
+              {user && (user.rol === 'administrador' || user.rol === 'profesor') && (
+                <div style={{ marginBottom: '15px', padding: '12px', backgroundColor: '#fff3cd', borderRadius: '5px', border: '1px solid #ffc107' }}>
+                  <div style={{ color: '#856404', fontSize: '14px', fontWeight: 'bold', marginBottom: '5px' }}>
+                    👤 RUT: {user.rut || 'No registrado'}
+                  </div>
+                  <div style={{ color: '#856404', fontSize: '14px', fontWeight: 'bold' }}>
+                    🎓 ROL: {user.rol.toUpperCase()}
+                  </div>
+                </div>
               )}
 
               {/* Mostrar información del perfil para estudiantes y consultores con correo @alumnos.ubiobio.cl */}

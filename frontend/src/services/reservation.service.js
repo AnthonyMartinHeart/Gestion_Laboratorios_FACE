@@ -39,11 +39,6 @@ export async function getAllReservations() {
     
     // Si la respuesta tiene una estructura específica, extraer los datos
     const reservations = data.data || data;
-    
-    console.log('Datos recibidos del servidor:', {
-      estructura: data,
-      reservas: reservations
-    });
 
     if (!Array.isArray(reservations)) {
       console.error('La respuesta no es un array:', reservations);
@@ -104,3 +99,4 @@ export async function clearAllReservations() {
     return handleError(error);
   }
 }
+

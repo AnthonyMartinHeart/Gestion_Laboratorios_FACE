@@ -1,6 +1,6 @@
 /* Gestión de Tareas - Estilos */
 
-/* Contenedor principal con fondo moderno */
+/* Fondo moderno con imagen personalizada */
 .gestion-tareas-container::before {
     content: "";
     position: fixed;
@@ -908,3 +908,4 @@ h9::after {
     gap: 35px;
   }
 }
+

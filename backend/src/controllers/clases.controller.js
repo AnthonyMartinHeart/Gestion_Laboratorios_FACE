@@ -27,16 +27,37 @@ const cancelarClase = async (req, res) => {
 
     // Validaciones básicas
     if (!solicitudId || !fechaEspecifica || !motivoCancelacion) {
-      return handleErrorClient(res, "Faltan datos requeridos", 400);
+      return handleErrorClient(res, 400, "Faltan datos requeridos");
     }
 
     // Validar que la fecha no sea pasada
-    const fechaCancelacion = new Date(fechaEspecifica);
+    console.log('Fecha específica recibida:', fechaEspecifica);
+    
+    // Crear fecha actual en zona horaria local y establecerla al inicio del día
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     
-    if (fechaCancelacion < hoy) {
-      return handleErrorClient(res, "No se pueden cancelar clases pasadas", 400);
+    // Parsear la fecha específica asegurándonos de que esté en la zona horaria local
+    let fechaCancelacion;
+    if (fechaEspecifica.includes('T')) {
+      // Si viene con timestamp, tomar solo la parte de la fecha
+      const [fecha] = fechaEspecifica.split('T');
+      fechaCancelacion = new Date(fecha + 'T00:00:00');
+    } else {
+      // Si es solo fecha YYYY-MM-DD
+      fechaCancelacion = new Date(fechaEspecifica + 'T00:00:00');
+    }
+    
+    console.log('Comparación de fechas:', {
+      fechaRecibida: fechaEspecifica,
+      fechaCancelacion: fechaCancelacion.toLocaleDateString(),
+      hoy: hoy.toLocaleDateString(),
+      sonIguales: fechaCancelacion.getTime() === hoy.getTime()
+    });
+    
+    // Permitir cancelar clases del día actual y futuras
+    if (fechaCancelacion.getTime() < hoy.getTime()) {
+      return handleErrorClient(res, 400, "No se pueden cancelar clases de días anteriores");
     }
 
     const cancelacionData = {

@@ -129,14 +129,17 @@ class NotificacionesService {
   // Notificaciones para administradores - cuando hay nuevas solicitudes
   async notificarNuevaSolicitud(profesorNombre, solicitud) {
     try {
-      const titulo = "📋 Nueva Solicitud de Clase";
-      const mensaje = `${profesorNombre} ha creado una nueva solicitud: "${solicitud.titulo}"`;
+      const titulo = "Nueva Solicitud de Clase";
+      // Formatear nombre con cada palabra capitalizada
+      const nombreFormateado = profesorNombre
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+      const mensaje = `${nombreFormateado} Ha Creado Una Nueva Solicitud De Clases Para: ${solicitud.titulo}`;
       const detalles = {
         profesorRut: solicitud.profesorRut,
         profesorNombre: profesorNombre,
         solicitudId: solicitud.id,
-        laboratorio: solicitud.laboratorio,
-        fecha: solicitud.fecha,
         tipoSolicitud: solicitud.tipoSolicitud
       };
 

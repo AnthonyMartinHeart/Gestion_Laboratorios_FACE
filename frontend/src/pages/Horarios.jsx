@@ -1,12 +1,17 @@
 import HorarioLaboratorios from "@components/Horarios-Lab";
 import { useAuth } from "@context/AuthContext";
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import '@styles/Horarios.css';
 import '@styles/bitacoras.css';
 
 export default function HorarioPage({ laboratorio }) {
   const { user } = useAuth();
   const isAdmin = user?.rol === 'administrador';
+  const horarioRef = useRef(null);
+  
+  // Estados para los botones
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Establecer la fecha actual como valor por defecto
   const getCurrentDate = () => {
@@ -76,6 +81,19 @@ export default function HorarioPage({ laboratorio }) {
     
     return `${formatDate(monday)} al ${formatDate(saturday)}`;
   }, [selectedDate, viewMode]);
+
+  // Callbacks para manejar los botones
+  const handleSaveClick = useCallback(() => {
+    if (horarioRef.current?.handleSave) {
+      horarioRef.current.handleSave();
+    }
+  }, []);
+
+  const handleClearClick = useCallback(() => {
+    if (horarioRef.current?.handleClear) {
+      horarioRef.current.handleClear();
+    }
+  }, []);
 
   return (
     <div className="horario-container">
@@ -206,15 +224,104 @@ export default function HorarioPage({ laboratorio }) {
               </>
             )}
           </div>
+
+          {/* Botones de Guardar y Limpiar (solo para admin) */}
+          {isAdmin && (
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              marginTop: '10px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={handleSaveClick}
+                disabled={!hasChanges || isLoading}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: hasChanges 
+                    ? 'linear-gradient(135deg, #4caf50, #2e7d32)' 
+                    : 'rgba(76, 175, 80, 0.5)',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  cursor: hasChanges && !isLoading ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  opacity: hasChanges && !isLoading ? 1 : 0.6
+                }}
+              >
+                {isLoading ? '⏳ Guardando...' : hasChanges ? '💾 Guardar Cambios' : '✅ Guardado'}
+              </button>
+              <button
+                onClick={handleClearClick}
+                disabled={isLoading}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #f44336, #c62828)',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+              >
+                🗑️ Limpiar y Guardar
+              </button>
+            </div>
+          )}
+          {isAdmin && hasChanges && (
+            <div style={{
+              background: 'white',
+              borderRadius: '15px',
+              padding: '12px 20px',
+              marginTop: '12px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              border: '2px solid #ff9800',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              maxWidth: '350px',
+              margin: '12px auto 0'
+            }}>
+              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+              <p style={{
+                color: '#e65100',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                margin: 0,
+                textAlign: 'center'
+              }}>
+                Hay cambios sin guardar
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       <HorarioLaboratorios 
+        ref={horarioRef}
         key={`${viewMode}-${selectedDate}`}
         laboratorio={laboratorio} 
         selectedDate={selectedDate} 
-        viewMode={viewMode} 
+        viewMode={viewMode}
+        renderButtons={true}
+        onStateChange={(changes) => {
+          if (changes.hasChanges !== undefined) setHasChanges(changes.hasChanges);
+          if (changes.isLoading !== undefined) setIsLoading(changes.isLoading);
+        }}
       />
     </div>
   );
 }
+

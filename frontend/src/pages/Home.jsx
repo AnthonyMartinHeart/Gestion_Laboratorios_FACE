@@ -40,45 +40,41 @@ const Home = () => {
           : `"Bienvenido al Gestor de Laboratorios FACE"`}
       </h5>
       
-      {!esProfesor && (
-        <>
-          <h2>
-            Seleccione Su Laboratorio <span className="emoji-animate">👇</span>
-          </h2>
+      <h2>
+        Seleccione Su Laboratorio <span className="emoji-animate">👇</span>
+      </h2>
 
-          <div className="lab-buttons">
-            <NavLink to="/select-pc/lab1">
-              <button 
-                className="lab-button lab1-button"
-                onMouseEnter={() => handleMouseEnter("lab1")}
-                onMouseLeave={handleMouseLeave}
-              >
-                LAB 1
-              </button>
-            </NavLink>
+      <div className="lab-buttons">
+        <NavLink to="/select-pc/lab1">
+          <button 
+            className="lab-button lab1-button"
+            onMouseEnter={() => handleMouseEnter("lab1")}
+            onMouseLeave={handleMouseLeave}
+          >
+            LAB 1
+          </button>
+        </NavLink>
 
-            <NavLink to="/select-pc/lab2">
-              <button 
-                className="lab-button lab2-button"
-                onMouseEnter={() => handleMouseEnter("lab2")}
-                onMouseLeave={handleMouseLeave}
-              >
-                LAB 2
-              </button>
-            </NavLink>
+        <NavLink to="/select-pc/lab2">
+          <button 
+            className="lab-button lab2-button"
+            onMouseEnter={() => handleMouseEnter("lab2")}
+            onMouseLeave={handleMouseLeave}
+          >
+            LAB 2
+          </button>
+        </NavLink>
 
-            <NavLink to="/select-pc/lab3">
-              <button 
-                className="lab-button lab3-button"
-                onMouseEnter={() => handleMouseEnter("lab3")}
-                onMouseLeave={handleMouseLeave}
-              >
-                LAB 3
-              </button>
-            </NavLink>
-          </div>
-        </>
-      )}
+        <NavLink to="/select-pc/lab3">
+          <button 
+            className="lab-button lab3-button"
+            onMouseEnter={() => handleMouseEnter("lab3")}
+            onMouseLeave={handleMouseLeave}
+          >
+            LAB 3
+          </button>
+        </NavLink>
+      </div>
 
       {/* Componente de usuarios conectados */}
       <UsuariosConectados />
@@ -87,3 +83,5 @@ const Home = () => {
 };
 
 export default Home;
+
+

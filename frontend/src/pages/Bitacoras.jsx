@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import BitacoraTable, { exportToExcel } from '@components/BitacoraTable';
+import BitacoraTable, { exportToExcel, exportToPDF } from '@components/BitacoraTable';
 import { useGetAllReservations } from '@hooks/reservation/useGetAllReservations';
 import { useAuth } from '@context/AuthContext';
 import '@styles/bitacoras.css';
@@ -34,7 +34,6 @@ const Bitacoras = ({ laboratorio }) => {
     return () => {
       // Limpiar estados cuando se desmonta el componente
       setModalFunctions({});
-      console.log('Bitacoras component cleanup completed');
     };
   }, []); // Solo al cambio de ruta principal
 
@@ -42,24 +41,27 @@ const Bitacoras = ({ laboratorio }) => {
 
   // Función para manejar cuando se elimina una reserva
   const handleReservationDeleted = () => {
-    console.log('🔄 handleReservationDeleted ejecutándose - Refrescando datos...');
-    console.log('🔍 Referencias disponibles:', {
-      'lab1.refetch': typeof lab1.refetch,
-      'lab2.refetch': typeof lab2.refetch,
-      'lab3.refetch': typeof lab3.refetch
-    });
-    
     // Refrescar los datos de todos los laboratorios
     if (lab1.refetch) lab1.refetch();
     if (lab2.refetch) lab2.refetch();
     if (lab3.refetch) lab3.refetch();
-    
-    console.log('✅ Datos de todos los laboratorios refrescados');
   };
+
+  // Exponer función global para refrescar bitácoras desde otros componentes (ej: MisClases)
+  useEffect(() => {
+    window.refreshBitacoras = () => {
+      if (lab1.refetch) lab1.refetch();
+      if (lab2.refetch) lab2.refetch();
+      if (lab3.refetch) lab3.refetch();
+    };
+
+    return () => {
+      window.refreshBitacoras = null;
+    };
+  }, [lab1.refetch, lab2.refetch, lab3.refetch]);
 
   // Función estable para manejar la apertura del modal
   const handleModalOpen = useCallback((labNumber, openModalFn) => {
-    console.log(`📝 Registrando función modal para LAB ${labNumber}`);
     setModalFunctions(prev => ({...prev, [labNumber]: openModalFn}));
   }, []);
 
@@ -69,17 +71,33 @@ const Bitacoras = ({ laboratorio }) => {
         {/* Botones centrados para cada laboratorio */}
         <div className="laboratorio-controls">
           <button 
-            className="export-button"
+            className="export-button excel-button"
             onClick={() => {
-              // Llamar a la función de exportar específica de cada tabla
               if (labData.reservations && labData.reservations.length > 0) {
                 exportToExcel(numEquipos, startIndex, selectedDate, labData.reservations);
               } else {
                 exportToExcel(numEquipos, startIndex, selectedDate, []);
               }
             }}
+            title="Exportar a Excel"
           >
-            <i className="fas fa-file-export"></i> Exportar Excel Lab {labNumber}
+            <span className="button-icon">📊</span>
+            <span className="button-text">Excel</span>
+          </button>
+
+          <button 
+            className="export-button pdf-button"
+            onClick={() => {
+              if (labData.reservations && labData.reservations.length > 0) {
+                exportToPDF(numEquipos, startIndex, selectedDate, labData.reservations, labNumber);
+              } else {
+                exportToPDF(numEquipos, startIndex, selectedDate, [], labNumber);
+              }
+            }}
+            title="Exportar a PDF"
+          >
+            <span className="button-icon">📄</span>
+            <span className="button-text">PDF</span>
           </button>
           
           {/* Solo mostrar el botón de eliminar reservas a los administradores */}
@@ -161,3 +179,4 @@ const Bitacoras = ({ laboratorio }) => {
 };
 
 export default Bitacoras;
+
