@@ -1,0 +1,24 @@
+{
+  "name": "@electron-forge/tracer",
+  "version": "7.10.2",
+  "description": "Tracing helpers for Electron Forge",
+  "repository": "https://github.com/electron/forge",
+  "author": "Samuel Attard",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "dependencies": {
+    "chrome-trace-event": "^1.0.3"
+  },
+  "engines": {
+    "node": ">= 14.17.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "gitHead": "af12ba0c7b0a43c272ada44c73cc377ee768f4fe"
+}

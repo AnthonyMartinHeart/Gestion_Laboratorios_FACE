@@ -1,0 +1,1 @@
+{"version":3,"file":"parse-archs.d.ts","sourceRoot":"","sources":["../../src/util/parse-archs.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,SAAS,EAAE,aAAa,EAAE,MAAM,8BAA8B,CAAC;AAExE,MAAM,CAAC,OAAO,UAAU,UAAU,CAChC,QAAQ,EAAE,aAAa,GAAG,MAAM,EAChC,YAAY,EAAE,SAAS,GAAG,KAAK,GAAG,MAAM,EACxC,eAAe,EAAE,MAAM,GACtB,SAAS,EAAE,CAWb"}

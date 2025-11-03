@@ -11,7 +11,8 @@ import clasesRoutes from "./clases.routes.js";
 import notificacionesRoutes from "./notificaciones.routes.js";
 import tareaRoutes from "./tarea.routes.js";
 import observacionesRoutes from "./observaciones.routes.js";
-
+import equipoRoutes from "./equipo.routes.js";
+import sesionRoutes from "./sesion.routes.js";
 const router = Router();
 
 router
@@ -25,6 +26,8 @@ router
     .use("/clases", clasesRoutes)
     .use("/notificaciones", notificacionesRoutes)
     .use("/tareas", tareaRoutes)
-    .use("/observaciones", observacionesRoutes);
+    .use("/observaciones", observacionesRoutes)
+    .use("/equipos", equipoRoutes)
+    .use("/sesiones", sesionRoutes);
 
 export default router;
