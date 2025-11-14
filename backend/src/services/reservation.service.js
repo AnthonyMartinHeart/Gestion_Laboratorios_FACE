@@ -26,7 +26,9 @@ export async function createReservationService(data) {
       return [saved, null];
     }
 
-    // Busca solapamientos existentes en el mismo PC (solo reservas activas si existe el campo status)
+    // Busca solapamientos existentes en el mismo PC
+    // IMPORTANTE: Validar TODAS las reservas (activas Y finalizadas) para evitar duplicados en la bitácora
+    // Esto previene que se reserve el mismo PC en el mismo horario aunque se haya liberado
     const metadata = repo.metadata;
     const hasStatusColumn = metadata.columns.some(column => column.propertyName === 'status');
     
@@ -37,13 +39,14 @@ export async function createReservationService(data) {
       .andWhere("r.horaInicio < :horaTermino", { horaTermino })
       .andWhere("r.horaTermino > :horaInicio", { horaInicio });
       
-    if (hasStatusColumn) {
-      pcQuery.andWhere("r.status = :status", { status: "active" });
-    }
+    // NO filtrar por status - validar contra TODAS las reservas en la bitácora
+    // Esto asegura que un horario no pueda ser reutilizado aunque se libere el equipo
     
     const pcOverlaps = await pcQuery.getMany();
 
-    // Busca solapamientos del mismo RUT en cualquier PC del mismo laboratorio (solo reservas activas si existe el campo)
+    // Busca solapamientos del mismo RUT en cualquier PC del mismo laboratorio
+    // IMPORTANTE: Validar solo reservas ACTIVAS del usuario para permitir que reserve en diferentes horarios
+    // después de liberar un equipo, pero NO en el mismo horario donde ya tiene una reserva registrada
     const labRange = getLabRange(labId);
     const rutQuery = repo
       .createQueryBuilder("r")
@@ -53,6 +56,8 @@ export async function createReservationService(data) {
       .andWhere("r.horaInicio < :horaTermino", { horaTermino })
       .andWhere("r.horaTermino > :horaInicio", { horaInicio });
       
+    // Para el RUT, solo validar contra reservas ACTIVAS
+    // Esto permite que el usuario reserve nuevamente después de liberar, pero en diferente horario
     if (hasStatusColumn) {
       rutQuery.andWhere("r.status = :status", { status: "active" });
     }
@@ -61,12 +66,19 @@ export async function createReservationService(data) {
 
     // Validar solapamientos del mismo RUT
     if (rutOverlaps.length > 0) {
-      return [null, "Ya tienes una reserva que se solapa con este horario en el laboratorio"];
+      return [null, "Ya tienes una reserva activa que se solapa con este horario en el laboratorio"];
     }
 
     // Validar solapamientos en el PC específico
     if (pcOverlaps.length > 0) {
-      return [null, "El PC ya está reservado en ese horario"];
+      // Verificar si todas las reservas solapadas están finalizadas
+      const todasFinalizadas = hasStatusColumn && pcOverlaps.every(r => r.status === 'finished');
+      
+      if (todasFinalizadas) {
+        return [null, "Este horario ya fue utilizado anteriormente en este PC y está registrado en la bitácora. Por favor selecciona otro horario o PC"];
+      } else {
+        return [null, "El PC ya está reservado en ese horario"];
+      }
     }
 
     // Propagar tipoActividad si existe
