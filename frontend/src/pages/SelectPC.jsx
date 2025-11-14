@@ -393,9 +393,9 @@ const SelectPC = ({ onReservaCreada }) => {
   };
 
   const handleLibrarEquipos = async () => {
-    // Solo administradores pueden liberar equipos
-    if (!user || user.rol !== 'administrador') {
-      Swal.fire('Acceso denegado', 'Solo los administradores pueden liberar equipos.', 'error');
+    // Solo administradores y consultores pueden liberar equipos
+    if (!user || (user.rol !== 'administrador' && user.rol !== 'consultor')) {
+      Swal.fire('Acceso denegado', 'Solo los administradores y consultores pueden liberar equipos.', 'error');
       return;
     }
 
@@ -893,10 +893,65 @@ const SelectPC = ({ onReservaCreada }) => {
         setShowOtroCarrera(false);
         if (onReservaCreada) onReservaCreada();
       } else if (result.error) {
+        // Mensajes de error personalizados y claros
         if (result.error.includes('Ya tienes una reserva')) {
-          Swal.fire('Error', 'Ya hay una reserva en ese horario. Intenta con otro equipo.', 'error');
+          Swal.fire({
+            title: 'Reserva Duplicada',
+            html: `
+              <div style="text-align: center;">
+                <p>Ya tienes una reserva activa en este horario.</p>
+                <br>
+                <p><strong>Por favor:</strong></p>
+                <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+                  <li>Selecciona otro horario, o</li>
+                  <li>Libera tu reserva actual primero</li>
+                </ul>
+              </div>
+            `,
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+          });
+        } else if (result.error.includes('Este horario ya fue utilizado anteriormente')) {
+          Swal.fire({
+            title: 'Horario No Disponible',
+            html: `
+              <div style="text-align: center;">
+                <p><strong>⚠️ Este horario ya fue reservado anteriormente en este PC</strong></p>
+                <br>
+                <p>Aunque el equipo esté disponible (azul), el horario está registrado en la bitácora y no puede ser reutilizado el mismo día.</p>
+                <br>
+                <p><strong>Solución:</strong></p>
+                <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+                  <li>✅ Selecciona un horario diferente, o</li>
+                  <li>✅ Selecciona otro equipo disponible</li>
+                </ul>
+                <br>
+                <p style="font-size: 12px; color: #666;">
+                  Esto previene conflictos y duplicados en la bitácora del sistema.
+                </p>
+              </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3085d6'
+          });
         } else if (result.error.includes('El PC ya está reservado')) {
-          Swal.fire('Error', 'El PC ya está reservado por otro usuario en ese horario. Intenta con otro equipo.', 'error');
+          Swal.fire({
+            title: 'Equipo Reservado',
+            html: `
+              <div style="text-align: center;">
+                <p>Este PC ya está reservado por otro usuario en ese horario.</p>
+                <br>
+                <p><strong>Por favor:</strong></p>
+                <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+                  <li>Selecciona otro equipo disponible (azul), o</li>
+                  <li>Selecciona un horario diferente</li>
+                </ul>
+              </div>
+            `,
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+          });
         } else {
           Swal.fire('Error', result.error, 'error');
         }
@@ -999,7 +1054,7 @@ const SelectPC = ({ onReservaCreada }) => {
             Gestionar Mantenimiento
           </button>
         )}
-        {user && user.rol === 'administrador' && (
+        {(user && (user.rol === 'administrador' || user.rol === 'consultor')) && (
           <button 
             onClick={handleLibrarEquipos}
             className="action-button liberar-button"
