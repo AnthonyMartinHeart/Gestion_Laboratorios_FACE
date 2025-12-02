@@ -11,6 +11,10 @@ import clasesRoutes from "./clases.routes.js";
 import notificacionesRoutes from "./notificaciones.routes.js";
 import tareaRoutes from "./tarea.routes.js";
 import observacionesRoutes from "./observaciones.routes.js";
+import equipoRoutes from "./equipo.routes.js";
+import sesionRoutes from "./sesion.routes.js";
+import { getHealth } from "../controllers/chequeo.controller.js";
+import labRoutes from "./lab.routes.js";
 
 const router = Router();
 
@@ -25,6 +29,9 @@ router
     .use("/clases", clasesRoutes)
     .use("/notificaciones", notificacionesRoutes)
     .use("/tareas", tareaRoutes)
-    .use("/observaciones", observacionesRoutes);
-
+    .use("/observaciones", observacionesRoutes)
+    .use("/equipos", equipoRoutes)
+    .use("/sesiones", sesionRoutes)
+    .use("/health", getHealth)
+    .use("/labs", labRoutes);
 export default router;

@@ -1,37 +1,51 @@
 "use strict";
-import Reservation from "../entity/reservation.entity.js";
 import Turno from "../entity/turno.entity.js";
 import { AppDataSource } from "../config/configDb.js";
+import  Sesion  from "../entity/sesion.entity.js";
 
 export async function getEstadisticasGeneralesService(filtros = {}) {
   try {
-    const repo = AppDataSource.getRepository(Reservation);
+    const repo = AppDataSource.getRepository(Sesion);
     
-    // Construir query base
-    let query = repo.createQueryBuilder("r")
-      .where("r.carrera != :maintenance", { maintenance: "MAINTENANCE" }); // Excluir mantenimiento
+    
+    let query = repo
+      .createQueryBuilder("s")
+      .where("(s.carrera IS NULL OR s.carrera != :maintenance)", {
+        maintenance: "MAINTENANCE",
+      }); 
 
-    // Aplicar filtros de fecha
+    
     if (filtros.fechaInicio) {
-      query.andWhere("r.fechaReserva >= :fechaInicio", { fechaInicio: filtros.fechaInicio });
+      query.andWhere("DATE(s.startedAt) >= :fechaInicio", {
+        fechaInicio: filtros.fechaInicio,
+      });
     }
     if (filtros.fechaFin) {
-      query.andWhere("r.fechaReserva <= :fechaFin", { fechaFin: filtros.fechaFin });
-    }
-    if (filtros.laboratorio && filtros.laboratorio !== 'todos') {
-      query.andWhere("r.labId = :labId", { labId: parseInt(filtros.laboratorio) });
+      query.andWhere("DATE(s.startedAt) <= :fechaFin", {
+        fechaFin: filtros.fechaFin,
+      });
     }
 
-    const reservas = await query.getMany();
+    
+    if (filtros.laboratorio && filtros.laboratorio !== "todos") {
+      query.andWhere("s.labId = :labId", {
+        labId: parseInt(filtros.laboratorio),
+      });
+    }
 
-    // Calcular estadísticas
+    const sesiones = await query.getMany();
+
+   
+    const reservasLike = mapSessionsToReservaLike(sesiones);
+
+    
     const estadisticas = {
-      resumenGeneral: calcularResumenGeneral(reservas),
-      usoEquipos: calcularUsoEquipos(reservas),
-      horariosActivos: calcularHorariosActivos(reservas),
-      diasActivos: calcularDiasActivos(reservas),
-      laboratoriosDemanda: calcularDemandaLaboratorios(reservas),
-      tendencias: calcularTendencias(reservas)
+      resumenGeneral: calcularResumenGeneral(reservasLike),
+      usoEquipos: calcularUsoEquipos(reservasLike),
+      horariosActivos: calcularHorariosActivos(reservasLike),
+      diasActivos: calcularDiasActivos(reservasLike),
+      laboratoriosDemanda: calcularDemandaLaboratorios(reservasLike),
+      tendencias: calcularTendencias(reservasLike),
     };
 
     return [estadisticas, null];
@@ -43,31 +57,42 @@ export async function getEstadisticasGeneralesService(filtros = {}) {
 
 export async function getEstadisticasEquiposService(labId = null) {
   try {
-    const repo = AppDataSource.getRepository(Reservation);
+    const repo = AppDataSource.getRepository(Sesion);
     
-    let query = repo.createQueryBuilder("r")
+    let query = repo
+      .createQueryBuilder("s")
       .select([
-        "r.pcId",
-        "r.labId", 
-        "COUNT(*) as total_uso",
-        "COUNT(DISTINCT r.fechaReserva) as dias_utilizados"
+        "s.deviceNumber AS pcId",
+        "s.labId AS labId",
+        "COUNT(*) AS total_uso",
+        "COUNT(DISTINCT DATE(s.startedAt)) AS dias_utilizados",
       ])
-      .where("r.carrera != :maintenance", { maintenance: "MAINTENANCE" })
-      .groupBy("r.pcId, r.labId")
+      .where("(s.carrera IS NULL OR s.carrera != :maintenance)", {
+        maintenance: "MAINTENANCE",
+      })
+      .groupBy("s.deviceNumber, s.labId")
       .orderBy("total_uso", "DESC");
 
     if (labId) {
-      query.andWhere("r.labId = :labId", { labId });
+      query.andWhere("s.labId = :labId", { labId });
     }
 
     const equipos = await query.getRawMany();
 
-    // Procesar datos para incluir información adicional
-    const equiposConEstadisticas = equipos.map(equipo => ({
-      ...equipo,
-      porcentaje_uso: calcularPorcentajeUso(equipo.total_uso),
-      estado: determinarEstadoEquipo(equipo.total_uso, equipo.dias_utilizados)
-    }));
+    
+    const equiposConEstadisticas = equipos.map((equipo) => {
+      const totalUso = Number(equipo.total_uso) || 0;
+      const diasUtilizados = Number(equipo.dias_utilizados) || 0;
+
+      return {
+        pcId: Number(equipo.pcid),   
+        labId: Number(equipo.labid), 
+        total_uso: totalUso,
+        dias_utilizados: diasUtilizados,
+        porcentaje_uso: calcularPorcentajeUso(totalUso),
+        estado: determinarEstadoEquipo(totalUso, diasUtilizados),
+      };
+    });
 
     return [equiposConEstadisticas, null];
   } catch (error) {
@@ -76,31 +101,37 @@ export async function getEstadisticasEquiposService(labId = null) {
   }
 }
 
-export async function getEstadisticasTemporalesService(tipo = 'mensual') {
+
+
+
+export async function getEstadisticasTemporalesService(tipo = "mensual") {
   try {
-    const repo = AppDataSource.getRepository(Reservation);
-    
+    const repo = AppDataSource.getRepository(Sesion);
+
     let dateFormat;
     switch (tipo) {
-      case 'diario':
-        dateFormat = "DATE(r.fechaReserva)";
+      case "diario":
+        dateFormat = "DATE(s.startedAt)";
         break;
-      case 'semanal':
-        dateFormat = "DATE_TRUNC('week', r.fechaReserva)";
+      case "semanal":
+        dateFormat = "DATE_TRUNC('week', s.startedAt)";
         break;
-      case 'mensual':
+      case "mensual":
       default:
-        dateFormat = "DATE_TRUNC('month', r.fechaReserva)";
+        dateFormat = "DATE_TRUNC('month', s.startedAt)";
     }
 
-    const query = repo.createQueryBuilder("r")
+    const query = repo
+      .createQueryBuilder("s")
       .select([
         `${dateFormat} as periodo`,
-        "COUNT(*) as total_reservas",
-        "COUNT(DISTINCT r.pcId) as equipos_utilizados",
-        "COUNT(DISTINCT r.rut) as usuarios_unicos"
+        "COUNT(*) as total_reservas", 
+        "COUNT(DISTINCT s.deviceNumber) as equipos_utilizados",
+        "COUNT(DISTINCT s.rut) as usuarios_unicos",
       ])
-      .where("r.carrera != :maintenance", { maintenance: "MAINTENANCE" })
+      .where("(s.carrera IS NULL OR s.carrera != :maintenance)", {
+        maintenance: "MAINTENANCE",
+      })
       .groupBy("periodo")
       .orderBy("periodo", "ASC");
 
@@ -113,11 +144,41 @@ export async function getEstadisticasTemporalesService(tipo = 'mensual') {
   }
 }
 
-// Funciones auxiliares para cálculos
+function mapSessionsToReservaLike(sesiones) {
+  return sesiones.map((s) => {
+    const started = s.startedAt ? new Date(s.startedAt) : null;
+
+    const horaInicio = started
+      ? started.toTimeString().substring(0, 5) 
+      : "00:00";
+
+    const fechaReserva = started
+      ? started.toISOString().slice(0, 10)
+      : null;
+
+    return {
+      pcId: s.deviceNumber,
+      rut: s.rut,
+      fechaReserva,
+      labId: s.labId,
+      carrera: s.carrera,
+      horaInicio,
+    };
+  });
+}
+
+
+
+
+// Funciones auxiliares para calculos
 function calcularResumenGeneral(reservas) {
   const equiposUnicos = new Set(reservas.map(r => r.pcId));
   const usuariosUnicos = new Set(reservas.map(r => r.rut));
-  const fechasUnicas = new Set(reservas.map(r => r.fechaReserva));
+  const fechasUnicas = new Set(
+    reservas
+      .filter(r => r.fechaReserva)
+      .map(r => r.fechaReserva)
+  );
   
   // Calcular capacidad total diaria (Lab1: 40*17 + Lab2: 20*17 + Lab3: 20*17 = 1360)
   const capacidadDiaria = LAB_CONFIG[1].equipos * 17 + LAB_CONFIG[2].equipos * 17 + LAB_CONFIG[3].equipos * 17;
@@ -155,12 +216,14 @@ function calcularHorariosActivos(reservas) {
 function calcularDiasActivos(reservas) {
   const diasActivos = {};
   reservas.forEach(reserva => {
+    if (!reserva.fechaReserva) return;
     const fecha = new Date(reserva.fechaReserva);
     const nombreDia = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
     diasActivos[nombreDia] = (diasActivos[nombreDia] || 0) + 1;
   });
   return diasActivos;
 }
+
 
 function calcularDemandaLaboratorios(reservas) {
   const demanda = { 1: 0, 2: 0, 3: 0 };

@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f7f8fa;
+  color: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.app-container {
+  text-align: center;
+  padding: 2rem 3rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+h1 {
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  color: #0055a5;
+}
+
+p {
+  font-size: 1rem;
+  color: #555;
+}

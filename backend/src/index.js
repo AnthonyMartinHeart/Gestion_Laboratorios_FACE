@@ -12,6 +12,7 @@ import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { createUsers } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
+import { setIO } from "./services/socket.service.js";
 
 // Set para almacenar usuarios conectados
 const connectedUsers = new Set();
@@ -28,6 +29,9 @@ async function setupServer() {
         credentials: true,
       },
     });
+
+    setIO(io);//---------------
+
 
     app.disable("x-powered-by");
 
@@ -78,6 +82,17 @@ async function setupServer() {
     // Socket.IO - Manejar conexiones
     io.on("connection", (socket) => {
       console.log("🔌 Usuario conectado:", socket.id);
+
+      socket.on("subscribe_lab", ({ labId }) => {
+      const id = Number(labId);
+      if (!Number.isFinite(id)) return;
+
+      const roomName = `lab_${id}`;
+      socket.join(roomName);
+
+      socket.emit("subscribed_lab", { labId: id });
+      console.log(` Socket ${socket.id} suscrito a sala ${roomName}`);
+      });
       
       // Enviar el conteo actual al nuevo usuario conectado
       socket.emit("users-count", connectedUsers.size);
