@@ -5,7 +5,7 @@ const rules = require('./webpack.rules');
 module.exports = {
   mode: 'development',
   target: 'web',
-  entry: path.resolve(__dirname, 'src/renderer/app.jsx'),
+  entry: path.resolve(__dirname, 'src/renderer/index.jsx'),
   module: { rules },
   resolve: { extensions: ['.js', '.jsx'] },
   plugins: [

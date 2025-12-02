@@ -13,3 +13,18 @@ export async function login(rut, password) {
     };
   }
 }
+
+export async function register(payload) {
+  try {
+    const { data } = await axios.post("/auth/register", payload);
+    return { ok: true, data };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error.response?.data?.message ||
+        "Error al registrarse. Revisa los datos ingresados.",
+      errors: error.response?.data?.errors || null,
+    };
+  }
+}

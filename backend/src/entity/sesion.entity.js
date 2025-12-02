@@ -36,6 +36,11 @@ const SesionSchema = new EntitySchema({
       onUpdate: "CURRENT_TIMESTAMP",
       nullable: false,
     },
+    carrera: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+    },
   },
   indices: [
     { name: "IDX_SESSION_DAY_PC", columns: ["deviceNumber", "labId", "status"] },

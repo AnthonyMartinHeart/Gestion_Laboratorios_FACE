@@ -10457,7 +10457,10 @@ var __webpack_exports__ = {};
 const {
   app,
   BrowserWindow,
-  ipcMain
+  ipcMain,
+  Tray,
+  Menu,
+  nativeImage
 } = __webpack_require__(/*! electron */ "electron");
 const os = __webpack_require__(/*! os */ "os");
 const fs = __webpack_require__(/*! fs */ "fs");
@@ -10474,10 +10477,10 @@ const axios = __webpack_require__(/*! axios */ "./node_modules/axios/dist/node/a
 const API_BASE = process.env.ELECTRON_API_BASE_URL || 'http://localhost:3001/api';
 const LAB_ID = String(process.env.ELECTRON_LAB_ID || '1');
 const DEVICES_PATH = process.env.ELECTRON_DEVICES_PATH || '/equipos/register-or-resolve';
-
-// ---------- Ventana ----------
+let mainWindow = null;
+let tray = null;
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1100,
     height: 740,
     show: true,
@@ -10487,19 +10490,75 @@ function createWindow() {
       nodeIntegration: false
     }
   });
-  win.loadURL('http://localhost:3000/main_window/index.html');
+  mainWindow.on('close', e => {
+    if (ACTIVE_SESSION) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
+  });
+  mainWindow.loadURL('http://localhost:3000/main_window/index.html');
 }
-app.whenReady().then(() => {
+function createTray() {
+  if (tray) return;
+  const trayIconPath = app.isPackaged ? path.join(process.resourcesPath, 'assets', 'UBB.png') : path.join(process.cwd(), 'src', 'renderer', 'UBB.png');
+  if (!fs.existsSync(trayIconPath)) {
+    console.warn('[tray] Icono no encontrado:', trayIconPath);
+    console.warn('[tray] No se crea bandeja. Usaré minimizar como fallback al cerrar la ventana.');
+    tray = null;
+    return;
+  }
+  const icon = nativeImage.createFromPath(trayIconPath);
+  if (icon.isEmpty()) {
+    console.warn('[tray] Icono inválido (¿no es PNG/ICO?):', trayIconPath);
+    tray = null;
+    return;
+  }
+  tray = new Tray(icon);
+  const menu = Menu.buildFromTemplate([{
+    label: 'Mostrar',
+    click: () => mainWindow?.show()
+  }, {
+    label: 'Salir',
+    click: () => {
+      if (ACTIVE_SESSION) {
+        mainWindow?.show();
+        mainWindow?.webContents.send('app:cannot-quit-while-session');
+      } else {
+        app.quit();
+      }
+    }
+  }]);
+  tray.setToolTip('Gestión Laboratorios FACE');
+  tray.setContextMenu(menu);
+  tray.on('click', () => mainWindow?.show());
+}
+app.whenReady().then(async () => {
   createWindow();
+  createTray();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+  const persisted = readSession();
+  if (persisted) {
+    const ok = await verifySessionOnBoot(persisted);
+    if (ok) {
+      ACTIVE_SESSION = persisted;
+      setAuth({
+        token: persisted.token
+      });
+      mainWindow.webContents.once('did-finish-load', () => {
+        mainWindow.webContents.send('sesion:rehydrate', persisted);
+      });
+    } else {
+      clearSessionFile();
+    }
+  }
 });
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    if (!ACTIVE_SESSION) app.quit();
+  }
 });
-
-// ---------- Auth (en memoria) ----------
 let AUTH = {
   token: null,
   claims: null
@@ -10509,15 +10568,49 @@ function setAuth(next) {
     ...AUTH,
     ...next
   };
+  const token = AUTH.token || null;
+  if (token) {
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common.Authorization;
+  }
 }
 function clearAuth() {
   AUTH = {
     token: null,
     claims: null
   };
+  delete axios.defaults.headers.common.Authorization;
 }
-
-// ---------- Utils dispositivo ----------
+const SESSION_FILE = path.join(app.getPath('userData'), 'session.json');
+function readSession() {
+  try {
+    if (!fs.existsSync(SESSION_FILE)) return null;
+    return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+function writeSession(payload) {
+  try {
+    fs.mkdirSync(path.dirname(SESSION_FILE), {
+      recursive: true
+    });
+    fs.writeFileSync(SESSION_FILE, JSON.stringify(payload, null, 2), 'utf8');
+    return true;
+  } catch {
+    return false;
+  }
+}
+function clearSessionFile() {
+  try {
+    if (fs.existsSync(SESSION_FILE)) fs.unlinkSync(SESSION_FILE);
+    return true;
+  } catch {
+    return false;
+  }
+}
+let ACTIVE_SESSION = null;
 const STORE_FILE = path.join(app.getPath('userData'), 'device.json');
 function readDeviceData() {
   try {
@@ -10598,21 +10691,41 @@ async function ensureDeviceRegistered() {
     deviceId,
     suggestedNumber
   });
-  const fixed = Number(data?.data?.deviceNumber ?? data?.deviceNumber);
+  const payload = data?.data || data || {};
+  const fixed = Number(payload.deviceNumber);
   if (!fixed) throw new Error('No se recibió deviceNumber del backend');
+  const freeMode = !!payload.freeMode;
+  const labId = payload.labId ?? Number(LAB_ID);
   persistDeviceData({
-    deviceNumber: fixed
+    deviceNumber: fixed,
+    labId,
+    freeMode
   });
   return {
     fixedNumber: fixed,
     deviceId,
     hostname,
     ip,
-    labId: LAB_ID
+    labId,
+    freeMode
   };
 }
-
-// ---------- IPC: sistema ----------
+async function verifySessionOnBoot(sess) {
+  try {
+    if (!sess || !sess.sessionId) return false;
+    setAuth({
+      token: sess.token
+    });
+    const {
+      data
+    } = await axios.post(`${API_BASE}/sesiones/heartbeat`, {
+      sessionId: sess.sessionId
+    });
+    return data?.status === 'active';
+  } catch {
+    return true;
+  }
+}
 ipcMain.handle('system:state', async () => {
   return {
     authenticated: !!AUTH.token,
@@ -10620,8 +10733,6 @@ ipcMain.handle('system:state', async () => {
     token: AUTH.token || null
   };
 });
-
-// ---------- IPC: dispositivo ----------
 ipcMain.handle('dispositivo:getInfo', async (_evt, {
   baseUrl,
   labId
@@ -10666,8 +10777,6 @@ ipcMain.handle('dispositivo:ensureRegistered', async () => {
     };
   }
 });
-
-// ---------- IPC: auth ----------
 ipcMain.handle('auth:login', async (_evt, {
   rut,
   password
@@ -10679,7 +10788,6 @@ ipcMain.handle('auth:login', async (_evt, {
       rut,
       password
     });
-    // asumo que el backend retorna token (string) o { token }
     const token = typeof data === 'string' ? data : data?.token || data?.data?.token;
     if (!token) throw new Error('Token no recibido');
     setAuth({
@@ -10687,7 +10795,7 @@ ipcMain.handle('auth:login', async (_evt, {
       claims: {
         rut
       }
-    }); // opcional: puedes decodificar JWT si quieres
+    });
     return {
       ok: true,
       token
@@ -10711,13 +10819,75 @@ ipcMain.handle('auth:logout', async () => {
     };
   }
 });
+ipcMain.handle("app:allowOfflineUse", async () => {
+  try {
+    if (mainWindow) {
+      try {
+        mainWindow.setKiosk(false);
+      } catch (e) {}
+      try {
+        mainWindow.setFullScreen(false);
+      } catch (e) {}
 
-// ---------- IPC: sesiones ----------
+      // Minimiza la ventana para dejar el PC libre
+      mainWindow.minimize();
+    }
+    return {
+      ok: true
+    };
+  } catch (e) {
+    console.error("No se pudo liberar el equipo en modo offline:", e);
+    return {
+      ok: false,
+      message: e?.message || "No se pudo liberar el equipo"
+    };
+  }
+});
+ipcMain.handle("app:restoreKiosk", async () => {
+  try {
+    if (mainWindow) {
+      // Trae la ventana al frente
+      mainWindow.show();
+      mainWindow.focus();
+      try {
+        mainWindow.setFullScreen(true);
+      } catch (e) {}
+    }
+    return {
+      ok: true
+    };
+  } catch (e) {
+    console.error("No se pudo restaurar el modo kiosko:", e);
+    return {
+      ok: false,
+      message: e?.message || "No se pudo restaurar el modo kiosko"
+    };
+  }
+});
+ipcMain.handle('auth:register', async (_evt, payload) => {
+  try {
+    const {
+      data
+    } = await axios.post(`${API_BASE}/auth/register`, payload);
+    const body = data?.data || data;
+    return {
+      ok: true,
+      data: body
+    };
+  } catch (e) {
+    const res = e?.response?.data || {};
+    return {
+      ok: false,
+      message: res.message || e?.message || 'No se pudo registrar al usuario',
+      errors: res.errors || null
+    };
+  }
+});
 ipcMain.handle('sesion:iniciar', async (_evt, {
   rut
 }) => {
   try {
-    const reg = await ensureDeviceRegistered(); // garantiza número fijo e IP
+    const reg = await ensureDeviceRegistered();
     const payload = {
       rut,
       labId: Number(reg.labId || LAB_ID),
@@ -10730,10 +10900,29 @@ ipcMain.handle('sesion:iniciar', async (_evt, {
       data
     } = await axios.post(`${API_BASE}/sesiones/start`, payload);
     const res = data?.data || data;
+    const toPersist = {
+      sessionId: res?.sessionId || res?.id || null,
+      rut,
+      deviceNumber: payload.deviceNumber,
+      labId: payload.labId,
+      startedAt: res?.startedAt || payload.startedAt,
+      token: AUTH.token
+    };
+    ACTIVE_SESSION = toPersist;
+    writeSession(toPersist);
+    if (mainWindow) {
+      try {
+        mainWindow.setKiosk(false);
+      } catch (e) {}
+      try {
+        mainWindow.setFullScreen(false);
+      } catch (e) {}
+      mainWindow.minimize();
+    }
     return {
       ok: true,
       ...res
-    }; // idealmente { sessionId, ... }
+    };
   } catch (e) {
     return {
       ok: false,
@@ -10742,23 +10931,57 @@ ipcMain.handle('sesion:iniciar', async (_evt, {
   }
 });
 ipcMain.handle('sesion:finalizar', async (_evt, {
-  sessionId
+  sessionId,
+  reason
 }) => {
   try {
-    const {
-      data
-    } = await axios.post(`${API_BASE}/sesiones/end`, {
-      sessionId
+    await axios.post(`${API_BASE}/sesiones/end`, {
+      sessionId,
+      reason
     });
-    const res = data?.data || data;
+  } catch (e) {}
+  ACTIVE_SESSION = null;
+  clearAuth();
+  clearSessionFile();
+  mainWindow?.show();
+  mainWindow?.webContents.send('sesion:ended', {
+    reason: reason || 'logout'
+  });
+  return {
+    ok: true
+  };
+});
+ipcMain.handle('sesion:persist/read', async () => {
+  const data = readSession();
+  return {
+    ok: !!data,
+    data
+  };
+});
+ipcMain.handle('sesion:persist/clear', async () => {
+  ACTIVE_SESSION = null;
+  clearAuth();
+  return {
+    ok: clearSessionFile()
+  };
+});
+ipcMain.handle('system:config', () => {
+  return {
+    API_BASE,
+    LAB_ID
+  };
+});
+ipcMain.handle('network:health', async () => {
+  try {
+    await axios.get(`${API_BASE.replace(/\/+$/, '')}/health`, {
+      timeout: 3000
+    });
     return {
-      ok: true,
-      ...res
+      ok: true
     };
-  } catch (e) {
+  } catch {
     return {
-      ok: false,
-      message: e?.response?.data?.message || e?.message || 'No se pudo finalizar la sesión'
+      ok: false
     };
   }
 });

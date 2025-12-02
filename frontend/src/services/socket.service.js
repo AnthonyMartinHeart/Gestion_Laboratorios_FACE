@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_BASE_URL?.replace('/api', '') || 'http://localhost:3009';
+const SOCKET_URL = import.meta.env.VITE_BASE_URL?.replace('/api', '') || 'http://localhost:3001';
 
 console.log('Socket URL:', SOCKET_URL);
 

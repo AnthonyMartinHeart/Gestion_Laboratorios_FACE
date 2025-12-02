@@ -16,6 +16,9 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 import { crearNotificacion } from "./notificaciones.controller.js";
+import { FEATURE_BITACORA_SESIONES } from "../config/configEnv.js";
+import { getBitacoraData } from "../services/bitacoraAssembler.service.js";
+
 
 export async function createReservation(req, res) {
   try {
@@ -190,49 +193,64 @@ export async function getReservationsByPC(req, res) {
     }
   }
   
-  export async function getAllReservations(req, res) {
-    try {
-        // Prevenir caché
-        res.set({
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Surrogate-Control': 'no-store'
-        });
+export async function getAllReservations(req, res) {
+  try {
+    // Prevenir cache
+    res.set({
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+      "Surrogate-Control": "no-store",
+    });
 
-        const [list, err] = await getAllReservationsService();
-        
-        // Log para depuración
-        console.log('Reservas obtenidas:', {
-            cantidad: list?.length || 0,
-            muestra: list?.slice(0, 2) || [] // mostrar primeras 2 reservas como ejemplo
-        });
+    const [list, err] = await getAllReservationsService();
 
-        if (err) {
-            console.error('Error al obtener reservas:', err);
-            return handleErrorClient(res, 404, err);
-        }
+    // Log 
+    console.log("Reservas obtenidas:", {
+      cantidad: list?.length || 0,
+      muestra: list?.slice(0, 2) || [],
+    });
 
-        if (!Array.isArray(list)) {
-            console.error('Lista de reservas no es un array:', list);
-            return handleErrorClient(res, 500, 'Formato de respuesta inválido');
-        }
+    if (err) {
+      console.error("Error al obtener reservas:", err);
+      return handleErrorClient(res, 404, err);
+    }
 
-        // Transformar fechas y asegurar formato consistente
-    const formattedList = list.map(reserva => ({
+    if (!Array.isArray(list)) {
+      console.error("Lista de reservas no es un array:", list);
+      return handleErrorClient(res, 500, "Formato de respuesta inválido");
+    }
+
+    const formattedList = list.map((reserva) => ({
       ...reserva,
-      fechaReserva: new Date(reserva.fechaReserva).toISOString().split('T')[0],
-      horaInicio: reserva.horaInicio.slice(0, 5), // Asegurar formato HH:MM
-      horaTermino: reserva.horaTermino.slice(0, 5), // Asegurar formato HH:MM
-      tipoActividad: reserva.tipoActividad || null // Propagar tipoActividad
+      fechaReserva: new Date(reserva.fechaReserva).toISOString().split("T")[0],
+      horaInicio: reserva.horaInicio.slice(0, 5), // HH:MM
+      horaTermino: reserva.horaTermino.slice(0, 5), // HH:MM
+      tipoActividad: reserva.tipoActividad || null,
     }));
 
-        handleSuccess(res, 200, "Reservas encontradas", formattedList);
-    } catch (e) {
-        console.error('Error en getAllReservations:', e);
-        handleErrorServer(res, 500, e.message);
+   
+    if (!FEATURE_BITACORA_SESIONES) {
+      return handleSuccess(res, 200, "Reservas encontradas", formattedList);
     }
+
+    
+    const today = new Date().toISOString().split("T")[0];
+    const { from, to, labId } = req.query;
+
+    const bitacoraList = await getBitacoraData({
+      from: from ?? today,
+      to: to ?? today,
+      labId: labId ? Number(labId) : null,
+    });
+
+    return handleSuccess(res, 200, "Bitácora (reservas + sesiones)", bitacoraList);
+  } catch (e) {
+    console.error("Error en getAllReservations:", e);
+    handleErrorServer(res, 500, e.message);
+  }
 }
+
 
 export async function updateReservation(req, res) {
   try {
@@ -333,7 +351,7 @@ export async function finishReservation(req, res) {
   }
 }
 
-// Nuevo endpoint para liberar todos los equipos (finalizar reservas activas)
+
 export async function finishActiveReservations(req, res) {
   try {
     const [finished, err] = await finishActiveReservationsService();
@@ -348,8 +366,8 @@ export async function finishActiveReservations(req, res) {
   }
 }
 
-// Nuevo endpoint para vaciar completamente la bitácora
-export async function clearAllReservations(req, res) {
+
+export async function clearAllReservations(req, res) { //nuevo
   try {
     const [count, err] = await clearAllReservationsService();
     if (err) return handleErrorClient(res, 404, err);
@@ -361,3 +379,4 @@ export async function clearAllReservations(req, res) {
     handleErrorServer(res, 500, e.message);
   }
 }
+

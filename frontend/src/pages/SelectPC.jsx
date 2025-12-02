@@ -8,6 +8,7 @@ import useCreateReservation from '@hooks/reservation/useCreateReservation.jsx';
 import useReservationSync from '@hooks/reservation/useReservationSync.jsx';
 import { formatRut } from '@helpers/rutFormatter.js';
 import { deleteReservation, createReservation, finishReservation, finishActiveReservations } from '@services/reservation.service.js';
+import { getLabFreeMode, setLabFreeMode } from '../services/lab.service';
 
 const SelectPC = ({ onReservaCreada }) => {
   const { labId } = useParams();
@@ -31,6 +32,18 @@ const SelectPC = ({ onReservaCreada }) => {
   else if (labId === 'lab3') { pcStart = 61; pcEnd = 80; }
 
   const pcs = Array.from({ length: pcEnd - pcStart + 1 }, (_, i) => pcStart + i);
+
+    
+  const getNumericLabId = () => {
+    if (labId === 'lab1') return 1;
+    if (labId === 'lab2') return 2;
+    if (labId === 'lab3') return 3;
+    return 1;
+  };
+
+  
+  const [freeMode, setFreeMode] = useState(false);
+  const [loadingFreeMode, setLoadingFreeMode] = useState(false);
 
   const carrerasMap = {
     "Contador Público y Auditor": "CPA",
@@ -194,6 +207,21 @@ const SelectPC = ({ onReservaCreada }) => {
     const terminoMs = horaAMilisegundos(horaTermino);
     return terminoMs - inicioMs;
   };
+
+    
+  useEffect(() => {
+    const loadFreeMode = async () => {
+      try {
+        const numericLabId = getNumericLabId();
+        const initial = await getLabFreeMode(numericLabId);
+        setFreeMode(initial);
+      } catch (e) {
+        console.error('Error cargando modo libre del laboratorio:', e);
+      }
+    };
+
+    loadFreeMode();
+  }, [labId]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -555,6 +583,36 @@ const SelectPC = ({ onReservaCreada }) => {
       }
     }
   };
+
+  const handleToggleFreeMode = async () => {
+  if (!user || user.rol !== 'administrador') {
+    Swal.fire('Acceso denegado', 'Solo administradores pueden activar o desactivar modo libre.', 'error');
+    return;
+  }
+
+  const numericLabId = getNumericLabId();
+  const newValue = !freeMode;
+
+  setLoadingFreeMode(true);
+  const res = await setLabFreeMode(numericLabId, newValue);
+  setLoadingFreeMode(false);
+
+  if (res?.status !== 'Success') {
+    Swal.fire('Error', res?.message || 'Error al actualizar modo libre', 'error');
+    return;
+  }
+
+  setFreeMode(newValue);
+
+  Swal.fire(
+    'Modo libre actualizado',
+    newValue
+      ? `LAB${numericLabId} ahora está en modo libre. Los PCs no pedirán login en la app de escritorio.`
+      : `LAB${numericLabId} volvió al modo normal.`,
+    'success'
+  );
+};
+
 
   const handlePCClick = (pcNumber) => {
     // Verificar si hay horarios disponibles
@@ -935,6 +993,25 @@ const SelectPC = ({ onReservaCreada }) => {
           hour12: false
         })}
       </div>
+
+      {freeMode && (
+      <div
+        style={{
+          backgroundColor: '#fff3cd',
+          color: '#856404',
+          padding: '8px 12px',
+          borderRadius: '5px',
+          marginBottom: '15px',
+          textAlign: 'center',
+          fontSize: '12px',
+          border: '1px solid #ffeeba'
+        }}
+      >
+        🔓 Este laboratorio está en <strong>modo libre</strong>.
+        Los PCs podrán usarse sin inicio de sesión en la app de escritorio.
+      </div>
+)}
+
       
       {/* Indicador de domingo (laboratorio cerrado) */}
       {(() => {
@@ -1008,6 +1085,22 @@ const SelectPC = ({ onReservaCreada }) => {
             🔓 Liberar Equipos
           </button>
         )}
+        {user && user.rol === 'administrador' && (
+          <button
+            onClick={handleToggleFreeMode}
+            className="action-button free-mode-button"
+            style={{
+              backgroundColor: freeMode ? '#ff9800' : '#ffc107',
+              color: '#ffffff'
+            }}
+            disabled={loadingFreeMode}
+          >
+            {freeMode
+              ? 'Desactivar modo libre del laboratorio'
+              : 'Activar modo libre del laboratorio'}
+          </button>
+        )}
+
         <button 
           onClick={() => navigate('/home')}
           className="action-button back-button"

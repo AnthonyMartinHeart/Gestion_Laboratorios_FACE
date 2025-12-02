@@ -7,9 +7,9 @@ const EquipoSchema = new EntitySchema({
   columns: {
     id: { type: "int", primary: true, generated: true },
     labId: { type: "int", nullable: false },
-    deviceNumber: { type: "int", nullable: false }, // tu pcId (1..80)
+    deviceNumber: { type: "int", nullable: false }, 
     hostname: { type: "varchar", length: 255, nullable: false },
-    deviceId: { type: "varchar", length: 64, nullable: false }, // UUID de la app
+    deviceId: { type: "varchar", length: 64, nullable: false }, 
     ip: { type: "varchar", length: 64, nullable: true },
     createdAt: {
       type: "timestamp with time zone",

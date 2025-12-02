@@ -25,3 +25,7 @@ export const MAIL_PORT = process.env.MAIL_PORT;
 export const MAIL_USER = process.env.MAIL_USER;
 export const MAIL_PASS = process.env.MAIL_PASS;
 export const MAIL_FROM = process.env.MAIL_FROM;
+
+
+export const FEATURE_BITACORA_SESIONES =
+  process.env.FEATURE_BITACORA_SESIONES === "1";
