@@ -1,6 +1,6 @@
 import axios from './root.service.js'; 
 
-// Manejo centralizado de errores
+
 function handleError(error) {
   console.error('Error en la petición:', error);
   return error.response?.data || { error: 'Error desconocido' };
@@ -9,7 +9,7 @@ function handleError(error) {
 export async function createReservation(data) {
   try {
     const { data: response } = await axios.post('/reservas/create', data);
-    return response; // Se espera { success: true, ... } o similar
+    return response; 
   } catch (error) {
     return handleError(error);
   }
@@ -28,16 +28,17 @@ export async function getReservationsByPC(pcId, fechaReserva) {
   }
 }
 
-export async function getAllReservations() {
+export async function getAllReservations(params = {}) {
   try {
     const { data } = await axios.get('/reservas/all', {
+      params: params,
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
       }
     });
     
-    // Si la respuesta tiene una estructura específica, extraer los datos
+    
     const reservations = data.data || data;
 
     if (!Array.isArray(reservations)) {

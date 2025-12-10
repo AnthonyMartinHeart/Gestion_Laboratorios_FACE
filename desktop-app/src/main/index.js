@@ -9,9 +9,18 @@ const axios = require('axios');
 require('dotenv').config();
 
 
-const API_BASE = process.env.ELECTRON_API_BASE_URL || 'http://localhost:3001/api';
-const LAB_ID   = String(process.env.ELECTRON_LAB_ID || '1');
+const isProd = app.isPackaged;
+
+const API_BASE = isProd
+  ? 'http://146.83.198.35:1651/api'
+  : (process.env.ELECTRON_API_BASE_URL || 'http://localhost:3001/api');
+
+const LAB_ID   = process.env.ELECTRON_LAB_ID
+  ? Number(process.env.ELECTRON_LAB_ID)
+  : null;
+
 const DEVICES_PATH = process.env.ELECTRON_DEVICES_PATH || '/equipos/register-or-resolve';
+
 
 
 let mainWindow = null;
@@ -209,39 +218,64 @@ function getLocalAddressViaSocket(baseUrl) {
 }
 
 async function ensureDeviceRegistered() {
-  const deviceId = ensureDeviceId();
-  const ip = process.env.TEST_IP || (await getActiveIPv4(API_BASE));
-  const hostname = os.hostname();
-  const suggestedNumber = ip?.split('.').map(Number).pop() || null;
+  try {
+    const deviceId = ensureDeviceId();
+    const ip = process.env.TEST_IP || (await getActiveIPv4(API_BASE));
+    const hostname = os.hostname();
 
-  const { data } = await axios.post(`${API_BASE}${DEVICES_PATH}`, {
-    labId: Number(LAB_ID),
-    ip,
-    hostname,
-    deviceId,
-    suggestedNumber,
-  });
+    // Número sugerido desde IP
+    const suggestedNumber = ip?.split(".").map(Number).pop() || null;
 
-  
-  const payload = data?.data || data || {};
+    // Payload al backend
+    const payload = {
+      ip,
+      hostname,
+      deviceId,
+      suggestedNumber,
+    };
 
-  const fixed = Number(payload.deviceNumber);
-  if (!fixed) throw new Error('No se recibió deviceNumber del backend');
+    // Si hay LAB_ID definido en .env
+    if (Number.isFinite(LAB_ID)) {
+      payload.labId = LAB_ID;
+    }
 
-  const freeMode = !!payload.freeMode;
-  const labId = payload.labId ?? Number(LAB_ID);
+    // Llamada al backend
+    const { data } = await axios.post(`${API_BASE}${DEVICES_PATH}`, payload);
 
-  
-  persistDeviceData({ deviceNumber: fixed, labId, freeMode });
+    const resData = data?.data || data || {};
 
-  return {
-    fixedNumber: fixed,
-    deviceId,
-    hostname,
-    ip,
-    labId,
-    freeMode,
-  };
+    if (!resData.deviceNumber) {
+      throw new Error("Backend no devolvió deviceNumber");
+    }
+
+    const fixedNumber = Number(resData.deviceNumber);
+    const labId = resData.labId ?? (Number.isFinite(LAB_ID) ? LAB_ID : null);
+    const freeMode = !!resData.freeMode;
+
+    // Guardar en device.json
+    persistDeviceData({
+      deviceNumber: fixedNumber,
+      labId,
+      freeMode,
+    });
+
+    return {
+      ok: true,
+      fixedNumber,
+      deviceId,
+      hostname,
+      ip,
+      labId,
+      freeMode,
+    };
+
+  } catch (err) {
+    console.error("[ensureDeviceRegistered] ERROR:", err);
+    return {
+      ok: false,
+      message: err.message || "Error desconocido registrando equipo",
+    };
+  }
 }
 
 
@@ -281,9 +315,9 @@ ipcMain.handle('dispositivo:setFixedNumber', async (_evt, { deviceNumber }) => {
   const saved = persistDeviceData({ deviceNumber }); return { ok: true, savedNumber: saved.deviceNumber };
 });
 ipcMain.handle('dispositivo:getPersisted', async () => readDeviceData());
+
 ipcMain.handle('dispositivo:ensureRegistered', async () => {
-  try { const info = await ensureDeviceRegistered(); return { ok: true, ...info }; }
-  catch (e) { return { ok: false, message: e?.response?.data?.message || e?.message || 'Error registrando' }; }
+  return await ensureDeviceRegistered();
 });
 
 

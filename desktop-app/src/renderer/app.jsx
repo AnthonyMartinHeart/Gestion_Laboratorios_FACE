@@ -58,17 +58,35 @@ export default function App() {
     [login]
   );
 
-  const handleRegister = useCallback(async (payload) => {
+const handleRegister = useCallback(async (payload) => {
+  try {
     const res = await window.api?.auth?.register?.(payload);
 
+    //El backend rechazo el registro
     if (!res?.ok) {
-      const err = new Error(res?.message || "No se pudo registrar al usuario.");
-      err.details = res?.errors || null;
-      throw err;
+      return {
+        ok: false,
+        message: res?.message || "No se pudo registrar al usuario.",
+        errors: res?.errors || null,
+      };
     }
 
-    return res?.data;
-  }, []);
+    //Registro exitoso
+    return {
+      ok: true,
+      data: res?.data,
+    };
+
+  } catch (e) {
+    // Error de red o servidor caido
+    return {
+      ok: false,
+      message: "Error de red o servidor no disponible.",
+      errors: null,
+    };
+  }
+}, []);
+
 
   const handleIdleWarning = useCallback(({ remainingMs }) => {
     setWarning(
