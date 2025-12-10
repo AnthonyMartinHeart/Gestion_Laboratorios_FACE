@@ -44,9 +44,20 @@ export async function getBitacoraData({ from, to, labId = null }) {
 
   const sesiones = await SesionRepo
     .createQueryBuilder("s")
-    .where("DATE(s.startedAt) BETWEEN :from AND :to", { from, to })
+    .where("s.startedAt::date BETWEEN :from AND :to", { from, to })
     .andWhere(labId ? "s.labId = :labId" : "1=1", { labId })
     .getMany();
+
+  console.log(`📊 Sesiones encontradas: ${sesiones.length}`, {
+    from,
+    to,
+    labId,
+    muestra: sesiones.slice(0, 2).map(s => ({
+      rut: s.rut,
+      deviceNumber: s.deviceNumber,
+      startedAt: s.startedAt
+    }))
+  });
 
 const sesionesDTO = sesiones.map((s) => {
   const started = s.startedAt ? new Date(s.startedAt) : null;

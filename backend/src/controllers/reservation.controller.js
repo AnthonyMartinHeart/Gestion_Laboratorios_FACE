@@ -231,18 +231,28 @@ export async function getAllReservations(req, res) {
 
    
     if (!FEATURE_BITACORA_SESIONES) {
+      console.log("⚠️ FEATURE_BITACORA_SESIONES está desactivada");
       return handleSuccess(res, 200, "Reservas encontradas", formattedList);
     }
 
+    console.log("✅ FEATURE_BITACORA_SESIONES activada, usando bitacoraAssembler");
     
     const today = new Date().toISOString().split("T")[0];
     const { from, to, labId } = req.query;
+
+    console.log("📅 Parámetros de búsqueda:", {
+      from: from ?? today,
+      to: to ?? today,
+      labId: labId ? Number(labId) : null,
+    });
 
     const bitacoraList = await getBitacoraData({
       from: from ?? today,
       to: to ?? today,
       labId: labId ? Number(labId) : null,
     });
+
+    console.log(`📋 Bitácora combinada: ${bitacoraList.length} registros`);
 
     return handleSuccess(res, 200, "Bitácora (reservas + sesiones)", bitacoraList);
   } catch (e) {
