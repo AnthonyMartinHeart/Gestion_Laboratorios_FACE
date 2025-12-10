@@ -15,6 +15,23 @@ const CARRERAS = [
   { value: "otro",  label: "Otro" },
 ];
 
+function formatRut(rut) {
+  
+  rut = rut.replace(/\./g, "").replace(/\s+/g, "").toUpperCase();
+
+  
+  if (!rut.includes("-")) return rut;
+
+  const [body, dv] = rut.split("-");
+
+  
+  let reversed = body.split("").reverse().join("");
+  let groups = reversed.match(/.{1,3}/g);
+  let withDots = groups.join(".").split("").reverse().join("");
+
+  return `${withDots}-${dv}`;
+}
+
 
 
 export default function LoginForm({ onLogin, onRegister }) {
@@ -73,8 +90,8 @@ export default function LoginForm({ onLogin, onRegister }) {
 
     const rutClean = rut.trim();
 
+  
     if (isRegisterMode) {
-      // Registro
       const nombreClean = nombreCompleto.trim();
       const emailClean = email.trim().toLowerCase();
       const carreraClean = carrera.trim();
@@ -90,7 +107,6 @@ export default function LoginForm({ onLogin, onRegister }) {
         return;
       }
 
-
       if (!validateRut(rutClean)) {
         setMessage("El RUT ingresado no es válido.");
         return;
@@ -105,9 +121,7 @@ export default function LoginForm({ onLogin, onRegister }) {
         !emailClean.endsWith("@alumnos.ubiobio.cl") &&
         !emailClean.endsWith("@ubiobio.cl")
       ) {
-        setMessage(
-          "El correo debe terminar en @alumnos.ubiobio.cl o @ubiobio.cl"
-        );
+        setMessage("El correo debe terminar en @alumnos.ubiobio.cl o @ubiobio.cl");
         return;
       }
 
@@ -117,49 +131,53 @@ export default function LoginForm({ onLogin, onRegister }) {
       }
 
       setLoading(true);
-      try {
-        await onRegister({
-          nombreCompleto: nombreClean,
-          rut: rutClean,
-          email: emailClean,
-          password,
-          carrera: carreraClean || undefined,
-          anioIngreso: anioIngresoClean || undefined,
-        });
 
-        setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
-        setMode("login");
-        setPassword("");
-      } catch (err) {
-        setMessage(err?.message || "Error al registrar usuario.");
-      } finally {
+      const res = await onRegister({
+        nombreCompleto: nombreClean,
+        rut: formatRut(rutClean),
+        email: emailClean,
+        password,
+        carrera: carreraClean || undefined,
+        anioIngreso: anioIngresoClean || undefined,
+      });
+
+      if (!res.ok) {
+        setMessage(res.message || "Error al registrar usuario.");
         setLoading(false);
-      }
-    } else {
-      // Login
-      if (!rutClean || !password) {
-        setMessage("Ingresa tu RUT y contraseña.");
         return;
       }
 
-      if (!validateRut(rutClean)) {
-        setMessage("El RUT ingresado no es válido.");
-        return;
-      }
+      setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
+      setMode("login");
+      setPassword("");
+      setLoading(false);
+      return;
+    }
 
-      if (!onLogin) {
-        setMessage("No se configuró el manejador de login.");
-        return;
-      }
+  
+    if (!rutClean || !password) {
+      setMessage("Ingresa tu RUT y contraseña.");
+      return;
+    }
 
-      setLoading(true);
-      try {
-        await onLogin(rutClean, password);
-      } catch (err) {
-        setMessage(err?.message || "Error al iniciar sesión.");
-      } finally {
-        setLoading(false);
-      }
+    if (!validateRut(rutClean)) {
+      setMessage("El RUT ingresado no es válido.");
+      return;
+    }
+
+    if (!onLogin) {
+      setMessage("No se configuró el manejador de login.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const rutFormateado = formatRut(rutClean);
+      await onLogin(rutFormateado, password);
+    } catch (err) {
+      setMessage(err?.message || "Error al iniciar sesión.");
+    } finally {
+      setLoading(false);
     }
   };
 

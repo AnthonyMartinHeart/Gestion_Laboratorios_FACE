@@ -4,16 +4,27 @@ const { WebpackPlugin } = require('@electron-forge/plugin-webpack');
 module.exports = {
   packagerConfig: {},
   rebuildConfig: {},
-  makers: [],
+  makers: [
+    {
+      name: '@electron-forge/maker-squirrel',
+      config: {
+        name: 'desktop_app',
+      },
+    },
+    {
+      name: '@electron-forge/maker-zip',
+      platforms: ['win32'],
+    }
+  ],
   plugins: [
     new WebpackPlugin({
-      // 🔐 CSP solo para desarrollo (dev server + tu API local)
+      // solo para desarrollo
       devContentSecurityPolicy:
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-eval'; " +
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data:; " +
-        "connect-src 'self' http://localhost:3001 http://localhost:9000 ws://localhost:9000",
+        "connect-src 'self' http://localhost:3001 http://localhost:9000 ws://localhost:9000 http://146.83.198.35:1652",
 
       mainConfig: path.resolve(__dirname, 'webpack.main.config.js'),
       renderer: {

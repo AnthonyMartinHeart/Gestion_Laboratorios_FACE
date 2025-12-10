@@ -14,10 +14,17 @@ export const useGetAllReservations = (labId, selectedDate) => {
 
         setLoading(true);
         try {
-            // 1. Obtener reservas normales
-            const response = await getAllReservations();
+            // Normalizar fecha para el backend
+            const targetDate = new Date(selectedDate).toISOString().split('T')[0];
+            
+            // 1. Obtener bitácora combinada (reservas + sesiones) desde el backend
+            const response = await getAllReservations({
+                from: targetDate,
+                to: targetDate,
+                labId: parseInt(labId)
+            });
 
-            // 2. Extraer array de reservas
+            // 2. Extraer array de reservas/sesiones
             let allReservations;
             if (response?.data) {
                 allReservations = response.data;
@@ -28,7 +35,12 @@ export const useGetAllReservations = (labId, selectedDate) => {
                 throw new Error('Formato de respuesta inválido');
             }
 
-            // 3. Obtener solicitudes aprobadas
+            // 3. Excluir reservas de mantenimiento de la bitácora
+            const filteredReservations = allReservations.filter(reserva => {
+                return reserva.carrera !== 'MAINTENANCE';
+            });
+
+            // 4. Obtener solicitudes aprobadas
             const solicitudesResponse = await obtenerSolicitudes();
             
             let solicitudesAprobadas = [];
@@ -38,23 +50,8 @@ export const useGetAllReservations = (labId, selectedDate) => {
                 solicitudesAprobadas = solicitudesResponse.filter(s => s.estado === 'aprobada');
             }
 
-            // 4. Normalizar fecha para comparación
-            const targetDate = new Date(selectedDate).toISOString().split('T')[0];
+            // 5. Variables ya definidas arriba para comparación con solicitudes
             const targetLabId = parseInt(labId);
-
-            // 5. Filtrar reservas normales (excluir reservas de mantenimiento)
-            const filteredReservations = allReservations.filter(reserva => {
-                // Convertir y validar datos de la reserva
-                const reservaLabId = parseInt(reserva.labId);
-                const reservaDate = new Date(reserva.fechaReserva).toISOString().split('T')[0];
-
-                // Excluir reservas de mantenimiento de la bitácora
-                if (reserva.carrera === 'MAINTENANCE') {
-                    return false;
-                }
-
-                return reservaDate === targetDate && reservaLabId === targetLabId;
-            });
 
             // 6. Convertir solicitudes aprobadas a formato de reserva
             const reservasFromSolicitudes = [];
