@@ -6,7 +6,10 @@ function hhmm(value) {
   if (!value) return "—";
   const d = new Date(value);
   if (isNaN(d.getTime())) return "—";
-  return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  
+  // Convertir a hora local de Chile (America/Santiago)
+  const chileTime = new Date(d.toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+  return `${String(chileTime.getHours()).padStart(2,"0")}:${String(chileTime.getMinutes()).padStart(2,"0")}`;
 }
 
 // evitar duplicados
