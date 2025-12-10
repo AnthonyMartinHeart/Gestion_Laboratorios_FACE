@@ -35,6 +35,11 @@ export const useGetAllReservations = (labId, selectedDate) => {
                 throw new Error('Formato de respuesta inválido');
             }
 
+            console.log('📊 Bitácora recibida del backend:', {
+                total: allReservations.length,
+                muestra: allReservations.slice(0, 3)
+            });
+
             // 3. Excluir reservas de mantenimiento de la bitácora
             const filteredReservations = allReservations.filter(reserva => {
                 return reserva.carrera !== 'MAINTENANCE';

@@ -105,7 +105,7 @@ export async function startSessionService(payload) {
 
 export async function endSessionService(sessionId, payload = {}) {
   try {
-    const sessRepo = AppDataSource.getRepository(Session);
+    const sessRepo = AppDataSource.getRepository(Sesion);
     const session = await sessRepo.findOne({ where: { id: sessionId } });
     if (!session) return [null, "Sesión no encontrada"];
 
