@@ -45,14 +45,21 @@ export const useGetAllReservations = (labId, selectedDate) => {
                 return reserva.carrera !== 'MAINTENANCE';
             });
 
-            // 4. Obtener solicitudes aprobadas
-            const solicitudesResponse = await obtenerSolicitudes();
-            
+            console.log('📋 Reservas filtradas:', filteredReservations.length);
+
+            // 4. Obtener solicitudes aprobadas (solo si el usuario tiene permisos)
             let solicitudesAprobadas = [];
-            if (solicitudesResponse?.data) {
-                solicitudesAprobadas = solicitudesResponse.data.filter(s => s.estado === 'aprobada');
-            } else if (Array.isArray(solicitudesResponse)) {
-                solicitudesAprobadas = solicitudesResponse.filter(s => s.estado === 'aprobada');
+            try {
+                const solicitudesResponse = await obtenerSolicitudes();
+                
+                if (solicitudesResponse?.data) {
+                    solicitudesAprobadas = solicitudesResponse.data.filter(s => s.estado === 'aprobada');
+                } else if (Array.isArray(solicitudesResponse)) {
+                    solicitudesAprobadas = solicitudesResponse.filter(s => s.estado === 'aprobada');
+                }
+            } catch (solicitudError) {
+                console.warn('⚠️ No se pudieron cargar solicitudes (puede ser por permisos):', solicitudError);
+                // Continuar sin solicitudes si hay error de permisos
             }
 
             // 5. Variables ya definidas arriba para comparación con solicitudes
