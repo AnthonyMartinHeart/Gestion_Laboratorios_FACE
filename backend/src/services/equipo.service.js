@@ -77,10 +77,13 @@ export async function registerOrResolveDeviceService(payload) {
     
     const octet = lastOctet(ip);
     const deviceFromIP = ipOctetToDeviceNumber(octet);
-    
-    let numberToAssign = Number.isFinite(suggestedNumber)
-      ? Number(suggestedNumber)
-      : deviceFromIP;
+    // Si viene suggestedNumber, aplicar la transformación de IP a número de equipo
+    let numberToAssign;
+    if (Number.isFinite(suggestedNumber)) {
+      numberToAssign = ipOctetToDeviceNumber(suggestedNumber) ?? deviceFromIP;
+    } else {
+      numberToAssign = deviceFromIP;
+    }
 
     // Determinar laboratorio
     let resolvedLabId = labId
