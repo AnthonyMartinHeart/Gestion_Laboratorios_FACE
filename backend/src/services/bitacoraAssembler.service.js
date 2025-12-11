@@ -7,9 +7,16 @@ function hhmm(value) {
   const d = new Date(value);
   if (isNaN(d.getTime())) return "—";
   
-  // Convertir a hora local de Chile (America/Santiago)
-  const chileTime = new Date(d.toLocaleString('en-US', { timeZone: 'America/Santiago' }));
-  return `${String(chileTime.getHours()).padStart(2,"0")}:${String(chileTime.getMinutes()).padStart(2,"0")}`;
+  // Convertir a hora local de Chile (UTC-3 o UTC-4 según horario de verano)
+  // Usamos toLocaleString con zona horaria específica
+  const formatter = new Intl.DateTimeFormat("es-CL", {
+    timeZone: "America/Santiago",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+  
+  return formatter.format(d);
 }
 
 // evitar duplicados
@@ -23,7 +30,7 @@ export async function getBitacoraData({ from, to, labId = null }) {
   const ReservaRepo = AppDataSource.getRepository("Reservation");
 
   const reservas = await ReservaRepo
-    .createQueryBuilder("r")
+    .createQueryBuilder("r")   
     .where("r.fechaReserva BETWEEN :from AND :to", { from, to })
     .andWhere(labId ? "r.labId = :labId" : "1=1", { labId })
     .orderBy("r.fechaReserva", "ASC")

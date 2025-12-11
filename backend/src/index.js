@@ -17,6 +17,33 @@ import { setIO } from "./services/socket.service.js";
 // Set para almacenar usuarios conectados
 const connectedUsers = new Set();
 
+// Función para obtener sesiones activas de la app de escritorio
+async function getActiveSessions() {
+  try {
+    const sesionRepo = AppDataSource.getRepository("Sesion");
+    const count = await sesionRepo.count({ where: { status: "active" } });
+    return count;
+  } catch (error) {
+    console.error("Error obteniendo sesiones activas:", error);
+    return 0;
+  }
+}
+
+// Función para emitir conteo total (web + app)
+async function emitTotalUsersCount(io, socket = null) {
+  const webUsers = connectedUsers.size;
+  const appSessions = await getActiveSessions();
+  const total = webUsers + appSessions;
+  
+  console.log(`📊 Conteo total: ${total} (Web: ${webUsers}, App: ${appSessions})`);
+  
+  if (socket) {
+    socket.emit("users-count", total);
+  } else {
+    io.emit("users-count", total);
+  }
+}
+
 async function setupServer() {
   try {
     const app = express();
@@ -95,37 +122,37 @@ async function setupServer() {
       });
       
       // Enviar el conteo actual al nuevo usuario conectado
-      socket.emit("users-count", connectedUsers.size);
+      emitTotalUsersCount(io, socket);
 
-      socket.on("user-login", (userData) => {
+      socket.on("user-login", async (userData) => {
         connectedUsers.add(socket.id);
         console.log(`✅ Usuario ${socket.id} hizo login. Total: ${connectedUsers.size}`);
         console.log('📋 Usuarios conectados:', Array.from(connectedUsers));
         
         // Emitir a todos los clientes el nuevo conteo
-        io.emit("users-count", connectedUsers.size);
+        await emitTotalUsersCount(io);
       });
 
       // Nuevo evento para obtener el conteo actual
-      socket.on("get-users-count", () => {
-        console.log(`📊 Cliente ${socket.id} solicita conteo actual: ${connectedUsers.size}`);
-        socket.emit("users-count", connectedUsers.size);
+      socket.on("get-users-count", async () => {
+        console.log(`📊 Cliente ${socket.id} solicita conteo actual`);
+        await emitTotalUsersCount(io, socket);
       });
 
-      socket.on("user-logout", () => {
+      socket.on("user-logout", async () => {
         connectedUsers.delete(socket.id);
         console.log(`👋 Usuario ${socket.id} hizo logout. Total: ${connectedUsers.size}`);
         
         // Emitir a todos los clientes el nuevo conteo
-        io.emit("users-count", connectedUsers.size);
+        await emitTotalUsersCount(io);
       });
 
-      socket.on("disconnect", (reason) => {
+      socket.on("disconnect", async (reason) => {
         connectedUsers.delete(socket.id);
         console.log(`❌ Usuario ${socket.id} desconectado (${reason}). Total: ${connectedUsers.size}`);
         
         // Emitir a todos los clientes el nuevo conteo
-        io.emit("users-count", connectedUsers.size);
+        await emitTotalUsersCount(io);
       });
     });
 

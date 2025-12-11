@@ -10485,16 +10485,36 @@ function createWindow() {
     width: 1100,
     height: 740,
     show: true,
+    fullscreen: true,
+    // Pantalla completa
+    kiosk: true,
+    // Modo kiosco estricto - BLOQUEA TODO
+    frame: false,
+    // Sin barra de título
+    alwaysOnTop: true,
+    // Mantener ventana siempre visible
+    minimizable: false,
+    // Deshabilitar minimizar hasta login
+    closable: false,
+    // Deshabilitar cerrar hasta login
     webPreferences: {
       preload: require('path').resolve(__dirname, '../renderer', 'main_window', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false
     }
   });
+
+  // Maximizar ventana al iniciar
+  mainWindow.maximize();
+
+  // Bloquear cierre - solo permitir si NO hay sesión activa
   mainWindow.on('close', e => {
     if (ACTIVE_SESSION) {
       e.preventDefault();
       mainWindow.hide();
+    } else {
+      // Sin sesión activa, prevenir cierre en modo kiosco
+      e.preventDefault();
     }
   });
   mainWindow.loadURL(`file://${require('path').resolve(__dirname, '..', 'renderer', 'main_window', 'index.html')}`);
@@ -10534,6 +10554,15 @@ function createTray() {
   tray.on('click', () => mainWindow?.show());
 }
 app.whenReady().then(async () => {
+  // Configurar inicio automático con Windows
+  if (isProd) {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      openAsHidden: false,
+      path: process.execPath,
+      args: []
+    });
+  }
   createWindow();
   createTray();
   app.on('activate', () => {
@@ -10558,6 +10587,33 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     if (!ACTIVE_SESSION) app.quit();
+  }
+});
+
+// Cerrar sesion al apagar pc
+app.on('will-quit', async e => {
+  if (ACTIVE_SESSION && ACTIVE_SESSION.sessionId) {
+    console.log('🛑 Cerrando sesión automáticamente al salir...');
+    e.preventDefault();
+    try {
+      await axios.post(`${API_BASE}/sesiones/end`, {
+        sessionId: ACTIVE_SESSION.sessionId,
+        endedAt: new Date().toISOString()
+      }).catch(err => {
+        console.error('Error cerrando sesión en servidor:', err.message);
+      });
+
+      // Limpiar sesión local
+      ACTIVE_SESSION = null;
+      clearAuth();
+      clearSessionFile();
+      console.log('✅ Sesión cerrada, saliendo...');
+    } catch (error) {
+      console.error('Error en will-quit:', error);
+    } finally {
+      // Forzar salida
+      app.exit(0);
+    }
   }
 });
 let AUTH = {
@@ -10924,7 +10980,11 @@ ipcMain.handle('sesion:iniciar', async (_evt, {
     };
     ACTIVE_SESSION = toPersist;
     writeSession(toPersist);
+
+    // Cuando hay sesión activa, permitir minimizar
     if (mainWindow) {
+      mainWindow.setMinimizable(true);
+      mainWindow.setClosable(true);
       try {
         mainWindow.setKiosk(false);
       } catch (e) {}
@@ -10957,7 +11017,14 @@ ipcMain.handle('sesion:finalizar', async (_evt, {
   ACTIVE_SESSION = null;
   clearAuth();
   clearSessionFile();
-  mainWindow?.show();
+
+  // Al cerrar sesión, bloquear ventana nuevamente
+  if (mainWindow) {
+    mainWindow.setMinimizable(false);
+    mainWindow.setClosable(false);
+    mainWindow.show();
+    mainWindow.maximize();
+  }
   mainWindow?.webContents.send('sesion:ended', {
     reason: reason || 'logout'
   });

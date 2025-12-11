@@ -17,6 +17,24 @@ function lastOctet(ip) {
   return Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
+
+// Lab 1 usa IPs 101-140 (PC 1-40), el resto es directo
+function ipOctetToDeviceNumber(octet) {
+  if (!Number.isFinite(octet)) return undefined;
+  
+ 
+  if (octet >= 101 && octet <= 140) {
+    return octet - 100;
+  }
+  
+  // Lab 2 y 3: directo
+  if (octet >= 1 && octet <= 80) {
+    return octet;
+  }
+  
+  return undefined;
+}
+
 async function getFreeModeForLab(labId) {
   if (!Number.isFinite(labId)) return false;
   const repo = AppDataSource.getRepository(LabConfig);
@@ -34,7 +52,7 @@ export async function registerOrResolveDeviceService(payload) {
 
     const repo = AppDataSource.getRepository(Device);
 
-    // 1) Buscar equipo por deviceId o hostname
+
     let device = await repo.findOne({ where: [{ deviceId }, { hostname }] });
     if (device) {
       const newIp = ip || device.ip;
@@ -57,14 +75,16 @@ export async function registerOrResolveDeviceService(payload) {
     }
 
     
+    const octet = lastOctet(ip);
+    const deviceFromIP = ipOctetToDeviceNumber(octet);
+    
     let numberToAssign = Number.isFinite(suggestedNumber)
       ? Number(suggestedNumber)
-      : lastOctet(ip);
+      : deviceFromIP;
 
-    
-    let resolvedLabId =
-      labId ??
-      (Number.isFinite(numberToAssign) ? mapDeviceToLab(numberToAssign) : null);
+    // Determinar laboratorio
+    let resolvedLabId = labId
+      ?? (Number.isFinite(numberToAssign) ? mapDeviceToLab(numberToAssign) : null);
 
     if (!resolvedLabId) {
       return [null, "No se pudo asignar laboratorio al equipo"];

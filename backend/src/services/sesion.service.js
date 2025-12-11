@@ -2,7 +2,8 @@
 import { AppDataSource } from "../config/configDb.js";
 import Sesion from "../entity/sesion.entity.js";
 import Reservation from "../entity/reservation.entity.js";
-import User from "../entity/user.entity.js"; 
+import User from "../entity/user.entity.js";
+import { getIO } from "./socket.service.js"; 
 
 
 const TOL_BEFORE_MIN = 10; 
@@ -80,7 +81,7 @@ export async function startSessionService(payload) {
       }
     }
 
-    // 3) Crear la sesión
+    // 3) Crea la sesion
     const session = sessRepo.create({
       rut,
       labId,
@@ -95,6 +96,19 @@ export async function startSessionService(payload) {
     });
 
     const saved = await sessRepo.save(session);
+
+    // Notifica el contador de usuarios
+    try {
+      const io = getIO();
+      if (io) {
+        const totalActive = await sessRepo.count({ where: { status: "active" } });
+        
+        io.emit("session-count-update", totalActive);
+        console.log(`📊 Sesiones activas notificadas: ${totalActive}`);
+      }
+    } catch (socketError) {
+      console.error("Error emitiendo actualización de contador:", socketError);
+    }
 
     return [{ sessionId: saved.id, reservationId, matched: !!reservationId }, null];
   } catch (e) {
@@ -112,6 +126,19 @@ export async function endSessionService(sessionId, payload = {}) {
     session.status = "ended";
     session.endedAt = payload.endedAt ? new Date(payload.endedAt) : new Date();
     await sessRepo.save(session);
+
+    
+    try {
+      const io = getIO();
+      if (io) {
+        const totalActive = await sessRepo.count({ where: { status: "active" } });
+        
+        io.emit("session-count-update", totalActive);
+        console.log(`📊 Sesiones activas notificadas: ${totalActive}`);
+      }
+    } catch (socketError) {
+      console.error("Error emitiendo actualización de contador:", socketError);
+    }
 
     return [{ success: true }, null];
   } catch (e) {

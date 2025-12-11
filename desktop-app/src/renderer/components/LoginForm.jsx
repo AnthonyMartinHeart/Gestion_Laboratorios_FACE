@@ -262,7 +262,7 @@ export default function LoginForm({ onLogin, onRegister }) {
 
           <input
             type="text"
-            placeholder="RUT (sin puntos, con guión)"
+            placeholder="RUT (con puntos y guión)"
             value={rut}
             onChange={(e) => setRut(e.target.value)}
             disabled={loading}

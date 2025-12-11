@@ -21,6 +21,12 @@ const UsuariosConectados = () => {
 
         // Suscribirse al evento
         socket.on('users-count', handleUsersCount);
+        
+        // Escuchar actualizaciones cuando cambian sesiones de la app
+        socket.on('session-count-update', () => {
+          console.log('🔄 Sesión de app cambió, solicitando nuevo conteo');
+          socket.emit('get-users-count');
+        });
 
         // Si el socket ya está conectado, solicitar el conteo actual
         if (socket.connected) {
@@ -38,6 +44,7 @@ const UsuariosConectados = () => {
         return () => {
           console.log('🧹 Limpiando listener de usuarios conectados');
           socket.off('users-count', handleUsersCount);
+          socket.off('session-count-update');
         };
       } else {
         console.warn('⚠️ Socket no disponible aún, reintentando...');
